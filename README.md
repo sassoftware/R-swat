@@ -1,12 +1,12 @@
 # SAS Scripting Wrapper for Analytics Transfer (SWAT) for R
 
 SWAT is an R package that enables you to interface with
-with SAS Cloud Analytics Services (CAS), the in-memory server that is 
+SAS Cloud Analytics Services (CAS), the in-memory server that is 
 the centerpiece of the [SAS Viya](http://www.sas.com/en_us/software/viya.html)
 platform. 
 Using the SWAT package, you can write an R program that connects to a CAS server, 
 analyze large in-memory data sets, and then work with the results of the data 
-analysis using familiar data-wrangling technigues in R.
+analysis using familiar data-wrangling techniques in R.
 
 This package provides facilities for starting a CAS session and 
 running actions in CAS--such as classifying data with a decision tree or modeling
