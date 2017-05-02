@@ -1,0 +1,47 @@
+Package: swat
+Type: Package
+Title: SAS Scripting Wrapper for Analytics Transfer (SWAT)
+Version: 1.0.0
+Date: 28APR2017
+Authors@R: c(person("Jared", "Dean", role = c("aut", "cre"),
+                email = "Jared.Dean@sas.com"),
+             person("Tom", "Weber", role = "aut", email = "Tom.Weber@sas.com"),
+             person("Kevin", "Smith", role = "aut", email = "Kevin.Smith@sas.com"))
+Author: Jared Dean [aut, cre],
+  Tom Weber [aut, cre],
+  Kevin Smith [aut]
+Description: SWAT provides an R scripting interface to SAS Cloud Analytic Services (CAS).
+  This enables R programmers to perform analytical functions provided by SAS.
+License: file LICENSE
+Copyright: Copyright 2017 SAS Institute Inc. All Rights Reserved.
+Issues: Enter issues at https://github.com/sassoftware/r-swat/issues.
+Depends:
+    R (>= 3.1.0)
+Suggests: 
+    testthat,
+    random,
+    xlsx,
+    knitr
+Imports:
+    httr,
+    jsonlite,
+    tools,
+    methods
+Collate:
+    'datetime.R'
+    'rswat.R'
+    'authinfo.R'
+    'rswat_rest.R'
+    'swat.R'
+    'helper.R'
+    'CAStab.R'
+    'table_functions.R'
+    'descriptive_stats.R'
+    'action.R'
+    'CASdf.R'
+    'read_write.R'
+    'analytical_functions.R'
+    'graphics.R'
+    'Ops.R'
+RoxygenNote: 6.0.1
+VignetteBuilder: knitr

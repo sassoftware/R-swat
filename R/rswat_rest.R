@@ -1,0 +1,1126 @@
+#
+# Copyright SAS Institute
+#
+#  Licensed under the Apache License, Version 2.0 (the License);
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+
+.trace_actions <- function( action_name, params ) {
+   ui <- FALSE
+   if ( !is.null(params$`_apptag`) )
+       ui <- params$`_apptag` == 'UI'
+
+   if ( !as.logical(getOption('cas.trace.actions')) )
+      return(FALSE)
+
+   if ( ui && !as.logical(getOption('cas.trace.ui.actions')) )
+      return(FALSE)
+
+   message(paste('[', action_name, ']', sep=''))
+   .trace_list(params)
+   message('')
+
+   return(TRUE)
+}
+
+.paste_prefix <- function ( str1, str2, sep='.' ) {
+    if ( is.null(str1) ) {
+        return( str2 )
+    }
+    return( paste(str1, str2, sep=sep) )
+}
+
+.trace_list <- function( params, prefix=NULL ) {
+   for ( name in names(params) ) {
+      value <- params[[name]]
+      if ( class(value) == 'list' ) {
+         .trace_list( value, prefix=.paste_prefix(prefix, name) )
+      }
+      else if ( length(value) > 1 ) {
+         for ( i in 1:length(value) ) {
+            if ( class(value[i]) == 'list' || length(value[i]) > 1 ) {
+                .trace_list( value[i], prefix=.paste_prefix(prefix, name) )
+            } else {
+               message(paste('   ', .paste_prefix(prefix, name), '[', i, '] = ', 
+                             value[[i]], ' (', class(value), ')', sep=''))  
+            }
+         }
+      } else {
+         message(paste('   ', .paste_prefix(prefix, name), ' = ',
+                       value, ' (', class(value), ')', sep=''))  
+      }
+   }
+}
+
+REST_CASError <- setRefClass(
+
+    Class = 'REST_CASError',
+
+    fields = list(
+        soptions_ = 'character',
+        message_ = 'character'
+    ),
+
+    methods = list(
+        initialize = function( soptions ) {
+            soptions_ <<- soptions
+            message_ <<- ''
+        },
+
+        getTypeName = function() {
+            return( 'error' )
+        },
+
+        getSOptions = function() {
+            return( soptions_ )
+        },
+
+        isNULL = function() {
+            return( FALSE )
+        },
+
+        getLastErrorMessage = function() {
+            return( message_ )
+        },
+
+        setErrorMessage = function( msg ) {
+            message_ <<- msg
+        }
+    )
+)
+
+REST_CASTable <- setRefClass(
+
+    Class = 'REST_CASTable',
+
+    fields = list(
+        obj_ = 'list',
+        attrs_ = 'list',
+        colattrs_ = 'list'
+    ),
+
+    methods = list(
+        initialize = function( obj ) {
+            obj_ <<- obj
+
+            attrs_ <<- list()
+            for ( name in names(obj_$attributes) ) {
+                attrs_[[name]] <<- .self$attr2R(obj_$attributes[[name]])
+            }
+
+            colattrs_ <<- list()
+            for ( i in 1:length(obj_$schema) ) {
+                attrs <- obj_$schema[[i]]$attributes
+                newattrs <- list()
+                for ( name in names(attrs) ) {
+                    newattrs[[name]] <- .self$attr2R(attrs[[name]])
+                }
+                colattrs_ <<- c(colattrs_, newattrs)
+            }
+        },
+
+        getAttributes = function() {
+            return( attrs_ )
+        },
+
+        getColumnAttributes = function() {
+            return( colattrs_ )
+        },
+
+        attr2R = function( attr ) {
+            atype = attr$type
+            value = attr$value
+            if ( atype == 'double' || atype == 'float' ) {
+                if ( is.null(value) ) {
+                    return( NULL )
+                }
+                return( as.numeric(value) )
+            }
+            if ( atype == 'int32' ) {
+                return( as.integer(value) )
+            }
+            if ( atype == 'int64' ) {
+                return( as.character(value) )
+            }
+            if ( atype == 'date' ) {
+                return( cas.date2posix(value) )
+            }
+            if ( atype == 'time' ) {
+                return( cas.datetime2posix(value) )
+            }
+            if ( atype == 'datetime' ) {
+                return( cas.datetime2posix(value) )
+            }
+            return( value )
+        },
+
+        getTypeName = function() {
+            return( 'table' )
+        },
+
+        getSOptions = function() {
+            return( '' )
+        },
+
+        isNULL = function() {
+            return( FALSE )
+        },
+
+        getName = function() {
+            return( obj_$name )
+        },
+
+        getLabel = function() {
+            return( obj_$label )
+        },
+
+        getTitle = function() {
+            return( obj_$title )
+        },
+
+        getNColumns = function() {
+            return( length(obj_$schema) )
+        },
+
+        getNRows = function() {
+            return( length(obj_$rows) )
+        },
+
+        getColumnName = function( i ) {
+            return( obj_$schema[[i + 1]]$name )
+        },
+
+        getColumnLabel = function( i ) {
+            return( obj_$schema[[i + 1]]$label )
+        },
+
+        mapColumnType = function( type ) {
+            if ( type == 'string' ) {
+                return( 'varchar' )
+            }
+            if ( type == 'binary' ) {
+                return( 'varbinary' )
+            }
+            return( type )
+        },
+
+        getColumnType = function( i ) {
+            ctype <- .self$mapColumnType(obj_$schema[[i + 1]]$type)
+            if ( ctype == 'int' ) {
+                if ( .self$getColumnWidth(i) == 4 )
+                    ctype <- 'int32'
+                else
+                    ctype <- 'int64'
+            }
+            if ( ctype == 'double' && .self$getNColumns() > 0 && .self$getNRows() > 0 &&
+                 length(obj_$rows[[1]][[i + 1]]) > 1 ) {
+                return( 'double-array' )
+            }
+            else if ( ctype == 'int64' && .self$getNColumns() > 0 && .self$getNRows() > 0 &&
+                      length(obj_$rows[[1]][[i + 1]]) > 1 ) {
+                return( 'int64-array' )
+            }
+            else if ( ctype == 'int32' && .self$getNColumns() > 0 && .self$getNRows() > 0 &&
+                      length(obj_$rows[[1]][[i + 1]]) > 1 ) {
+                return( 'int64-array' )
+            }
+            return( ctype )
+        },
+
+        getColumnWidth = function( i ) {
+            return( obj_$schema[[i + 1]]$width )
+        },
+
+        getColumnFormat = function( i ) {
+            return( obj_$schema[[i + 1]]$format )
+        },
+
+        getColumnArrayNItems = function( i ) {
+            ctype <- .self$getColumnType(i)
+            if ( ctype == 'double-array' ) {
+                return( length(obj_$rows[[1]][[i + 1]]) )
+            }
+            if ( ctype == 'int64-array' ) {
+                return( length(obj_$rows[[1]][[i + 1]]) )
+            }
+            if ( ctype == 'int32-array' ) {
+                return( length(obj_$rows[[1]][[i + 1]]) )
+            }
+            return( 1 )
+        },
+
+        getStringValue = function( row, col ) {
+            return( as.character(obj_$rows[[row + 1]][[col + 1]]) )
+        },
+
+        getBinaryValue = function( row, col ) {
+            return( jsonlite::base64_dec(.self$getBinaryBase64Value(row, col)) )
+        },
+
+        getBinaryNBytes = function( row, col ) {
+            return( obj_$rows[[row + 1]][[col + 1]]$length )
+        },
+
+        getBinaryBase64Value = function( row, col ) {
+            return( as.character(obj_$rows[[row + 1]][[col + 1]]$data) )
+        },
+
+        getDateValue = function( row, col ) {
+            return( obj_$rows[[row + 1]][[col + 1]] )
+        },
+
+        getTimeValue = function( row, col ) {
+            return( obj_$rows[[row + 1]][[col + 1]] )
+        },
+
+        getTimeValueAsString = function( row, col ) {
+            return( as.character(obj_$rows[[row + 1]][[col + 1]]) )
+        },
+
+        getDatetimeValue = function( row, col ) {
+            return( obj_$rows[[row + 1]][[col + 1]] )
+        },
+
+        getDatetimeValueAsString = function( row, col ) {
+            return( as.character(obj_$rows[[row + 1]][[col + 1]]) )
+        },
+
+        getInt64Value = function( row, col ) {
+            return( swat.as.integer64(obj_$rows[[row + 1]][[col + 1]]) )
+        },
+
+        getInt64ValueAsString = function( row, col ) {
+            return( as.character(obj_$rows[[row + 1]][[col + 1]]) )
+        },
+
+        getInt64ArrayValue = function( row, col, elem ) {
+            return( swat.as.integer64(obj_$rows[[row + 1]][[col + 1]][[elem + 1]]) )
+        },
+
+        getInt64ArrayValueAsString = function( row, col, elem ) {
+            return( as.character(obj_$rows[[row + 1]][[col + 1]][[elem + 1]]) )
+        },
+
+        getInt32Value = function( row, col ) {
+            return( as.integer(obj_$rows[[row + 1]][[col + 1]]) )
+        },
+
+        getInt32ArrayValue = function( row, col, elem ) {
+            return( as.integer(obj_$rows[[row + 1]][[col + 1]][[elem + 1]]) )
+        },
+
+        getDoubleValue = function( row, col ) {
+            val <- obj_$rows[[row + 1]][[col + 1]]
+            if ( is.null(val) )
+                return( NaN )
+            return( as.numeric(val) )
+        },
+
+        getDoubleArrayValue = function( row, col, elem ) {
+            val <- obj_$rows[[row + 1]][[col + 1]][[elem + 1]]
+            if ( is.null(val) )
+                return( NaN )
+            return( as.numeric(val) )
+        },
+
+        getLastErrorMessage = function() {
+            return( '' )
+        }
+    )
+)
+
+REST_CASValue <- setRefClass(
+
+    Class = 'REST_CASValue',
+
+    fields = list(
+        key_ = 'ANY',
+        value_ = 'ANY',
+        items_ = 'list'
+    ),
+
+    methods = list(
+        initialize = function( key, value ) {
+            key_ <<- key
+            value_ <<- value
+
+            items_ <<- list()
+            if ( .self$getType() == 'list' ) {
+                if ( length(names(value_)) ) {
+                    for ( name in names(value_) ) {
+                        items_[[length(items_) + 1]] <<- REST_CASValue(name, value_[[name]])
+                    }
+                } else if ( length(value_) ) {
+                    for ( i in 1:length(value_) ) {
+                        items_[[length(items_) + 1]] <<- REST_CASValue(NULL, value_[[i]])
+                    }
+                }
+            }
+        },
+
+        hasKeys = function() {
+            if ( .self$getType() == 'list' && length(names(value_)) ) {
+                return( TRUE )
+            }
+            return( FALSE )
+        },
+
+        getTypeName = function() {
+            return( 'value' )
+        },
+
+        getSOptions = function() {
+            return( '' )
+        },
+
+        isNULL = function() {
+            if ( is.null(key_) && is.null(value_) ) {
+                return( TRUE )
+            }
+            return( FALSE )
+        },
+
+        getType = function() {
+            if ( length(names(value_)) ) {
+                if ( !is.null(value_$`_ctb`) && value_$`_ctb` ) {
+                    return( 'table' )
+                }
+                return( 'list' )
+            }
+            if ( class(value_) == 'list' || length(value_) > 1 ) {
+                return( 'list' )
+            }
+            if ( class(value_) == 'numeric' ) {
+                return( 'double' )
+            }
+            if ( class(value_) == 'integer' ) {
+                return( 'int64' )
+            }
+            if ( class(value_) == 'character' ) {
+                return( 'string' )
+            }
+            if ( class(value_) == 'logical' ) {
+                return( 'boolean' )
+            }
+            if ( is.null(value_) ) {
+                return( 'nil' )
+            }
+            stop(paste('Could not determine type of result', key_, ':', value_, paste=' '))
+        },
+
+        getKey = function() {
+            return( key_ )
+        },
+
+        getInt32 = function() {
+            return( as.integer(value_) )
+        },
+
+        getDate = function() {
+            return( as.integer(value_) )
+        },
+
+        getInt64 = function() {
+            return( swat.as.integer64(value_) )
+        },
+
+        getInt64AsString = function() {
+            return( as.character(value_) )
+        },
+
+        getTime = function() {
+            return( swat.as.integer64(value_) )
+        },
+
+        getTimeAsString = function() {
+            return( as.character(value_) )
+        },
+
+        getDatetime = function() {
+            return( swat.as.integer64(value_) )
+        },
+
+        getDatetimeAsString = function() {
+            return( as.character(value_) )
+        },
+
+        getDouble = function() {
+            if ( is.null(value_) )
+                return( NaN )
+            return( as.numeric(value_) )
+        },
+
+        getString = function() {
+            return( as.character(value_) )
+        },
+
+        getBoolean = function() {
+            return( as.logical(value_) )
+        },
+
+        getList = function() {
+            return( value_ )
+        },
+
+        getListNItems = function() {
+            return( length(items_) )
+        },
+
+        getListItem = function( i ) {
+            return( items_[[i + 1]] )
+        },
+
+        getTable = function() {
+            return( REST_CASTable(value_) )
+        },
+
+        getLastErrorMessage = function() {
+            return( '' )
+        }
+    )
+)
+
+camel2underscore <- function( str ) {
+    return( tolower(gsub('^_([A-Z])', '\\1', gsub('([A-Z])', '_\\1', str, perl=TRUE), perl=TRUE)) )
+}
+
+mapseverity <- function( sev ) {
+    if ( is.null(sev) ) {
+        return( 0 )
+    }
+    if ( sev == 'Error' ) {
+        return( 2 )
+    }
+    if ( sev == 'Warning' ) {
+        return( 1 )
+    }
+    return( 0 )
+}
+
+mapreason <- function( reason ) {
+    if ( is.null(reason) || reason == 'ok' ) {
+        return( '' )
+    }
+    return( tolower(reason) )
+}
+
+REST_CASResponse <- setRefClass(
+
+    Class = 'REST_CASResponse',
+
+    fields = list(
+        obj_ = 'list',
+        disposition_ = 'list',
+        update_flags_ = 'list',
+        messages_ = 'list',
+        metrics_ = 'list',
+        results_ = 'list',
+        result_idx_ = 'numeric',
+        message_idx_ = 'numeric',
+        update_flag_idx_ = 'numeric'
+    ),
+
+    methods = list(
+        initialize = function( obj ) {
+            obj_ <<- obj
+
+            disp <- obj_$disposition
+            disposition_ <<- list(
+                debug = disp$debugInfo,
+                status = disp$formattedStatus,
+                reason = mapreason(disp$reason),
+                severity = mapseverity(disp$severity),
+                status_code = disp$statusCode
+            )
+
+            update_flags_ <<- list()
+            if ( length(obj_$changedResources) ) {
+                for ( i in 1:length(obj_$changedResources) ) {
+                    update_flags_[[i]] <<- camel2underscore(obj_$changedResources[[i]])
+                }
+            }
+
+            messages_ <<- list()
+            if ( length(obj_$logEntries) ) {
+                for ( i in 1:length(obj_$logEntries) ) {
+                    messages_[[i]] <<- obj_$logEntries[[i]]$message
+                }
+            }
+
+            results_ <<- list()
+            if ( length(names(obj_$results)) ) {
+                for ( name in names(obj_$results) ) {
+                    results_[[length(results_) + 1]] <<- REST_CASValue(name, obj_$results[[name]])
+                }
+            } else if ( length(obj_$results) ) {
+                for ( i in 1:length(obj_$results) ) {
+                    results_[[length(results_) + 1]] <<- REST_CASValue(i, obj_$results[[i]])
+                }
+            }
+
+            if ( !is.null(obj_$metrics) ) {
+                metrics_ <<- obj_$metrics
+            } else {
+                metrics_ <<- list()
+            }
+
+            result_idx_ <<- 1
+            message_idx_ <<- 1
+            update_flag_idx_ <<- 1
+        },
+
+        getNextMessage = function() {
+            if ( message_idx_ <= length(messages_) ) {
+                message_idx_ <<- message_idx_ + 1
+                return( messages_[[message_idx_ - 1]] )
+            }
+            return( NULL )
+        },
+
+        getNextUpdateFlag = function() {
+            if ( update_flag_idx_ <= length(update_flags_) ) {
+                update_flag_idx_ <<- update_flag_idx_ + 1
+                return( update_flags_[[update_flag_idx_ - 1]] )
+            }
+            return( NULL )
+        },
+
+        getNextResult = function() {
+            if ( result_idx_ <= length(results_) ) {
+                result_idx_ <<- result_idx_ + 1
+                return( results_[[result_idx_ - 1]] )
+            }
+            return( REST_CASValue( NULL, NULL ) )
+        },
+
+        getTypeName = function() {
+            return( 'response' )
+        },
+
+        getSOptions = function() {
+            return( '' )
+        },
+
+        isNULL = function() {
+            return( FALSE )
+        },
+
+        getNMessages = function() {
+            return( length(messages_) )
+        },
+
+        getNUpdateFlags = function() {
+            return( length(update_flags_) )
+        },
+
+        getNResults = function() {
+            return( length(results_) )
+        },
+
+        getDispositionSeverity = function() {
+            return( disposition_$severity )
+        },
+
+        getDispositionStatusCode = function() {
+            return( disposition_$status_code )
+        },
+
+        getDispositionStatus = function() {
+            return( disposition_$status )
+        },
+
+        getDispositionReason = function() {
+            return( disposition_$reason )
+        },
+
+        getDispositionDebug = function() {
+            return( disposition_$debug )
+        },
+
+        getElapsedTime = function() {
+            return( metrics_$elapsed_time )
+        },
+
+        getDataMovementTime = function() {
+            return( metrics_$dataMovementTime )
+        },
+
+        getDataMovementBytes = function() {
+            return( metrics_$dataMovementBytes )
+        },
+
+        getCPUUserTime = function() {
+            return( metrics_$cpuUserTime )
+        },
+
+        getCPUSystemTime = function() {
+            return( metrics_$cpuSystemTime )
+        },
+
+        getSystemTotalMemory = function() {
+            return( metrics_$systemTotalMemory )
+        },
+
+        getSystemNodes = function() {
+            return( metrics_$systemNodes )
+        },
+
+        getSystemCores = function() {
+            return( metrics_$systemCores )
+        },
+
+        getMemory = function() {
+            return( metrics_$memory )
+        },
+
+        getMemoryOS = function() {
+            return( metrics_$memoryOS )
+        },
+
+        getMemorySystem = function() {
+            return( metrics_$memorySystem )
+        },
+
+        getMemoryQuota = function() {
+            return( metrics_$memoryQuota )
+        },
+
+        getLastErrorMessage = function() {
+            return( '' )
+        }
+    )
+)
+
+REST_CASMessage <- setRefClass(
+
+    Class = 'REST_CASMessage',
+
+    fields = list(
+        obj_ = 'ANY',
+        connection_ = 'ANY'
+    ),
+
+    methods = list(
+        initialize = function( obj, connection ) {
+            obj_ <<- obj
+            connection_ <<- connection
+        },
+
+        getTypeName = function() {
+            return( 'message' )
+        },
+
+        getSOptions = function() {
+            return( '' )
+        },
+
+        isNULL = function() {
+            if ( is.null(obj_) ) {
+                return( TRUE )
+            }
+            return( FALSE )
+        },
+
+        getTag = function() {
+            return( '' )
+        },
+
+        getType = function() {
+            return( 'response' )
+        },
+
+        getFlags = function() {
+            return( list() )
+        },
+
+        toResponse = function( connection ) {
+            return( REST_CASResponse(obj_) )
+        },
+
+        toRequest = function() {
+            stop('Not supported in the REST interface')
+        },
+
+        getLastErrorMessage = function() {
+            return( '' )
+        }
+    )
+
+)
+
+REST_CASConnection <- setRefClass(
+
+    Class = 'REST_CASConnection',
+
+    fields = list(
+        hostname_ = 'character',
+        port_ = 'numeric',
+        username_ = 'character',
+        password_ = 'character',
+        error_ = 'ANY',
+        results_ = 'ANY',
+        soptions_ = 'character',
+        baseurl_ = 'character',
+        auth_ = 'ANY',
+        session_ = 'character'
+    ),
+
+    methods = list(
+        initialize = function( hostname, port, username, password, soptions, error ) {
+            username_ <<- username
+            error_ <<- error
+            soptions_ <<- soptions
+            results_ <<- NULL
+            locale <- NULL
+            session <- NULL
+
+            if ( is.null(password) )
+            {
+                password <- ''
+            }
+
+            if ( grepl('^https?:', hostname, perl=TRUE) )
+            {
+                baseurl_ <<- hostname
+                url <- httr::parse_url(hostname)
+                hostname_ <<- url$hostname
+                hostname <- url$hostname
+                if ( is.null(url$port) ) {
+                    if ( !is.null(port) ) {
+                       port_ <<- port
+                    } else {
+                       port_ <<- 0
+                    }
+                    port <- NULL
+                } else {
+                    port_ <<- as.integer(url$port)
+                    port <- as.integer(url$port)
+                }
+                url$port <- port_
+                baseurl_ <<- sub('/$', '', httr::build_url(url), perl=TRUE)
+            }
+            else if ( grepl('protocol=https', soptions) )
+            {
+                baseurl_ <<- paste('https://', hostname, ':', port, sep='')
+                hostname_ <<- hostname
+                port_ <<- port
+            }
+            else
+            {
+                baseurl_ <<- paste('http://', hostname, ':', port, sep='')
+                hostname_ <<- hostname
+                port_ <<- port
+            }
+
+            if ( grepl('\\blocale=\\w+', soptions, perl=TRUE) )
+            {
+               m <- regexpr('\\blocale=(\\w+)', soptions_, perl=TRUE)
+               locale <- gsub('^locale=', '', regmatches(soptions_, m)[[1]], perl=TRUE)[[1]]
+            }
+
+            if ( grepl('\\bsession=[\\w\\-]+', soptions, perl=TRUE) )
+            {
+               m <- regexpr('\\bsession=([\\w\\-]+)', soptions_, perl=TRUE)
+               session <- gsub('^session=', '', regmatches(soptions_, m)[[1]], perl=TRUE)[[1]]
+            }
+
+            authinfo <- NULL
+            if ( grepl('^authinfo={', password, perl=TRUE) )
+            {
+                authinfo <- substr(password, 11, nchar(password) - 1)
+                authinfo <- strsplit(authinfo, '\\}\\{', perl=TRUE)[[1]]
+                authinfo <- query_authinfo(host=hostname, user=username,
+                                           protocol=port, filepath=authinfo)
+            }
+            else if ( password == '' )
+            {
+                authinfo <- query_authinfo(hostname, username=username, protocol=port)
+            }
+
+            if ( is.null(authinfo) )
+            {
+                if ( is.null(username) || username == '' ) {
+                   stop('No username was specified.')
+                }
+                if ( is.null(password) || password == '' ) {
+                   stop('No password was specified.')
+                }
+                auth_ <<- httr::authenticate(username, password)
+                password_ <<- jsonlite::base64_enc(password)
+            }
+            else
+            {
+                if ( is.null(authinfo$password) || authinfo$password == '' ) {
+                   stop('No password was specified.')
+                }
+                password_ <<- jsonlite::base64_enc(authinfo$password)
+                if ( is.null(authinfo$username) ) {
+                    if ( is.null(username) || username == '' ) {
+                       stop('No username was specified.')
+                    }
+                    auth_ <<- httr::authenticate(username, authinfo$password)
+                } else {
+                    auth_ <<- httr::authenticate(authinfo$username, authinfo$password)
+                    username_ <<- authinfo$username
+                }
+            }
+
+            if ( is.null(session) )
+            {
+               url <- paste(baseurl_, 'cas', 'sessions', sep='/')
+               res <- httr::PUT(url, auth_)
+               out <- httr::content(res, as='parsed')
+
+               if ( is.null(out$session) )
+                   stop(paste(url, ':', out$error))
+
+               session_ <<- out$session
+
+               if ( !is.null(locale) )
+               {
+                  .self$invoke('session.setlocale', list(locale=locale))
+                  if ( 'disposition' %in% names(results_) ) {
+                     if ( 'severity' %in% names(results_[['disposition']]) &&
+                          results_[['disposition']][['severity']] == 'Error' ) {
+                        stop(results_[['disposition']][['formattedStatus']])
+                     }
+                  } else {
+                      stop('Unknown error when setting locale')
+                  }
+
+                  results_ <<- NULL
+               }
+            }
+            else
+            {
+               url <- paste(baseurl_, 'cas', 'sessions', session, sep='/')
+               res <- httr::GET(url, auth_)
+               out <- httr::content(res, as='parsed')
+
+               if ( is.null(out$uuid) )
+                   stop(paste(url, ':', out$error))
+
+               session_ <<- session
+            }
+        },
+
+        invoke = function( action_name, params ) {
+            .trace_actions( action_name, params)
+            results_ <<- httr::content(httr::POST(paste(baseurl_, 'cas',
+                                                        'sessions', session_, 'actions',
+                                                  action_name, sep='/'), auth_,
+                                                  httr::accept_json(), 
+                                                  httr::content_type_json(),
+                                                  body=jsonlite::toJSON(params, auto_unbox=TRUE)
+                                                  #, verbose()
+                                                  ),
+                                 as='parsed')
+            if ( !('disposition' %in% names(results_)) ) {
+                if ( 'error' %in% names(results_) ) {
+                    stop(results_$error)
+                } else {
+                    stop('Unknown error when invoking action')
+                }
+            }
+        },
+
+        receive = function() {
+            out <- REST_CASMessage(results_, connection=.self)
+            results_ <<- NULL
+            return( out )
+        },
+
+        getTypeName = function() {
+            return( 'connection' )
+        },
+
+        getSOptions = function() {
+            return( soptions_ )
+        },
+
+        destroy = function() {
+            .self$close()
+        },
+
+        isNULL = function() {
+            return( FALSE )
+        },
+
+        isConnected = function() {
+            return( length(session_) > 1 )
+        },
+
+        hasPendingResponses = function() {
+            return( FALSE )
+        },
+
+        setZeroIndexedParameters = function() {
+            return
+        },
+
+        copy = function() {
+            return( REST_CASConnection(hostname_, port_, username_,
+                                       rawToChar(jsonlite::base64_dec(password_)),
+                                       soptions_, error_) )
+        },
+
+        getHostname = function() {
+            return( hostname_ )
+        },
+
+        getUsername = function() {
+            return( username_ )
+        },
+
+        getPort = function() {
+            return( port_ )
+        },
+
+        getSession = function() {
+            return( session_ )
+        },
+
+        close = function() {
+            httr::DELETE(paste(baseurl_, 'cas', 'sessions', session_, sep='/'))
+            session_ <<- ''
+            return( 0 )
+        },
+
+        upload = function( file_name, params ) {
+            results_ <<- httr::content(httr::PUT(paste(baseurl_, 'cas', 'sessions',
+                                                       session_, 'actions',
+                                                       'table.upload', sep='/'), auth_,
+                                                 httr::accept_json(),
+                                                 httr::add_headers('JSON-Parameters'=jsonlite::toJSON(params, auto_unbox=TRUE),
+                                                                   'Content-Type'='application/octet-stream'),
+                                                 body=httr::upload_file(file_name)
+                                                 #, verbose()
+                                                 ),
+                                 as='parsed')
+
+            if ( !('disposition' %in% names(results_)) ) {
+                if ( 'error' %in% names(results_) ) {
+                    stop(results_$error)
+                } else {
+                    stop('Unknown error when uploading file')
+                }
+            }
+
+            return( REST_CASResponse(results_) )
+        },
+
+        stopAction = function() {
+            return
+        },
+
+        getOptionType = function( option ) {
+            return( 'none' )
+        },
+
+        getBooleanOption = function( option ) {
+            return
+        },
+
+        setBooleanOption = function( option, value ) {
+            return
+        },
+
+        getInt32Option = function( option ) {
+            return
+        },
+
+        setInt32Option = function( option, value ) {
+            return
+        },
+
+        getInt64Option = function( option ) {
+            return
+        },
+
+        setInt64Option = function( option, value ) {
+            return
+        },
+
+        setInt64OptionFromString = function( option, value ) {
+            return
+        },
+
+        getStringOption = function( option ) {
+            return
+        },
+
+        setStringOption = function( option, value ) {
+            return
+        },
+
+        getDoubleOption = function( option ) {
+            return
+        },
+
+        setDoubleOption = function( option, value ) {
+            return
+        },
+
+        enableDataMessages = function() {
+            return
+        },
+
+        disableDataMessages = function() {
+            return
+        },
+
+        getLastErrorMessage = function() {
+            return( '' )
+        }
+    )
+)
+
+REST_CASConnectionEventWatcher <- setRefClass(
+
+    Class = 'REST_CASConnectionEventWatcher',
+
+    fields = list(
+        connections_ = 'list',
+        timeout_ = 'numeric',
+        soptions_ = 'character',
+        error_ = 'ANY',
+        idx_ = 'numeric'
+    ),
+
+    methods = list(
+        initialize = function( nconnections, timeout, soptions, error ) {
+            connections_ <<- list()
+            timeout_ <<- timeout
+            soptions_ <<- soptions
+            error_ <<- error
+            idx_ <<- 0
+        },
+
+        addConnection = function( connection ) {
+            connections_[[length(connections_) + 1]] <<- connection
+        },
+
+        wait = function( ) {
+            if ( idx_ < length(connections_) )
+            {
+                idx_ <<- idx_ + 1
+                return( idx_ - 1 )
+            }
+            return( -2 )
+        },
+
+        getLastErrorMessage = function( ) {
+            return( '' )
+        }
+    )
+)
+

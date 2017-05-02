@@ -1,0 +1,8 @@
+n1 n2 n3 n4 l
+2 5 12 NaN aa
+3 6 13 16 bb
+5 7 15 17 cc
+NaN 7 15 15 dd
+5 NaN NaN 8 dd
+598 120 198 1120 NA
+
