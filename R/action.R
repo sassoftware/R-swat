@@ -45,53 +45,76 @@
 #' cas.simple.summary(mtcarsct)
 #' }
 #' 
+#runAction <-  function(CASorCASTab='',actn, ...) {
+#   allargs = list(...)
+#   ns      = names(allargs)
+#   pnames  = list()
+#   parms   = list()
+#   pi      = 1
+#   nsi     = 1
+#   pstr    = ''
+#
+#   pnames[pi] = "caz"
+#   parms[pi]  = expression(cas)
+#   pi         = pi + 1
+#   pnames[pi] = "actn"
+#   parms[pi]  = actn
+#   pi         = pi + 1
+#
+#   if (class(CASorCASTab) == 'CASTable')
+#      {
+#      tp  = swat::gen.table.parm(CASorCASTab)
+#      cas = CASorCASTab@conn
+#      pnames[pi]  = "table"
+#      parms[[pi]] = tp
+#      pi          = pi + 1
+#      pstr = paste(pstr, "table='", tp, "' ", sep='')
+#      }
+#   else
+#      cas = CASorCASTab
+# 
+#   for (arg in allargs)
+#      {
+#      if (! is.null(arg))
+#         {
+#         pnames[pi] = ns[nsi]
+#         if (length(arg) > 1)
+#            parms[pi]  = list(arg)
+#         else
+#            parms[pi]  = arg
+#         pi         = pi + 1
+#         pstr = paste(pstr, ns[nsi], "='", arg, "' ", sep='')
+#         }
+#      nsi = nsi + 1
+#      }
+#
+#  names(parms) = pnames
+#
+#  pms = list('caz'=cas, 'actn'=actn, ...)
+#  res <- do.call('casRetrieve', pms)
+#  #res <- do.call('casRetrieve', parms)
+#
+#  #swat::check_for_cas_errors(res)
+#  as.list(res$results)
+#}
+#
 runAction <-  function(CASorCASTab='',actn, ...) {
-   allargs = list(...)
-   ns      = names(allargs)
-   pnames  = list()
-   parms   = list()
-   pi      = 1
-   nsi     = 1
-   pstr    = ''
-
-   pnames[pi] = "caz"
-   parms[pi]  = expression(cas)
-   pi         = pi + 1
-   pnames[pi] = "actn"
-   parms[pi]  = actn
-   pi         = pi + 1
 
    if (class(CASorCASTab) == 'CASTable')
       {
       tp  = swat::gen.table.parm(CASorCASTab)
       cas = CASorCASTab@conn
-      pnames[pi]  = "table"
-      parms[[pi]] = tp
-      pi          = pi + 1
-      pstr = paste(pstr, "table='", tp, "' ", sep='')
+      pms = list('caz'=cas, 'actn'=actn, 'table'=tp, ...)
+
+      res <- do.call('casRetrieve', pms)
       }
    else
-      cas = CASorCASTab
- 
-   for (arg in allargs)
       {
-      if (! is.null(arg))
-         {
-         pnames[pi] = ns[nsi]
-         if (length(arg) > 1)
-            parms[pi]  = list(arg)
-         else
-            parms[pi]  = arg
-         pi         = pi + 1
-         pstr = paste(pstr, ns[nsi], "='", arg, "' ", sep='')
-         }
-      nsi = nsi + 1
+      cas = CASorCASTab
+      pms = list('caz'=cas, 'actn'=actn, ...)
+      res <- do.call('casRetrieve', pms)
       }
 
-  names(parms) = pnames
-  res <- do.call('casRetrieve', parms)
-
-  #swat::check_for_cas_errors(res)
   as.list(res$results)
 }
 
