@@ -412,6 +412,10 @@ cas.read.csv <- function(conn,
       comment.char = comment.char,
       ...
     )
+  if (is.character(casOut)) {
+    cn <- casOut
+    casOut <- list(name=cn, replace=FALSE)
+  }
   if (is.null(casOut$name) || nchar(casOut$name)==0) {
     casOut$name = tools::file_path_sans_ext(basename(file))
   }
@@ -523,6 +527,10 @@ cas.read.xlsx <- function(conn,
                           casOut = list(name='', replace=FALSE)) {
   if (nchar(file) == 0) {
     stop("You must provide a valid file name")
+  }
+  if (is.character(casOut)) {
+    cn <- casOut
+    casOut <- list(name=cn, replace=FALSE)
   }
   if (is.null(casOut$name) || nchar(casOut$name)==0) {
     casOut$name = tools::file_path_sans_ext(basename(file))
@@ -769,6 +777,10 @@ cas.read.table <- function (conn, file, header = FALSE, sep = "", quote = "\"'",
                    stringsAsFactors = stringsAsFactors,
                    fileEncoding = fileEncoding, encoding = encoding, text=text, skipNul = skipNul)
   
+  if (is.character(casOut)) {
+    cn <- casOut
+    casOut <- list(name=cn, replace=FALSE)
+  }
   if (is.null(casOut$name) || nchar(casOut$name)==0) {
     casOut$name = tools::file_path_sans_ext(basename(file))
   }
@@ -830,7 +842,10 @@ cas.read.sas7bdat <- function(conn, file, casOut = list(name='', replace=FALSE) 
   if (nchar(file) == 0) {
     stop("You must provide a valid file name")
   }
-  
+  if (is.character(casOut)) {
+    cn <- casOut
+    casOut <- list(name=cn, replace=FALSE)
+  }
   if (is.null(casOut$name) || nchar(casOut$name)==0) {
     casOut$name = tools::file_path_sans_ext(basename(file))
   } 
@@ -895,6 +910,10 @@ cas.read.jmp <- function(conn, file, casOut=NULL){
   
   if (nchar(file) == 0) {
     stop("You must provide a valid file name")
+  }
+  if (is.character(casOut)) {
+    cn <- casOut
+    casOut <- list(name=cn, replace=FALSE)
   }
   
   tablename = tools::file_path_sans_ext(basename(file))

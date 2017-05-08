@@ -28,6 +28,8 @@ test_that("Read CSV files", {
   c1 <- cas.read.csv(caz, "../data/class.csv")
   c2 <- cas.read.csv(caz, "../data/class.csv", casOut=list(name="class2", replace=TRUE))
   expect_equivalent(c1, c2)
+  # tests for issue 2
+  c3 <- cas.read.csv(caz, "../data/class.csv", casOut="class3")
 })
 
 # Read table files
@@ -45,7 +47,6 @@ test_that("Read Table files", {
   import_DF0_skipnul <- read.table("../data/MissingVals.txt", row.names = NULL, header=TRUE, na.strings = nastr)
   import_DF0_skipnul.cas <- cas.read.table(caz, "../data/MissingVals.txt", row.names = NULL, header=TRUE, na.strings = nastr)
   expect_equivalent(as.casTable(caz, import_DF0_skipnul), import_DF0_skipnul.cas)
-  
 })
 
 
@@ -66,6 +67,10 @@ test_that("Generic Read Function", {
   from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name= 'from_csv', replace=TRUE), header = TRUE)
   from_generic_csv <- cas.read.table(caz, file = 'titanic.csv', casOut = list(name = 'from_generic_csv', replace=TRUE), header = TRUE, sep = ",")
   expect_equivalent(from_generic_csv, from_csv)
+  
+  # test for issue 2
+  from_generic_csv2 <- cas.read.table(caz, file = 'titanic.csv', casOut = 'from_generic_csv2', header = TRUE, sep = ",")
+  expect_equivalent(from_generic_csv2, from_csv)
 })
 
 # Write CSV files
@@ -98,6 +103,10 @@ test_that("Read sas7bdat files", {
   t2 <- cas.read.sas7bdat(caz, "../data/census2.sas7bdat", casOut = list(name = 't2', replace=TRUE))
   expect_equivalent(t1, t2)
   expect_that(t2, is_a("CASTable"))
+  
+  # test for issue 2
+  st3 <- cas.read.sas7bdat(caz, "../data/census2.sas7bdat", casOut = 'st3')
+  expect_equivalent(t1, st3)
 })
 
 
@@ -107,6 +116,10 @@ test_that("Read jmp files", {
   t2 <- cas.read.jmp(caz, "../data/class.jmp", casOut = list(name = 't2', replace=TRUE))
   expect_equivalent(t1, t2)
   expect_that(t2, is_a("CASTable"))
+  
+  # test for issue 2
+  jt3 <- cas.read.jmp(caz, "../data/class.jmp", casOut = 'jt3')
+  expect_equivalent(t1, jt3)
 })
 
 # Read RDS files
