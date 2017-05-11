@@ -199,9 +199,9 @@ test_that("tail", {
   expect_equivalent(rownames(tail(i2[1:4])), rownames(tail(iris[1:4])))
   
   # check that tail works correctly after sort
-  ct@orderby <- "n1"
-  expect_equivalent(tail(df[order(df$n1), c(1:4)], 4), tail(ct[c(1:4)], 4))
-  expect_true(all.equal(tail(df[order(df$n1), c(1:4)], 4), tail(ct[c(1:4)], 4), tolerance=1e-06, check.attributes=FALSE))
+  ct@orderby <- "n4"
+  expect_equivalent(tail(df[order(df$n4), c(1:4)], 4), tail(ct[c(1:4)], 4))
+  expect_true(all.equal(tail(df[order(df$n4), c(1:4)], 4), tail(ct[c(1:4)], 4), tolerance=1e-06, check.attributes=FALSE))
   
   #
   # NOTE: Character columns are returned as factors in R and Date columns
