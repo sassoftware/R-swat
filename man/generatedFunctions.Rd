@@ -341,7 +341,7 @@
 \alias{cas.varReduce.unsuper}
 \title{Common Page for CAS Actions}
 \usage{
-cas.actionSet.action(CASorCASTab, parameters...)
+cas.\emph{actionSet}.\emph{action}(CASorCASTab, parameters...)
 }
 \arguments{
 \item{CASorCASTab}{An instance of a \code{\link{CAS}} object that 
