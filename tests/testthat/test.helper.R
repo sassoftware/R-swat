@@ -41,3 +41,9 @@ test_that("casFormula Functions", {
   t5 <- ~ x1 + x2 * x3
   expect_error(casFormula(t5))
 })
+
+test_that("help function",{
+  expect_message(help(cas.aStore.describe),regexp = "Using")
+  expect_message(help(cas.network.readGraph),regexp = "Using")
+  expect_silent(help(cas.foo.bar))
+})
