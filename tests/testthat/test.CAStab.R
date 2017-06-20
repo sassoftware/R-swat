@@ -231,9 +231,6 @@ test_that("defCasTable", {
 orig_options <- options()
 options(cas.print.messages=TRUE)
 test_that("as.castable and dropTable", {
-  if ( PROTOCOL == 'cas' )
-    skip('Messaging implemented only in REST interface.')
-  
   # Testing that an existing CAS table can't be overwriten by default
   df_cmpct1<-as.casTable(caz, df_cmp, casOut="df_cmpct1")
   expect_message(df_cmpct2<-as.casTable(caz, df, casOut="df_cmpct1"), "already exists")

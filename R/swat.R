@@ -138,6 +138,8 @@
 
 cacheMetaData(1)
 
+RETRY_ACTION_CODE <- 0x280034
+
 errorcheck <- function(x) {
    if ( !is.null(x) ) {
       m <- x$getLastErrorMessage()
@@ -201,6 +203,8 @@ CASResponse <- setRefClass(
          d[['reason']] <- sw_response$getDispositionReason()
          swat::errorcheck(sw_response)
          d[['status']] <- sw_response$getDispositionStatus()
+         swat::errorcheck(sw_response)
+         d[['statusCode']] <- sw_response$getDispositionStatusCode()
          swat::errorcheck(sw_response)
          d[['debug']] <- sw_response$getDispositionDebug()
          swat::errorcheck(sw_response)
@@ -848,37 +852,42 @@ CAS <- setRefClass(
          if ( !is.null(args$datamsghandler) ) {
             datamsghandler <- args$datamsghandler
          }
-         .self$invoke(actn, ...)
-         output <- list()
-         results <- list()
-         messages <- list()
-         idx <- 1
-         while ( TRUE ) {
-            nextresp <- getnext(.self, datamsghandler=datamsghandler)
-            if ( is.null(nextresp$response) ) break
-
+         repeat {
+            .self$invoke(actn, ...)
+            output <- list()
+            results <- list()
+            messages <- list()
+            idx <- 1
             while ( TRUE ) {
-               result <- getnext(nextresp$response)
-               if ( is.null(result) || length(result) < 1) break
-               for ( i in 1:length(result) )
-               {
-                  key <- names(result[i])
-                  if ( is.null(key) || nchar(key) == 0 )
+               nextresp <- getnext(.self, datamsghandler=datamsghandler)
+               if ( is.null(nextresp$response) ) break
+   
+               while ( TRUE ) {
+                  result <- getnext(nextresp$response)
+                  if ( is.null(result) || length(result) < 1) break
+                  for ( i in 1:length(result) )
                   {
-                     results[[idx]] <- result[[i]]
-                     idx <- idx + 1
-                  }
-                  else
-                  {
-                     results[[key]] <- result[[i]]
+                     key <- names(result[i])
+                     if ( is.null(key) || nchar(key) == 0 )
+                     {
+                        results[[idx]] <- result[[i]]
+                        idx <- idx + 1
+                     }
+                     else
+                     {
+                        results[[key]] <- result[[i]]
+                     }
                   }
                }
+
+               messages <- c(messages, nextresp$response$messages)
+
+               output[['performance']] <- nextresp$response$performance
+               output[['disposition']] <- nextresp$response$disposition
             }
-
-            messages <- c(messages, nextresp$response$messages)
-
-            output[['performance']] <- nextresp$response$performance
-            output[['disposition']] <- nextresp$response$disposition
+            if ( output[['disposition']][['statusCode']] != RETRY_ACTION_CODE ) {
+                break
+            }
          }
          output[['messages']] <- messages
          output[['results']] <- results
