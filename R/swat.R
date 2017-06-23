@@ -1432,6 +1432,19 @@ cas2r <- function(sw_value) {
           return( table )
       }
 
+      int32_missval <- -2147483648
+      int64_missval <- '-9223372036854775808'
+      setMissing <- function (value, missval)
+      {
+          if ( is.na(value) || is.nan(value) ) {
+              return( NA )
+          }
+          if ( value == missval ) {
+              return( NA )
+          }
+          return( value )
+      }
+
       if ( nCols > 0 )
       {
          columns <- list()
@@ -1459,7 +1472,7 @@ cas2r <- function(sw_value) {
                   swat::errorcheck(sw_table)
                   if ( identical(out, numeric(0)) )
                       out <- 0
-                  column <- c(column, out)
+                  column <- c(column, setMissing(out, int32_missval))
                }
                table <- add_column(table, name, column)
             }
@@ -1474,7 +1487,7 @@ cas2r <- function(sw_value) {
                      swat::errorcheck(sw_table)
                      if ( identical(out, numeric(0)) )
                          out <- 0
-                     column <- c(column, out)
+                     column <- c(column, setMissing(out, int32_missval))
                   }
                   table <- add_column(table, paste(name, elem+1, sep=''), column)
                }
@@ -1487,7 +1500,7 @@ cas2r <- function(sw_value) {
                   swat::errorcheck(sw_table)
                   if ( identical(out, numeric(0)) )
                       out <- 0
-                  column[[length(column) + 1]] <- swat.as.integer64(out)
+                  column[[length(column) + 1]] <- swat.as.integer64(setMissing(out, int64_missval))
                }
                table <- add_column(table, name, column)
             }
@@ -1501,7 +1514,7 @@ cas2r <- function(sw_value) {
                      swat::errorcheck(sw_table)
                      if ( identical(out, numeric(0)) )
                          out <- 0
-                     column[[length(column) + 1]] <- swat.as.integer64(out)
+                     column[[length(column) + 1]] <- swat.as.integer64(setMissing(out, int64_missval))
                   }
                   table <- add_column(table, paste(name, elem+1, sep=''), column)
                }
@@ -1558,9 +1571,13 @@ cas2r <- function(sw_value) {
             {
                column <- list()
                for (row in 0:(nRows-1)) {
-                  value <- sw_table$getDatetimeValueAsString(row, col)
+                  value <- setMissing(sw_table$getDatetimeValueAsString(row, col), int64_missval)
                   swat::errorcheck(sw_table)
-                  column[[length(column) + 1]] <- cas2rPOSIXct(value)
+                  if ( is.na(value) ) {
+                     column[[length(column) + 1]] <- value
+                  } else {
+                     column[[length(column) + 1]] <- cas2rPOSIXct(value)
+                  }
                }
                table <- add_column(table, name, column)
             }
@@ -1568,9 +1585,13 @@ cas2r <- function(sw_value) {
             {
                column <- list()
                for (row in 0:(nRows-1)) {
-                  value <- sw_table$getDateValue(row, col)
+                  value <- setMissing(sw_table$getDateValue(row, col), int32_missval)
                   swat::errorcheck(sw_table)
-                  column[[length(column) + 1]] <- cas2rDate(value)
+                  if ( is.na(value) ) {
+                     column[[length(column) + 1]] <- value
+                  } else {
+                     column[[length(column) + 1]] <- cas2rDate(value)
+                  }
                }
                table <- add_column(table, name, column)
             }
@@ -1578,9 +1599,13 @@ cas2r <- function(sw_value) {
             {
                column <- list()
                for (row in 0:(nRows-1)) {
-                  value <- sw_table$getTimeValueAsString(row, col)
+                  value <- setMissing(sw_table$getTimeValueAsString(row, col), int64_missval)
                   swat::errorcheck(sw_table)
-                  column[[length(column) + 1]] <- cas2rPOSIXct(value)
+                  if ( is.na(value) ) {
+                     column[[length(column) + 1]] <- value
+                  } else {
+                     column[[length(column) + 1]] <- cas2rPOSIXct(value)
+                  }
                }
                table <- add_column(table, name, column)
             }
