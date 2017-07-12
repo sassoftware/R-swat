@@ -404,7 +404,7 @@ setMethod("[",
                         if (length(compvars) > 1 || nchar(compvars))
                            {
                            compvars = c(compvars, vname) 
-                           compvpgm = c(compvars, x@computedVarsProgram[idx])
+                           compvpgm = c(compvpgm, x@computedVarsProgram[idx])
                            }
                         else
                            {
