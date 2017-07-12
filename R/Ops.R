@@ -25,11 +25,12 @@
 .cas.arith <- function(e1, op, e2) {
          if (class(e1) == "CASTable")
             {
-            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names[1])
+            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names)
             if (nchar(e1@XcomputedVarsProgram))
                {
                e1p = e1@XcomputedVarsProgram
                rct@XcomputedVars = e1@XcomputedVars
+               rct@computedVars  = e1@computedVars
                rct@computedVarsProgram = e1@computedVarsProgram
                }
             else
@@ -41,13 +42,14 @@
                   {
                   rct@XcomputedVars = c(e1@XcomputedVars, e1@computedVars) 
                   rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
+                  rct@computedVars  = e1@computedVars
                   rct@computedVarsProgram = e1@computedVarsProgram
                   }
                }
             }
          else
             {
-            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names[1])
+            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names)
             e1p = e1
             }
 
@@ -56,8 +58,12 @@
             if (nchar(e2@XcomputedVarsProgram))
                {
                e2p = e2@XcomputedVarsProgram
-               rct@XcomputedVars = e2@XcomputedVars
-               rct@computedVarsProgram = e2@computedVarsProgram
+               rct@XcomputedVars = c(rct@XcomputedVars, e2@XcomputedVars)
+               rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
+               rct@computedVars = c(rct@computedVars, e2@computedVars)
+               rct@computedVars = rct@computedVars[rct@computedVars != ""]
+               rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
+               rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
                }
             else
                {
@@ -66,9 +72,12 @@
                e2p = paste('"', e2p, '"n', sep='')
                if (sum(nchar(e2@computedVars)))
                   {
-                  rct@XcomputedVars = c(e2@XcomputedVars, e2@computedVars) 
+                  rct@XcomputedVars = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
                   rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVarsProgram = e2@computedVarsProgram
+                  rct@computedVars = c(rct@computedVars, e2@computedVars)
+                  rct@computedVars = rct@computedVars[rct@computedVars != ""]
+                  rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
+                  rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
                   }
                }
             }
@@ -288,6 +297,7 @@ setMethod("%/%",
                {
                e1p = e1@XcomputedVarsProgram
                rct@XcomputedVars = e1@XcomputedVars
+               rct@computedVars  = e1@computedVars
                rct@computedVarsProgram = e1@computedVarsProgram
                }
             else
@@ -299,6 +309,7 @@ setMethod("%/%",
                   {
                   rct@XcomputedVars = c(e1@XcomputedVars, e1@computedVars) 
                   rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
+                  rct@computedVars  = e1@computedVars
                   rct@computedVarsProgram = e1@computedVarsProgram
                   }
                }
@@ -317,8 +328,12 @@ setMethod("%/%",
             if (nchar(e2@XcomputedVarsProgram))
                {
                e2p = e2@XcomputedVarsProgram
-               rct@XcomputedVars = e2@XcomputedVars
-               rct@computedVarsProgram = e2@computedVarsProgram
+               rct@XcomputedVars = c(rct@XcomputedVars, e2@XcomputedVars)
+               rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
+               rct@computedVars = c(rct@computedVars, e2@computedVars)
+               rct@computedVars = rct@computedVars[rct@computedVars != ""]
+               rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
+               rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
                }
             else
                {
@@ -327,9 +342,12 @@ setMethod("%/%",
                e2p = paste('"', e2p, '"n', sep='')
                if (sum(nchar(e2@computedVars)))
                   {
-                  rct@XcomputedVars = c(e2@XcomputedVars, e2@computedVars) 
+                  rct@XcomputedVars = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
                   rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVarsProgram = e2@computedVarsProgram
+                  rct@computedVars = c(rct@computedVars, e2@computedVars)
+                  rct@computedVars = rct@computedVars[rct@computedVars != ""]
+                  rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
+                  rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
                   }
                }
             }
@@ -519,6 +537,7 @@ setMethod("!=",
                {
                e1p = e1@XcomputedVarsProgram
                rct@XcomputedVars = e1@XcomputedVars
+               rct@computedVars  = e1@computedVars
                rct@computedVarsProgram = e1@computedVarsProgram
                }
             else
@@ -530,6 +549,7 @@ setMethod("!=",
                   {
                   rct@XcomputedVars = c(e1@XcomputedVars, e1@computedVars) 
                   rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
+                  rct@computedVars  = e1@computedVars
                   rct@computedVarsProgram = e1@computedVarsProgram
                   }
                }
@@ -545,8 +565,12 @@ setMethod("!=",
             if (nchar(e2@XcomputedVarsProgram))
                {
                e2p = e2@XcomputedVarsProgram
-               rct@XcomputedVars = e2@XcomputedVars
-               rct@computedVarsProgram = e2@computedVarsProgram
+               rct@XcomputedVars = c(rct@XcomputedVars, e2@XcomputedVars)
+               rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
+               rct@computedVars = c(rct@computedVars, e2@computedVars)
+               rct@computedVars = rct@computedVars[rct@computedVars != ""]
+               rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
+               rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
                }
             else
                {
@@ -555,9 +579,12 @@ setMethod("!=",
                e2p = paste('"', e2p, '"n', sep='')
                if (sum(nchar(e2@computedVars)))
                   {
-                  rct@XcomputedVars = c(e2@XcomputedVars, e2@computedVars) 
+                  rct@XcomputedVars = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
                   rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVarsProgram = e2@computedVarsProgram
+                  rct@computedVars = c(rct@computedVars, e2@computedVars)
+                  rct@computedVars = rct@computedVars[rct@computedVars != ""]
+                  rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
+                  rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
                   }
                }
             }
@@ -641,6 +668,7 @@ setMethod("!",
                {
                e1p = x@XcomputedVarsProgram
                rct@XcomputedVars = x@XcomputedVars
+               rct@computedVars  = x@computedVars
                rct@computedVarsProgram = x@computedVarsProgram
                }
             else
@@ -651,6 +679,7 @@ setMethod("!",
                   {
                   rct@XcomputedVars = c(x@XcomputedVars, x@computedVars) 
                   rct@XcomputedVars = rct@XcomputedVars[rct@XcomputedVars != ""]
+                  rct@computedVars  = x@computedVars
                   rct@computedVarsProgram = x@computedVarsProgram
                   }
                }

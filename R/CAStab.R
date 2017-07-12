@@ -37,9 +37,9 @@
 #' @slot computedOnDemand An optional \code{logical} flag that indicates whether to 
 #'   the computed variables are created when the table is loaded (False) or to compute
 #'   them when an action begins (True).
-#' @slot computedVars An optional \code{character} string that identifies the
+#' @slot computedVars An optional \code{character} string list that identifies the
 #'   name and optional information such as a format and label.
-#' @slot computedVarsProgram An optional \code{character} string. Specify the
+#' @slot computedVarsProgram An optional \code{character} string list. Specify the
 #'   expression to use for computing each of the computed variables.
 #' @slot names An optional \code{list} of column names.
 #'
@@ -299,7 +299,8 @@ setMethod("[",
 
             vars     = ""
             compvars = ""
-            nn       = length(x@names)
+            compvpgm = ""
+            nn       = length(x@names[x@names != ''])
 
             if (is.numeric(ci))   # numeric list of columns
                {
@@ -307,7 +308,7 @@ setMethod("[",
                pos = FALSE
                for (vnum in ci)
                   {
-                  if (vnum > 0)
+                  if (vnum > 0)   # Select
                      {
                      pos = TRUE
                      if (neg)
@@ -320,16 +321,23 @@ setMethod("[",
                            vars = x@names[vnum]
                      else
                         if (length(compvars) > 1 || nchar(compvars))
+                           {
                            compvars = c(compvars, x@computedVars[vnum-nn]) 
+                           compvpgm = c(compvpgm, x@computedVarsProgram[vnum-nn]) 
+                           }
                         else
+                           {
                            compvars = x@computedVars[vnum-nn] 
+                           compvpgm = x@computedVarsProgram[vnum-nn] 
+                           }
                      }
-                  if (vnum < 0)
+                  if (vnum < 0)   # Exclude 
                      {
                      if (! neg)
                         {
                         vars     = x@names
                         compvars = x@computedVars
+                        compvpgm = x@computedVarsProgram
                         dn  =FALSE
                         dcv = FALSE
                         }
@@ -346,7 +354,10 @@ setMethod("[",
                         }
                      else
                         {
-                        x@computedVars[vnum-nn] = "" 
+                        #x@computedVars[vnum-nn] = "" 
+                        #x@computedVarsProgram[vnum-nn] = "" 
+                        compvars = c(compvars, x@computedVars[vnum-nn]) 
+                        compvpgm = c(compvpgm, x@computedVarsProgram[vnum-nn]) 
                         dcv = TRUE
                         }
                      }
@@ -356,12 +367,18 @@ setMethod("[",
                   {
                   if (dn)
                      vars = vars[vars != ""]
-                  if (length(vars) == 0)
+                  if (length(vars[vars != '']) == 0)
                      x@names = ""
                   if(dcv)
+                     {
                      compvars = compvars[compvars != ""]
-                  if (length(compvars) == 0)
+                     compvpgm = compvprm[compvpgm != ""]
+                     }
+                  if (length(compvars[compvars != '']) == 0)
+                     {
                      compvars = ""
+                     compvpgm = ""
+                     }
                   }
                }
             else  # named list of columns or CAStable
@@ -385,9 +402,15 @@ setMethod("[",
                      else
                         {
                         if (length(compvars) > 1 || nchar(compvars))
+                           {
                            compvars = c(compvars, vname) 
+                           compvpgm = c(compvars, x@computedVarsProgram[idx])
+                           }
                         else
+                           {
                            compvars = vname
+                           compvpgm = x@computedVarsProgram[idx]
+                           }
                         } 
                      }
                   else
@@ -398,21 +421,10 @@ setMethod("[",
                   }
                }
 
-            if (length(compvars) > 1 || nchar(compvars))
-               {
-               x = new("CASTable", x@conn, x@tname, x@caslib, vars, where, x@orderby, 
-                          x@groupby, x@gbmode, FALSE, compvars, x@computedVarsProgram)
-               x@XcomputedVars = xcompvars 
-               return(x)
-               }
-            else
-               {
-               x = new("CASTable", x@conn, x@tname, x@caslib, vars, where, x@orderby, 
-                          x@groupby, x@gbmode, FALSE, "", x@computedVarsProgram)
-               x@XcomputedVars = xcompvars 
-               return(x)
-               }
-
+            x = new("CASTable", x@conn, x@tname, x@caslib, vars, where, x@orderby, 
+                       x@groupby, x@gbmode, FALSE, compvars, compvpgm)
+            x@XcomputedVars = xcompvars 
+            return(x)
        })
 
 #' @rdname CASTable-Extract
@@ -439,7 +451,7 @@ setMethod("[<-",
                {
                dn  = FALSE
                dcv = FALSE
-               nn  = length(x@names)
+               nn  = length(x@names[x@names != ''])
                tn  = length(x)
 
                for(coln in i)
@@ -456,7 +468,8 @@ setMethod("[<-",
                         }
                      else
                         {
-                        x@computedVars[coln-nn] = "" 
+                        x@computedVars[coln-nn]        = "" 
+                        x@computedVarsProgram[coln-nn] = "" 
                         dcv = TRUE
                         }
                      }
@@ -469,7 +482,8 @@ setMethod("[<-",
                         if (is.na(idx))
                            stop("Column name not in existing columns\n")
 
-                        x@computedVars[idx] = "" 
+                        x@computedVars[idx]        = "" 
+                        x@computedVarsProgram[idx] = "" 
                         dcv = TRUE
                         }
                      else
@@ -482,76 +496,108 @@ setMethod("[<-",
 
                if (dn)
                   x@names = x@names[x@names != ""]
-               if (length(x@names) == 0)
+               if (length(x@names[x@names != ""]) == 0)
                   x@names = ""
                if(dcv)
-                  x@computedVars = x@computedVars[x@computedVars != ""]
-               if (length(x@computedVars) == 0)
-                  x@computedVars = ""
+                  {
+                  x@computedVars        = x@computedVars[x@computedVars != ""]
+                  x@computedVarsProgram = x@computedVarsProgram[x@computedVarsProgram != ""]
+                  }
+               if (length(x@computedVars[x@computedVars != '']) == 0)
+                  {
+                  x@computedVars        = ""
+                  x@computedVarsProgram = ""
+                  }
                }
             else   # add computed column(s) case
                {
-               computedVars = ''
-               vars = c(x@names, x@computedVars)
-               vars = vars[vars != ""]
+               #validx   = 0
+               replace  = FALSE
                for(coln in i)
                   {
+                  #validx = validx + 1
+                  v = c(x@names, x@computedVars)
+                  nvars = length(v[v != '']) 
                   if (is.numeric(coln))
                      {
-                     if (coln < length(vars))
+                     if (coln <= length(x@names[x@names != '']))  # Can't replace permanent column
                         {
-                        stop(paste("Cannot redefine an existing column. You can add a new column this way though; use an index value of",
-                            toString(length(c(x@names, x@computedVars))+1),"\n"))
+                        stop(paste("Cannot redefine an existing permanent column. You can add a new column this way though; use an index value of",
+                            toString(nvars+1,"\n")))
                         }
-                     colname = paste("_", toString(coln), sep='')
+                     else                         
+                        {
+                        if (coln <= nvars)                                       # Replace existing computed column
+                           {
+                           replace = TRUE
+                           idx     = coln - length(x@names[x@names != ''])
+                           colname = x@computedVars[idx]
+                           }
+                        else                                                     # Create new computed column
+                           {
+                           colname = paste("_", toString(coln), sep='')
+                           }
+                        }
                      }
                   else
                      {
-                     idx = match(coln, vars)
+                     idx = match(coln, x@names)
                      if (is.na(idx))
                         {
-                        colname = coln 
+                        idx = match(coln, x@computedVars)
+                        if (!(is.na(idx)))     # replace column
+                           replace = TRUE
+                        colname = coln
                         }
-                     else
+                     else                      # Can't replace permanent column
                         {
                         stop("Cannot redefine an existing column. You can add a new column this way though; use an unused column name.\n")
                         }
                      }
-
-                  if (length(computedVars) > 1 || nchar(computedVars))
-                     computedVars        = c(computedVars, colname)
-                  else
-                     computedVars        = colname
-                  }
-
-               if (length(x@computedVars) > 1 || nchar(x@computedVars))
-                  x@computedVars      = c(x@computedVars, computedVars)
-               else
-                  x@computedVars      = computedVars
-
-               if (class(value) == "CASTable")
-                  if (sum(nchar(value@XcomputedVarsProgram))) #expresion, else col name
-                     pgm = paste(computedVars, ' = ', value@XcomputedVarsProgram, sep='')
-                  else
-                     pgm = paste(computedVars, ' = ', value@names, sep='')
-               else
-                  {
-                  if (length(i) == 1                             &&
-                      class(value) == "character"                &&
-                      strsplit(value, '=', fixed = TRUE) != value )
-                     pgm = value
-                  else
-                     if (class(value) == "character") 
-                        pgm = paste(colname, ' = ',  '"', value, '"', sep='')
+                  
+                  # figure out what the program for this col is
+                  if (class(value) == "CASTable")
+                     if (sum(nchar(value@XcomputedVarsProgram))) #expresion, else col name
+                        pgm = paste(colname, ' = ', value@XcomputedVarsProgram, sep='')
                      else
-                        pgm = paste(colname, ' = ',  as.character(value), sep='')
-             
+                        {
+                        vname = c(value@names, value@computedVars)
+                        vname = vname[vname != '']
+                        pgm = paste(colname, ' = ', vname, sep='')
+                        }
+                  else
+                     {
+                     if (length(i) == 1                             &&
+                         class(value) == "character"                &&
+                         strsplit(value, '=', fixed = TRUE) != value )
+                        pgm = value
+                     else
+                        if (class(value) == "character") 
+                           pgm = paste(colname, ' = ',  '"', value, '"', sep='')
+                        else
+                           pgm = paste(colname, ' = ',  as.character(value), sep='')
+                     }
+
+                  if (! replace)
+                     {
+                     if (sum(nchar(x@computedVars)))
+                        x@computedVars      = c(x@computedVars, colname)
+                     else
+                        x@computedVars      = colname
+
+                     if (sum(nchar(x@computedVarsProgram)))
+                        x@computedVarsProgram = c(x@computedVarsProgram, pgm)
+                     else
+                        x@computedVarsProgram = c(pgm)
+                     }
+                  else
+                     {
+                     x@computedVarsProgram[idx] = pgm
+                     replace = FALSE
+                     }
                   }
-               if (length(x@computedVarsProgram) > 1 || nchar(x@computedVarsProgram))
-                  x@computedVarsProgram = paste(x@computedVarsProgram, pgm, sep=';')
-               else
-                  x@computedVarsProgram = pgm
                }
+
             return(x)
           })
 
@@ -563,11 +609,8 @@ setMethod("[[",
 
             vars     = ""
             compvars = ""
-
-            if (length(x@names) > 1 || nchar(x@names))
-               nn       = length(x@names)
-            else
-               nn       = 0
+            compvpgm = ""
+            nn       = length(x@names[x@names != ''])
 
             if (is.numeric(i))   # numeric list of columns
                {
@@ -579,9 +622,15 @@ setMethod("[[",
                         vars = x@names[vnum]
                   else
                      if (length(compvars) > 1 || nchar(compvars))
+                        {
                         compvars = c(compvars, x@computedVars[vnum-nn]) 
+                        compvpgm = c(compvpgm, x@computedVarsProgram[vnum-nn]) 
+                        }
                      else
+                        {
                         compvars = x@computedVars[vnum-nn] 
+                        compvpgm = x@computedVarsProgram[vnum-nn] 
+                        }
                }
             else
                { 
@@ -604,9 +653,15 @@ setMethod("[[",
                      else
                         {
                         if (length(compvars) > 1 || nchar(compvars))
+                           {
                            compvars = c(compvars, vname) 
+                           compvpgm = c(compvars, x@computedVarsProgram[idx])
+                           }
                         else
+                           {
                            compvars = vname
+                           compvpgm = x@computedVarsProgram[idx]
+                           }
                         } 
                      }
                   else
@@ -617,13 +672,10 @@ setMethod("[[",
                   }
                }
         
-            if (length(compvars) > 1 || nchar(compvars))
-               return(new("CASTable", x@conn, x@tname, x@caslib, vars, x@where, x@orderby, 
-                          x@groupby, x@gbmode, FALSE, compvars, x@computedVarsProgram))
-            else
-               return(new("CASTable", x@conn, x@tname, x@caslib, vars, x@where, x@orderby, 
-                          x@groupby, x@gbmode))
-
+            x = new("CASTable", x@conn, x@tname, x@caslib, vars, x@where, x@orderby, 
+                          x@groupby, x@gbmode, FALSE, compvars, compvpgm)
+            #x@XcomputedVars = xcompvars 
+            return(x)
           })
 
 #' @rdname CASTable-Extract
@@ -642,7 +694,7 @@ setMethod("$",
                   }
                else
                   new("CASTable", x@conn, x@tname, x@caslib, "", x@where, x@orderby, 
-                      x@groupby, x@gbmode, FALSE, name, x@computedVarsProgram)
+                      x@groupby, x@gbmode, FALSE, name, x@computedVarsProgram[idx])
                }
             else
                new("CASTable", x@conn, x@tname, x@caslib, name, x@where, x@orderby, 
@@ -654,7 +706,7 @@ setMethod("$",
 setMethod("$<-",
           signature(x = "CASTable"),
           function(x, name, value) {
-            if ((! missing(value)) &&  is.null(value))
+            if ((! missing(value)) && is.null(value))
                {
                dn  =FALSE
                dcv = FALSE
@@ -665,7 +717,8 @@ setMethod("$<-",
                   if (is.na(idx))
                      stop("Column name not in existing columns\n")
 
-                  x@computedVars[idx] = ""
+                  x@computedVars[idx]        = ""
+                  x@computedVarsProgram[idx] = ""
                   dcv = TRUE
                   }
                else
@@ -675,29 +728,47 @@ setMethod("$<-",
                   }
                if (dn)
                   x@names = x@names[x@names != ""]
-               if (length(x@names) == 0)
+               if (length(x@names[x@names != ""]) == 0)
                   x@names = ""
                if (dcv)
-                  x@computedVars = x@computedVars[x@computedVars != ""]
-               if (length(x@computedVars) == 0)
-                  x@computedVars = ""
+                  {
+                  x@computedVars        = x@computedVars[x@computedVars != ""]
+                  x@computedVarsProgram = x@computedVarsProgram[x@computedVarsProgram != ""]
+                  }
+               if (length(x@computedVars[x@computedVars != '']) == 0)
+                  {
+                  x@computedVars        = ""
+                  x@computedVarsProgram = ""
+                  }
                }
             else   # add computed column(s) case
                {
-               idx = match(name, c(x@names, x@computedVars))
+               idx = match(name, x@names)
                if (! is.na(idx))
-                  stop("Cannot redefine an existing column. You can add a new column this way though; use an unused column name.\n")
+                  stop("Cannot redefine an permanent column. You can add a new column this way though; use an unused column name.\n")
 
-               if (length(x@computedVars) > 1 || nchar(x@computedVars))
-                  x@computedVars      = c(x@computedVars, name)
-               else
-                  x@computedVars      = name
+               idx = match(name, x@computedVars)
+               if (! is.na(idx))     # Replace Compvar
+                  {
+                  replace = TRUE
+                  idx     = idx + length(x@names[x@names != ''])
+                  }                
+               else                  # New Compvar
+                  {
+                  replace = FALSE
+                  }
 
+
+               # figure out what the program for this col is
                if (class(value) == "CASTable")
                   if (sum(nchar(value@XcomputedVarsProgram))) #expresion, else col name
                      pgm = paste(name, ' = ', value@XcomputedVarsProgram, sep='')
                   else
-                     pgm = paste(name, ' = ', value@names, sep='')
+                     {
+                     vname = c(value@names, value@computedVars)
+                     vname = vname[vname != '']
+                     pgm = paste(name, ' = ', vname, sep='')
+                     }
                else
                   {
                   if (class(value) == "character"                &&
@@ -711,10 +782,22 @@ setMethod("$<-",
              
                   }
 
-               if (length(x@computedVarsProgram) > 1 || nchar(x@computedVarsProgram))
-                  x@computedVarsProgram = paste(x@computedVarsProgram, pgm, sep=';')
+               if (! replace)
+                  {
+                  if (sum(nchar(x@computedVars)))
+                     x@computedVars      = c(x@computedVars, name)
+                  else
+                     x@computedVars      = name
+
+                  if (sum(nchar(x@computedVarsProgram)))
+                     x@computedVarsProgram = c(x@computedVarsProgram, pgm)
+                  else
+                     x@computedVarsProgram = c(pgm)
+                  }
                else
-                  x@computedVarsProgram = pgm
+                  {
+                  x@computedVarsProgram[idx] = pgm
+                  }
                }
           return (x)
           })

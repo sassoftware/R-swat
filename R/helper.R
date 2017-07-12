@@ -49,13 +49,12 @@ uniqueTableName <- function(prefix = "") {
 #
 # tp = swat::gen.table.parm(x)
 gen.table.parm <- function(ct) {
-  if (class(ct) == 'CASTable')
-    tp <- c(name                    = ct@tname)
-  if (ct@caslib  != '') tp <- c(tp, caslib              = ct@caslib)
-  if (ct@where   != '') tp <- c(tp, where               = ct@where)
-  if (ct@orderby != '') tp <- c(tp, orderby             = ct@orderby)
-  if (ct@groupby != '') tp <- c(tp, groupby             = ct@groupby)
-  if (ct@gbmode  != '') tp <- c(tp, groupbymode         = ct@gbmode)
+  if (class(ct)  == 'CASTable') tp <- c(    name        = ct@tname)
+  if (ct@caslib  != ''        ) tp <- c(tp, caslib      = ct@caslib)
+  if (ct@where   != ''        ) tp <- c(tp, where       = ct@where)
+  if (ct@orderby != ''        ) tp <- c(tp, orderby     = ct@orderby)
+  if (ct@groupby != ''        ) tp <- c(tp, groupby     = ct@groupby)
+  if (ct@gbmode  != ''        ) tp <- c(tp, groupbymode = ct@gbmode)
   if (length(ct@computedVars) > 1 || ct@computedVars != "")
      {
                      if (sum(nchar(ct@XcomputedVars)))
@@ -70,7 +69,7 @@ gen.table.parm <- function(ct) {
                         tp <- c(tp, computedVars        = list(c(ct@computedVars)))
 
                         tp <- c(tp, computedOnDemand    = ct@computedOnDemand)
-                        tp <- c(tp, computedVarsProgram = ct@computedVarsProgram)
+                        tp <- c(tp, computedVarsProgram = paste(paste(ct@computedVarsProgram,collapse=';'),';',sep=''))
 
                      if (length(ct@names) > 1 || nchar(ct@names))
                         tp <- c(tp, vars                = list(c(ct@names)))
@@ -82,8 +81,8 @@ gen.table.parm <- function(ct) {
                      if (sum(nchar(ct@XcomputedVars)))
                         {
                         tp <- c(tp, computedVars        = list(c(ct@XcomputedVars)))
-                        tp <- c(tp, computedVarsProgram = ct@computedVarsProgram)
-                        }
+                        tp <- c(tp, computedVarsProgram = paste(paste(ct@computedVarsProgram,collapse=';'),';',sep=''))
+                     }
      }
   return (tp)
 }
