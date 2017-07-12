@@ -103,7 +103,7 @@ setMethod("initialize", "casDataFrame", function(.Object,
   .Object@row.names <- row.names(.Object@df)
 
   if (class(dframe)=='casDataFrame') {
-     .Object@name <- dframe@name
+     .Object@name  <- dframe@name
      .Object@label <- dframe@label
      .Object@title <- dframe@title
      .Object@attrs <- dframe@attrs
@@ -220,16 +220,17 @@ to.casDataFrame <-  function(ct, obs=32768) {
      res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=10)
 
   fetch <- res$results$Fetch
-  name = fetch@name
-  label = fetch@label
-  title = fetch@title
-  attrs = fetch@attrs
-  col.labels = fetch@col.labels
+
+  name        = fetch@name
+  label       = fetch@label
+  title       = fetch@title
+  attrs       = fetch@attrs
+  col.labels  = fetch@col.labels
   col.formats = fetch@col.formats
-  col.attrs = fetch@col.attrs
-  col.sizes = fetch@col.sizes
-  col.types = fetch@col.types
-  col.widths = fetch@col.widths
+  col.attrs   = fetch@col.attrs
+  col.sizes   = fetch@col.sizes
+  col.types   = fetch@col.types
+  col.widths  = fetch@col.widths
 
   out <- list()
   for ( i in 1:length(res$results) ) {
