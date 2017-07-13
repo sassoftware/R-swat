@@ -40,6 +40,7 @@
                e1p = paste('"', e1p, '"n', sep='')
                if (sum(nchar(e1@computedVars)))
                   {
+                  rct@compcomp            = TRUE
                   rct@XcomputedVars       = c(e1@XcomputedVars, e1@computedVars) 
                   rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
                   rct@computedVars        = e1@computedVars
@@ -72,6 +73,7 @@
                e2p = paste('"', e2p, '"n', sep='')
                if (sum(nchar(e2@computedVars)))
                   {
+                  rct@compcomp            = TRUE
                   rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
                   rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
                   rct@computedVars        = c(rct@computedVars, e2@computedVars)
@@ -307,6 +309,7 @@ setMethod("%/%",
                e1p = paste('"', e1p, '"n', sep='')
                if (sum(nchar(e1@computedVars)))
                   {
+                  rct@compcomp            = TRUE
                   rct@XcomputedVars       = c(e1@XcomputedVars, e1@computedVars) 
                   rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
                   rct@computedVars        = e1@computedVars
@@ -342,6 +345,7 @@ setMethod("%/%",
                e2p = paste('"', e2p, '"n', sep='')
                if (sum(nchar(e2@computedVars)))
                   {                  
+                  rct@compcomp            = TRUE
                   rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
                   rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
                   rct@computedVars        = c(rct@computedVars, e2@computedVars)
@@ -547,6 +551,7 @@ setMethod("!=",
                e1p = paste('"', e1p, '"n', sep='')
                if (sum(nchar(e1@computedVars)))
                   {
+                  rct@compcomp            = TRUE
                   rct@XcomputedVars       = c(e1@XcomputedVars, e1@computedVars) 
                   rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
                   rct@computedVars        = e1@computedVars
@@ -579,6 +584,7 @@ setMethod("!=",
                e2p = paste('"', e2p, '"n', sep='')
                if (sum(nchar(e2@computedVars)))
                   {
+                  rct@compcomp            = TRUE
                   rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
                   rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
                   rct@computedVars        = c(rct@computedVars, e2@computedVars)
@@ -677,6 +683,7 @@ setMethod("!",
                e1p = e1p[e1p != ""]
                if (sum(nchar(x@computedVars)))
                   {
+                  rct@compcomp            = TRUE
                   rct@XcomputedVars       = c(x@XcomputedVars, x@computedVars) 
                   rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
                   rct@computedVars        = x@computedVars

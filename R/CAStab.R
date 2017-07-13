@@ -62,7 +62,8 @@ setClass("CASTable",
                       computedVarsProgram = "character",
                      XcomputedVarsProgram = "character",
                      XcomputedVars        = "character",
-                      names               = 'character'))
+                      names               = 'character',
+                      compcomp            = 'logical'  ))
 
 #' @export
 #' @rawRd % Copyright SAS Institute
@@ -83,6 +84,7 @@ setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib, colum
   .Object@computedVarsProgram  <- computedVarsProgram
   .Object@XcomputedVarsProgram <- ""
   .Object@XcomputedVars        <- ""
+  .Object@compcomp             <- FALSE
 
   .Object
 })
@@ -557,6 +559,10 @@ setMethod("[<-",
                   
                   # figure out what the program for this col is
                   if (class(value) == "CASTable")
+                     {
+                     if (value@compcomp)
+                        stop("Cannot define a Computed Column referencing another Computed Column.")
+ 
                      if (sum(nchar(value@XcomputedVarsProgram))) #expresion, else col name
                         pgm = paste(colname, ' = ', value@XcomputedVarsProgram, sep='')
                      else
@@ -565,9 +571,10 @@ setMethod("[<-",
                         vname = vname[vname != '']
                         pgm = paste(colname, ' = ', vname, sep='')
                         }
+                     }
                   else
                      {
-                     if (length(i) == 1                             &&
+                     if (length(i)    == 1                          &&
                          class(value) == "character"                &&
                          strsplit(value, '=', fixed = TRUE) != value )
                         pgm = value
@@ -672,10 +679,10 @@ setMethod("[[",
                   }
                }
         
-            x = new("CASTable", x@conn, x@tname, x@caslib, vars, x@where, x@orderby, 
+            rct = new("CASTable", x@conn, x@tname, x@caslib, vars, x@where, x@orderby, 
                           x@groupby, x@gbmode, FALSE, compvars, compvpgm)
-            #x@XcomputedVars = xcompvars 
-            return(x)
+            rct@XcomputedVars = x@XcomputedVars 
+            return(rct)
           })
 
 #' @rdname CASTable-Extract
@@ -761,6 +768,10 @@ setMethod("$<-",
 
                # figure out what the program for this col is
                if (class(value) == "CASTable")
+                  {
+                  if (value@compcomp)
+                     stop("Cannot define a Computed Column referencing another Computed Column.")
+ 
                   if (sum(nchar(value@XcomputedVarsProgram))) #expresion, else col name
                      pgm = paste(name, ' = ', value@XcomputedVarsProgram, sep='')
                   else
@@ -769,6 +780,7 @@ setMethod("$<-",
                      vname = vname[vname != '']
                      pgm = paste(name, ' = ', vname, sep='')
                      }
+                  }
                else
                   {
                   if (class(value) == "character"                &&
@@ -779,7 +791,6 @@ setMethod("$<-",
                         pgm = paste(name, ' = ',  '"', value, '"', sep='')
                      else
                         pgm = paste(name, ' = ',  as.character(value), sep='')
-             
                   }
 
                if (! replace)
