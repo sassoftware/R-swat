@@ -676,7 +676,7 @@ setMethod("!",
           signature(x = "CASTable"),
           function(x) {
             rct = new("CASTable", x@conn, x@tname, x@caslib, x@names)
-            rct@compcomp = e1@compcomp
+            rct@compcomp = x@compcomp
             if (sum(nchar(x@XcomputedVarsProgram)))
                {
                e1p                     = x@XcomputedVarsProgram
