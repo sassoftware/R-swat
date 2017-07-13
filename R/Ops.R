@@ -26,6 +26,7 @@
          if (class(e1) == "CASTable")
             {
             rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names)
+            rct@compcomp = e1@compcomp
             if (nchar(e1@XcomputedVarsProgram))
                {
                e1p                     = e1@XcomputedVarsProgram
@@ -51,6 +52,7 @@
          else
             {
             rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names)
+            rct@compcomp = e2@compcomp
             e1p = e1
             }
 
@@ -295,6 +297,7 @@ setMethod("%/%",
          if (class(e1) == "CASTable")
             {
             rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names)
+            rct@compcomp = e1@compcomp
             if (nchar(e1@XcomputedVarsProgram))
                {
                e1p                     = e1@XcomputedVarsProgram
@@ -320,6 +323,7 @@ setMethod("%/%",
          else
             {
             rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names)
+            rct@compcomp = e2@compcomp
             if (class(e1) == "character")
                e1p = paste("'", e1, "'", sep='')
             else
@@ -537,6 +541,7 @@ setMethod("!=",
          if (class(e1) == "CASTable")
             {
             rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names)
+            rct@compcomp = e1@compcomp
             if (nchar(e1@XcomputedVarsProgram))
                {
                e1p                     = e1@XcomputedVarsProgram
@@ -562,6 +567,7 @@ setMethod("!=",
          else
             {
             rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names)
+            rct@compcomp = e2@compcomp
             e1p = e1
             }
 
@@ -670,6 +676,7 @@ setMethod("!",
           signature(x = "CASTable"),
           function(x) {
             rct = new("CASTable", x@conn, x@tname, x@caslib, x@names)
+            rct@compcomp = e1@compcomp
             if (sum(nchar(x@XcomputedVarsProgram)))
                {
                e1p                     = x@XcomputedVarsProgram
