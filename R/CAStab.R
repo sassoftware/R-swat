@@ -756,14 +756,9 @@ setMethod("$<-",
 
                idx = match(name, x@computedVars)
                if (! is.na(idx))     # Replace Compvar
-                  {
                   replace = TRUE
-                  idx     = idx + length(x@names[x@names != ''])
-                  }                
                else                  # New Compvar
-                  {
                   replace = FALSE
-                  }
 
 
                # figure out what the program for this col is
