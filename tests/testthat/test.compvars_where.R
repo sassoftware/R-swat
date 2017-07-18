@@ -466,6 +466,144 @@ expect_equivalent(dimnames(df0.ct[1:8]), dimnames(df0_))
 })
 
 
+orig_options <- options()
+options(cas.print.messages=TRUE)
+
+# Deleting a compvar
+test_that("Deleting a compvar", {
+  
+df0_$string<-"string"
+df0.ct$string<-"sting"
+df0.ct['string2']<-"string2='string';"
+expect_silent(df0_$string<-NULL)
+expect_silent(df0.ct$string<-NULL)
+expect_silent(df0.ct['string2']<-NULL)
+expect_equivalent(dimnames(df0.ct), dimnames(df0_))
+
+})
+
+# Deleting a compvar2
+test_that("Deleting a compvar", {
+  
+df0_$string<-"string"
+df0.ct$string<-"sting"
+df0.ct['string2']<-"string2='string';"
+expect_silent(df0_<-df0_[-8])
+expect_silent(df0.ct<-df0.ct[-8])
+expect_silent(df0.ct<-df0.ct[-8])
+expect_equivalent(dimnames(df0.ct), dimnames(df0_))
+  
+})
+
+# Deleting muiltiple compvars 1
+test_that("Deleting a muiltiple compvars 1", {
+  
+df0_$string<-"string"
+df0_$string2<-"string"
+df0.ct$string<-"sting"
+df0.ct['string2']<-"string2='string';"
+  
+df0_$dup<-df0_$n2
+df0_$dup2<-df0_$n2
+df0.ct$dup<-df0.ct$n2
+df0.ct['dup2']<-"dup2=n2;"
+  
+df0_$compExp<-df0_$n1^2
+df0_$compExp2<-df0_$n1^2
+df0.ct$compExp<-df0.ct$n1^2
+df0.ct['compExp2']<-"compExp2=n1**2;"
+  
+expect_silent(df0_[,8:10]<-NULL)
+expect_silent(df0.ct[,8:10]<-NULL)
+expect_equivalent(dimnames(df0.ct), dimnames(df0_))
+  
+})
+
+
+# Deleting a muiltiple compvars 2
+test_that("Deleting a muiltiple compvars 2", {
+  
+df0_$string<-"string"
+df0_$string2<-"string"
+df0.ct$string<-"sting"
+df0.ct['string2']<-"string2='string';"
+  
+df0_$dup<-df0_$n2
+df0_$dup2<-df0_$n2
+df0.ct$dup<-df0.ct$n2
+df0.ct['dup2']<-"dup2=n2;"
+  
+df0_$compExp<-df0_$n1^2
+df0_$compExp2<-df0_$n1^2
+df0.ct$compExp<-df0.ct$n1^2
+df0.ct['compExp2']<-"compExp2=n1**2;"
+  
+expect_silent(df0_<-df0_[-(8:10)])
+expect_silent(df0.ct<-df0.ct[-(8:10)])
+expect_equivalent(dimnames(df0.ct), dimnames(df0_))
+  
+})
+
+
+# Replacing a compvar
+test_that("Deleting a compvar", {
+  
+df0_$replace<-df0_$n1
+df0_$replace2<-df0_$n1
+df0.ct$replace<-df0.ct$n1
+df0.ct['replace2']<-"replace2=n1;"
+expect_silent(df0_$replace<-df0_$n1 + 1)
+expect_silent(df0_$replace2<-df0_$n1 + 1)
+expect_silent(df0.ct$replace<-df0.ct$n1 + 1)
+expect_silent(df0.ct['replace2']<-"replace2=n1 + 1;")
+expect_equivalent(dimnames(df0.ct), dimnames(df0_))
+  
+})
+
+# Replacing a string compvar
+test_that("Replacing a string compvar", {
+  
+df0_$string<-"string"
+df0_$string2<-"string"
+df0.ct$string<-"sting"
+df0.ct['string2']<-"string2='string';"
+expect_silent(df0_$string<-"replace string")
+expect_silent(df0_$string2<-"replace string")
+expect_silent(df0.ct$string<-"replace sting")
+expect_silent(df0.ct['string2']<-"string2='replace string';")
+expect_equivalent(dimnames(df0.ct), dimnames(df0_))
+  
+})
+
+
+# Replacing compvar with another compvar
+test_that("Replacing compvar with another compvar", {
+  
+df0_$compvar<-df0_$n2*df0_$n5
+df0.ct$compvar<-df0_$n2*df0_$n5
+  
+  
+df0_$comprep<-df0_$n2
+df0_$comprep2<-df0_$n2
+df0.ct$comprep<-df0.ct$n2
+df0.ct['comprep']<-"comprep=n2;"
+  
+# replace with compvar
+expect_error(df0.ct$comprep<-df0.ct$compvar/2, "Cannot define")
+#expect_error(df0.ct['comprep2']<-"comprep2=compvar/2;", "Cannot define")
+
+# replace with valid variables
+expect_silent(df0_$comprep<-df0_$compvar/2)
+expect_silent(df0_$comprep2<-df0_$compvar/2)
+expect_silent(df0.ct$comprep<-(df0.ct$n2*df0.ct$n5)/2)
+expect_silent(df0.ct$comprep2<-(df0.ct$n2*df0.ct$n5)/2)
+expect_equivalent(dimnames(df0.ct), dimnames(df0_))
+  
+})
+
+
+options(orig_options)
+
 
 
 
