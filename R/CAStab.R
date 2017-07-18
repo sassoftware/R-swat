@@ -374,7 +374,7 @@ setMethod("[",
                   if(dcv)
                      {
                      compvars = compvars[compvars != ""]
-                     compvpgm = compvprm[compvpgm != ""]
+                     compvpgm = compvpgm[compvpgm != ""]
                      }
                   if (length(compvars[compvars != '']) == 0)
                      {
