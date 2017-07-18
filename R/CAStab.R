@@ -356,10 +356,8 @@ setMethod("[",
                         }
                      else
                         {
-                        #x@computedVars[vnum-nn] = "" 
-                        #x@computedVarsProgram[vnum-nn] = "" 
-                        compvars = c(compvars, x@computedVars[vnum-nn]) 
-                        compvpgm = c(compvpgm, x@computedVarsProgram[vnum-nn]) 
+                        compvars[vnum-nn] = "" 
+                        compvpgm[vnum-nn] = "" 
                         dcv = TRUE
                         }
                      }
