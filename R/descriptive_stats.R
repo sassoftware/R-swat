@@ -368,14 +368,11 @@ setMethod("cov",
                  {
                  cpgm = c(x@computedVarsProgram, y@computedVarsProgram)
                  cpgm = cpgm[cpgm != ""]
-                 if (length(cpgm) > 1)
-                    cpgm = paste(cpgm, collapse=';')
                  }
               v2 <- x
               v2@names               = vars
               v2@computedVars        = cvars
               v2@computedVarsProgram = cpgm
-
               cov <- cor2cov(v2)
               cormat3 <- cov[1:length(x),(nrow(cov)-length(y)+1):nrow(cov)]
               if (is.null(dim(cormat3))) {

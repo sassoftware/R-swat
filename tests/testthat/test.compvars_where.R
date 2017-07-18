@@ -425,19 +425,27 @@ test_that("Assign constant value with different syntax", {
 
 
 # Using one compVar to create another, multiplication
+#test_that("Using one compVar to create another", {
+#  df_$constant<-0.5
+#  df.ct['constant']<-'constant=0.5;'
+#  df_$weightedVar<-df_$constant*df_$n1 + ((1-df_$constant)*df_$n2)
+#  df.ct$weightedVar<-df.ct$constant*df.ct$n1 + ((1-df.ct$constant)*df.ct$n2)
+#  df.ct$weightedVar2 <- "weightedVar2 = constant*n1 + ((1-constant)*n2);"
+#  rdf<-as.data.frame(df_$weightedVar)
+#  cdf=to.casDataFrame(df.ct$weightedVar)
+#  cdf2=to.casDataFrame(df.ct$weightedVar2)
+#  cas2rdf=to.data.frame(cdf)
+#  expect_equivalent(cas2rdf, rdf)
+#  expect_equivalent(cdf, cdf2)
+#  expect_equivalent(dimnames(df.ct[1:9]), dimnames(df_)) 
+#})
+
+# Using one compVar to create another, This should fail! Can't create CV referencing another CV
 test_that("Using one compVar to create another", {
   df_$constant<-0.5
-  df.ct['constant']<-'constant=0.5;'
+  df.ct['constant']<-0.5
   df_$weightedVar<-df_$constant*df_$n1 + ((1-df_$constant)*df_$n2)
-  df.ct$weightedVar<-df.ct$constant*df.ct$n1 + ((1-df.ct$constant)*df.ct$n2)
-  df.ct$weightedVar2 <- "weightedVar2 = constant*n1 + ((1-constant)*n2);"
-  rdf<-as.data.frame(df_$weightedVar)
-  cdf=to.casDataFrame(df.ct$weightedVar)
-  cdf2=to.casDataFrame(df.ct$weightedVar2)
-  cas2rdf=to.data.frame(cdf)
-  expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
-  expect_equivalent(dimnames(df.ct[1:9]), dimnames(df_)) 
+  expect_error(df.ct$weightedVar<-df.ct$constant*df.ct$n1 + ((1-df.ct$constant)*df.ct$n2))
 })
 
 
