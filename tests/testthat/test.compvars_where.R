@@ -425,28 +425,21 @@ test_that("Assign constant value with different syntax", {
 
 
 # Using one compVar to create another, multiplication
-#test_that("Using one compVar to create another", {
-#  df_$constant<-0.5
-#  df.ct['constant']<-'constant=0.5;'
-#  df_$weightedVar<-df_$constant*df_$n1 + ((1-df_$constant)*df_$n2)
-#  df.ct$weightedVar<-df.ct$constant*df.ct$n1 + ((1-df.ct$constant)*df.ct$n2)
-#  df.ct$weightedVar2 <- "weightedVar2 = constant*n1 + ((1-constant)*n2);"
-#  rdf<-as.data.frame(df_$weightedVar)
-#  cdf=to.casDataFrame(df.ct$weightedVar)
-#  cdf2=to.casDataFrame(df.ct$weightedVar2)
-#  cas2rdf=to.data.frame(cdf)
-#  expect_equivalent(cas2rdf, rdf)
-#  expect_equivalent(cdf, cdf2)
-#  expect_equivalent(dimnames(df.ct[1:9]), dimnames(df_)) 
-#})
-
-# Using one compVar to create another, This should fail! Can't create CV referencing another CV
 test_that("Using one compVar to create another", {
   df_$constant<-0.5
-  df.ct['constant']<-0.5
+  df.ct['constant']<-'constant=0.5;'
   df_$weightedVar<-df_$constant*df_$n1 + ((1-df_$constant)*df_$n2)
-  expect_error(df.ct$weightedVar<-df.ct$constant*df.ct$n1 + ((1-df.ct$constant)*df.ct$n2))
+  df.ct$weightedVar<-df.ct$constant*df.ct$n1 + ((1-df.ct$constant)*df.ct$n2)
+  df.ct$weightedVar2 <- "weightedVar2 = constant*n1 + ((1-constant)*n2);"
+  rdf<-as.data.frame(df_$weightedVar)
+  cdf=to.casDataFrame(df.ct$weightedVar)
+  cdf2=to.casDataFrame(df.ct$weightedVar2)
+  cas2rdf=to.data.frame(cdf)
+  expect_equivalent(cas2rdf, rdf)
+  expect_equivalent(cdf, cdf2)
+  expect_equivalent(dimnames(df.ct[1:9]), dimnames(df_)) 
 })
+
 
 
 # Creating a duplicate column
@@ -580,7 +573,7 @@ expect_equivalent(dimnames(df0.ct), dimnames(df0_))
 test_that("Replacing compvar with another compvar", {
   
 df0_$compvar<-df0_$n2*df0_$n5
-df0.ct$compvar<-df0_$n2*df0_$n5
+df0.ct$compvar<-df0.ct$n2*df0.ct$n5
   
   
 df0_$comprep<-df0_$n2
@@ -589,7 +582,7 @@ df0.ct$comprep<-df0.ct$n2
 df0.ct['comprep']<-"comprep=n2;"
   
 # replace with compvar
-expect_error(df0.ct$comprep<-df0.ct$compvar/2, "Cannot define")
+#expect_error(df0.ct$comprep<-df0.ct$compvar/2, "Cannot define")
 #expect_error(df0.ct['comprep2']<-"comprep2=compvar/2;", "Cannot define")
 
 # replace with valid variables

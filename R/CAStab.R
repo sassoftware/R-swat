@@ -422,7 +422,7 @@ setMethod("[",
                }
 
             x = new("CASTable", x@conn, x@tname, x@caslib, vars, where, x@orderby, 
-                       x@groupby, x@gbmode, FALSE, compvars, compvpgm)
+                       x@groupby, x@gbmode, FALSE, compvars, x@computedVarsProgram)
             x@XcomputedVars = xcompvars 
             return(x)
        })
@@ -469,7 +469,7 @@ setMethod("[<-",
                      else
                         {
                         x@computedVars[coln-nn]        = "" 
-                        x@computedVarsProgram[coln-nn] = "" 
+                        #x@computedVarsProgram[coln-nn] = "" 
                         dcv = TRUE
                         }
                      }
@@ -483,7 +483,7 @@ setMethod("[<-",
                            stop("Column name not in existing columns\n")
 
                         x@computedVars[idx]        = "" 
-                        x@computedVarsProgram[idx] = "" 
+                        #x@computedVarsProgram[idx] = "" 
                         dcv = TRUE
                         }
                      else
@@ -501,12 +501,12 @@ setMethod("[<-",
                if(dcv)
                   {
                   x@computedVars        = x@computedVars[x@computedVars != ""]
-                  x@computedVarsProgram = x@computedVarsProgram[x@computedVarsProgram != ""]
+                  #x@computedVarsProgram = x@computedVarsProgram[x@computedVarsProgram != ""]
                   }
                if (length(x@computedVars[x@computedVars != '']) == 0)
                   {
                   x@computedVars        = ""
-                  x@computedVarsProgram = ""
+                  #x@computedVarsProgram = ""
                   }
                }
             else   # add computed column(s) case
@@ -532,6 +532,9 @@ setMethod("[<-",
                            replace = TRUE
                            idx     = coln - length(x@names[x@names != ''])
                            colname = x@computedVars[idx]
+
+                           x@computedVars[idx] = ''
+                           x@computedVars      = x@computedVars[x@computedVars !=''] 
                            }
                         else                                                     # Create new computed column
                            {
@@ -548,6 +551,9 @@ setMethod("[<-",
                         if (!(is.na(idx)))     # replace column
                            replace = TRUE
                         colname = coln
+
+                        x@computedVars[idx] = ''
+                        x@computedVars      = x@computedVars[x@computedVars !=''] 
                         }
                      else                      # Can't replace permanent column
                         {
@@ -558,8 +564,8 @@ setMethod("[<-",
                   # figure out what the program for this col is
                   if (class(value) == "CASTable")
                      {
-                     if (value@compcomp)
-                        stop("Cannot define a Computed Column referencing another Computed Column.")
+                     #if (value@compcomp)
+                     #   stop("Cannot define a Computed Column referencing another Computed Column.")
  
                      if (sum(nchar(value@XcomputedVarsProgram))) #expresion, else col name
                         pgm = paste(colname, ' = ', value@XcomputedVarsProgram, sep='')
@@ -583,8 +589,8 @@ setMethod("[<-",
                            pgm = paste(colname, ' = ',  as.character(value), sep='')
                      }
 
-                  if (! replace)
-                     {
+                  #if (! replace)
+                  #   {
                      if (sum(nchar(x@computedVars)))
                         x@computedVars      = c(x@computedVars, colname)
                      else
@@ -594,12 +600,12 @@ setMethod("[<-",
                         x@computedVarsProgram = c(x@computedVarsProgram, pgm)
                      else
                         x@computedVarsProgram = c(pgm)
-                     }
-                  else
-                     {
-                     x@computedVarsProgram[idx] = pgm
-                     replace = FALSE
-                     }
+                  #   }
+                  #else
+                  #   {
+                  #   x@computedVarsProgram[idx] = pgm
+                  #   replace = FALSE
+                  #   }
                   }
                }
 
@@ -678,7 +684,7 @@ setMethod("[[",
                }
         
             rct = new("CASTable", x@conn, x@tname, x@caslib, vars, x@where, x@orderby, 
-                          x@groupby, x@gbmode, FALSE, compvars, compvpgm)
+                          x@groupby, x@gbmode, FALSE, compvars, x@computedVarsProgram)
             rct@XcomputedVars = x@XcomputedVars 
             return(rct)
           })
@@ -699,7 +705,7 @@ setMethod("$",
                   }
                else
                   new("CASTable", x@conn, x@tname, x@caslib, "", x@where, x@orderby, 
-                      x@groupby, x@gbmode, FALSE, name, x@computedVarsProgram[idx])
+                      x@groupby, x@gbmode, FALSE, name, x@computedVarsProgram)
                }
             else
                new("CASTable", x@conn, x@tname, x@caslib, name, x@where, x@orderby, 
@@ -723,7 +729,7 @@ setMethod("$<-",
                      stop("Column name not in existing columns\n")
 
                   x@computedVars[idx]        = ""
-                  x@computedVarsProgram[idx] = ""
+                  #x@computedVarsProgram[idx] = ""
                   dcv = TRUE
                   }
                else
@@ -738,12 +744,12 @@ setMethod("$<-",
                if (dcv)
                   {
                   x@computedVars        = x@computedVars[x@computedVars != ""]
-                  x@computedVarsProgram = x@computedVarsProgram[x@computedVarsProgram != ""]
+                  #x@computedVarsProgram = x@computedVarsProgram[x@computedVarsProgram != ""]
                   }
                if (length(x@computedVars[x@computedVars != '']) == 0)
                   {
                   x@computedVars        = ""
-                  x@computedVarsProgram = ""
+                  #x@computedVarsProgram = ""
                   }
                }
             else   # add computed column(s) case
@@ -754,7 +760,12 @@ setMethod("$<-",
 
                idx = match(name, x@computedVars)
                if (! is.na(idx))     # Replace Compvar
+                  {
                   replace = TRUE
+
+                  x@computedVars[idx] = ''
+                  x@computedVars      = x@computedVars[x@computedVars !=''] 
+                  }
                else                  # New Compvar
                   replace = FALSE
 
@@ -762,8 +773,8 @@ setMethod("$<-",
                # figure out what the program for this col is
                if (class(value) == "CASTable")
                   {
-                  if (value@compcomp)
-                     stop("Cannot define a Computed Column referencing another Computed Column.")
+                  #if (value@compcomp)
+                  #   stop("Cannot define a Computed Column referencing another Computed Column.")
  
                   if (sum(nchar(value@XcomputedVarsProgram))) #expresion, else col name
                      pgm = paste(name, ' = ', value@XcomputedVarsProgram, sep='')
@@ -786,8 +797,8 @@ setMethod("$<-",
                         pgm = paste(name, ' = ',  as.character(value), sep='')
                   }
 
-               if (! replace)
-                  {
+               #if (! replace)
+               #   {
                   if (sum(nchar(x@computedVars)))
                      x@computedVars      = c(x@computedVars, name)
                   else
@@ -797,11 +808,11 @@ setMethod("$<-",
                      x@computedVarsProgram = c(x@computedVarsProgram, pgm)
                   else
                      x@computedVarsProgram = c(pgm)
-                  }
-               else
-                  {
-                  x@computedVarsProgram[idx] = pgm
-                  }
+               #   }
+               #else
+               #   {
+               #   x@computedVarsProgram[idx] = pgm
+               #   }
                }
           return (x)
           })
