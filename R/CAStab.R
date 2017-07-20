@@ -533,8 +533,8 @@ setMethod("[<-",
                            idx     = coln - length(x@names[x@names != ''])
                            colname = x@computedVars[idx]
 
-                           x@computedVars[idx] = ''
-                           x@computedVars      = x@computedVars[x@computedVars !=''] 
+                           #x@computedVars[idx] = ''
+                           #x@computedVars      = x@computedVars[x@computedVars !=''] 
                            }
                         else                                                     # Create new computed column
                            {
@@ -552,8 +552,8 @@ setMethod("[<-",
                            replace = TRUE
                         colname = coln
 
-                        x@computedVars[idx] = ''
-                        x@computedVars      = x@computedVars[x@computedVars !=''] 
+                        #x@computedVars[idx] = ''
+                        #x@computedVars      = x@computedVars[x@computedVars !=''] 
                         }
                      else                      # Can't replace permanent column
                         {
@@ -589,17 +589,17 @@ setMethod("[<-",
                            pgm = paste(colname, ' = ',  as.character(value), sep='')
                      }
 
-                  #if (! replace)
-                  #   {
+                  if (! replace)
+                     {
                      if (sum(nchar(x@computedVars)))
                         x@computedVars      = c(x@computedVars, colname)
                      else
                         x@computedVars      = colname
-
-                     if (sum(nchar(x@computedVarsProgram)))
-                        x@computedVarsProgram = c(x@computedVarsProgram, pgm)
-                     else
-                        x@computedVarsProgram = c(pgm)
+                     }
+                  if (sum(nchar(x@computedVarsProgram)))
+                     x@computedVarsProgram = c(x@computedVarsProgram, pgm)
+                  else
+                     x@computedVarsProgram = c(pgm)
                   #   }
                   #else
                   #   {
@@ -762,9 +762,6 @@ setMethod("$<-",
                if (! is.na(idx))     # Replace Compvar
                   {
                   replace = TRUE
-
-                  x@computedVars[idx] = ''
-                  x@computedVars      = x@computedVars[x@computedVars !=''] 
                   }
                else                  # New Compvar
                   replace = FALSE
@@ -797,17 +794,17 @@ setMethod("$<-",
                         pgm = paste(name, ' = ',  as.character(value), sep='')
                   }
 
-               #if (! replace)
-               #   {
+               if (! replace)
+                  {
                   if (sum(nchar(x@computedVars)))
                      x@computedVars      = c(x@computedVars, name)
                   else
                      x@computedVars      = name
-
-                  if (sum(nchar(x@computedVarsProgram)))
-                     x@computedVarsProgram = c(x@computedVarsProgram, pgm)
-                  else
-                     x@computedVarsProgram = c(pgm)
+                  }
+               if (sum(nchar(x@computedVarsProgram)))
+                  x@computedVarsProgram = c(x@computedVarsProgram, pgm)
+               else
+                  x@computedVarsProgram = c(pgm)
                #   }
                #else
                #   {
