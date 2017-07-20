@@ -421,10 +421,15 @@ setMethod("[",
                   }
                }
 
-            x = new("CASTable", x@conn, x@tname, x@caslib, vars, where, x@orderby, 
-                       x@groupby, x@gbmode, FALSE, compvars, x@computedVarsProgram)
-            x@XcomputedVars = xcompvars 
-            return(x)
+            if (sum(nchar(compvars)))
+               compvpgm = x@computedVarsProgram
+            else
+               compvpgm = ""
+
+            ret = new("CASTable", x@conn, x@tname, x@caslib, vars, where, x@orderby, 
+                       x@groupby, x@gbmode, FALSE, compvars, compvpgm)
+            ret@XcomputedVars = xcompvars 
+            return(ret)
        })
 
 #' @rdname CASTable-Extract
@@ -683,8 +688,13 @@ setMethod("[[",
                   }
                }
         
+            if (sum(nchar(compvars)))
+               compvpgm = x@computedVarsProgram
+            else
+               compvpgm = ""
+
             rct = new("CASTable", x@conn, x@tname, x@caslib, vars, x@where, x@orderby, 
-                          x@groupby, x@gbmode, FALSE, compvars, x@computedVarsProgram)
+                       x@groupby, x@gbmode, FALSE, compvars, compvpgm)
             rct@XcomputedVars = x@XcomputedVars 
             return(rct)
           })
