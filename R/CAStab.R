@@ -421,7 +421,7 @@ setMethod("[",
                   }
                }
 
-            if (sum(nchar(compvars)))
+            if (sum(nchar(compvars)) || where != '')
                compvpgm = x@computedVarsProgram
             else
                compvpgm = ""
