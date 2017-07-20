@@ -203,8 +203,6 @@ setMethod("cor",
                  {
                  cpgm = c(x@computedVarsProgram, y@computedVarsProgram)
                  cpgm = cpgm[cpgm != ""]
-                 if (length(cpgm) > 1)
-                    cpgm = paste(cpgm, collapse=';')
                  }
               v2 <- x
               v2@names               = vars
