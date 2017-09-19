@@ -1494,13 +1494,13 @@ cas2r <- function(sw_value) {
             }
             else if (t == 'int64')
             {
-               column <- list()
+               column <- c()
                for (row in 0:(nRows-1)) {
                   out <- sw_table$getInt64ValueAsString(row, col)
                   swat::errorcheck(sw_table)
                   if ( identical(out, numeric(0)) )
                       out <- 0
-                  column[[length(column) + 1]] <- swat.as.integer64(setMissing(out, int64_missval))
+                  column <- c(column, swat.as.integer64(setMissing(out, int64_missval)))
                }
                table <- add_column(table, name, column)
             }
@@ -1508,13 +1508,13 @@ cas2r <- function(sw_value) {
             {
                for (elem in 0:(len-1))
                {
-                  column <- list()
+                  column <- c()
                   for (row in 0:(nRows-1)) {
                      out <- sw_table$getInt64ArrayValueAsString(row, col, elem)
                      swat::errorcheck(sw_table)
                      if ( identical(out, numeric(0)) )
                          out <- 0
-                     column[[length(column) + 1]] <- swat.as.integer64(setMissing(out, int64_missval))
+                     column <- c(column, swat.as.integer64(setMissing(out, int64_missval)))
                   }
                   table <- add_column(table, paste(name, elem+1, sep=''), column)
                }
