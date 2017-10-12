@@ -118,10 +118,13 @@
       tryCatch(
          {
             library.dynam('rswat', pkg, lib)
-            if ( Sys.getenv('TKPATH') == '' && 
-                 (file.exists(file.path(lib, pkg, 'libs', 'tkmk.so')) ||
-                  file.exists(file.path(lib, pkg, 'libs', 'tkmk.dll'))) ) {
-               InitializeTK(file.path(lib, pkg, 'libs:'))
+            if ( Sys.getenv('TKPATH') == '' ) {
+               if ( file.exists(file.path(lib, pkg, 'libs', 'tkmk.so')) ) {
+                  InitializeTK(file.path(lib, pkg, 'libs:'))
+               }
+               else if ( file.exists(file.path(lib, pkg, 'libs', 'tkmk.dll')) ) {
+                  InitializeTK(file.path(lib, pkg, 'libs;'))
+               }
             }
          }
          , error=function(e) {
