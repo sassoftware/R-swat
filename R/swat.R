@@ -122,8 +122,8 @@
                if ( file.exists(file.path(lib, pkg, 'libs', 'tkmk.so')) ) {
                   InitializeTK(file.path(lib, pkg, 'libs:'))
                }
-               else if ( file.exists(file.path(lib, pkg, 'libs', 'tkmk.dll')) ) {
-                  InitializeTK(file.path(lib, pkg, 'libs;'))
+               else if ( file.exists(file.path(lib, pkg, 'libs', 'x64', 'tkmk.dll')) ) {
+                  InitializeTK(file.path(lib, pkg, 'libs', 'x64;'))
                }
             }
          }
