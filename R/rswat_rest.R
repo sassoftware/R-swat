@@ -771,7 +771,13 @@ REST_CASConnection <- setRefClass(
         soptions_ = 'character',
         baseurl_ = 'character',
         auth_ = 'ANY',
-        session_ = 'character'
+        session_ = 'character',
+        orig_hostname_ = 'character',
+        orig_port_ = 'numeric',
+        current_baseurl_ = 'character',
+        current_hostname_ = 'character',
+        current_port_ = 'numeric',
+        host_index_ = 'numeric'
     ),
 
     methods = list(
@@ -782,43 +788,48 @@ REST_CASConnection <- setRefClass(
             results_ <<- NULL
             locale <- NULL
             session <- NULL
+            orig_hostname_ <<- hostname
+            orig_port_ <<- port
 
             if ( is.null(password) )
             {
                 password <- ''
             }
 
-            if ( grepl('^https?:', hostname, perl=TRUE) )
+            if ( grepl('^https?:', hostname[[1]], perl=TRUE) )
             {
-                baseurl_ <<- hostname
-                url <- httr::parse_url(hostname)
-                hostname_ <<- url$hostname
-                hostname <- url$hostname
-                if ( is.null(url$port) ) {
-                    if ( !is.null(port) ) {
-                       port_ <<- port
+                url <- httr::parse_url(hostname[[1]])
+                baseurl_ <<- character()
+                hostname_ <<- character()
+                port_ <<- numeric()
+                for ( i in 1:length(hostname) )
+                {
+                    url <- httr::parse_url(hostname[[i]])
+                    hostname_ <<- c(.self$hostname_, url$hostname)
+                    if ( is.null(url$port) )
+                    {
+                        if ( !is.null(port) )
+                            port_ <<- c(.self$port_, port)
+                        else
+                            port_ <<- c(.self$port_, 0)
                     } else {
-                       port_ <<- 0
+                        port_ <<- as.integer(url$port)
                     }
-                    port <- NULL
-                } else {
-                    port_ <<- as.integer(url$port)
-                    port <- as.integer(url$port)
+                    url$port <- .self$port_
+                    baseurl_ <<- c(baseurl_, sub('/$', '', httr::build_url(url), perl=TRUE))
                 }
-                url$port <- port_
-                baseurl_ <<- sub('/$', '', httr::build_url(url), perl=TRUE)
             }
             else if ( grepl('protocol=https', soptions) )
             {
                 baseurl_ <<- paste('https://', hostname, ':', port, sep='')
                 hostname_ <<- hostname
-                port_ <<- port
+                port_ <<- rep(port, length(hostname))
             }
             else
             {
                 baseurl_ <<- paste('http://', hostname, ':', port, sep='')
                 hostname_ <<- hostname
-                port_ <<- port
+                port_ <<- rep(port, length(hostname))
             }
 
             if ( grepl('\\blocale=\\w+', soptions, perl=TRUE) )
@@ -833,17 +844,20 @@ REST_CASConnection <- setRefClass(
                session <- gsub('^session=', '', regmatches(soptions_, m)[[1]], perl=TRUE)[[1]]
             }
 
+            host_index_ <<- 0
+            .self$set_next_connection_()
+
             authinfo <- NULL
             if ( grepl('^authinfo={', password, perl=TRUE) )
             {
                 authinfo <- substr(password, 11, nchar(password) - 1)
                 authinfo <- strsplit(authinfo, '\\}\\{', perl=TRUE)[[1]]
-                authinfo <- query_authinfo(host=hostname, user=username,
-                                           protocol=port, filepath=authinfo)
+                authinfo <- query_authinfo(host=current_hostname_, user=username,
+                                           protocol=current_port_, filepath=authinfo)
             }
             else if ( password == '' )
             {
-                authinfo <- query_authinfo(hostname, username=username, protocol=port)
+                authinfo <- query_authinfo(current_hostname_, username=username, protocol=current_port_)
             }
 
             if ( is.null(authinfo) )
@@ -874,56 +888,117 @@ REST_CASConnection <- setRefClass(
                 }
             }
 
-            if ( is.null(session) )
+            while ( TRUE ) 
             {
-               url <- paste(baseurl_, 'cas', 'sessions', sep='/')
-               res <- httr::PUT(url, auth_)
-               out <- httr::content(res, as='parsed')
-
-               if ( is.null(out$session) )
-                   stop(paste(url, ':', out$error))
-
-               session_ <<- out$session
-
-               if ( !is.null(locale) )
-               {
-                  .self$invoke('session.setlocale', list(locale=locale))
-                  if ( 'disposition' %in% names(results_) ) {
-                     if ( 'severity' %in% names(results_[['disposition']]) &&
-                          results_[['disposition']][['severity']] == 'Error' ) {
-                        stop(results_[['disposition']][['formattedStatus']])
+               tryCatch({
+                  if ( is.null(session) )
+                  {
+                     url <- paste(current_baseurl_, 'cas', 'sessions', sep='/')
+                     res <- httr::PUT(url, auth_)
+                     out <- httr::content(res, as='parsed')
+   
+                     if ( is.null(out$session) )
+                        stop(paste(url, ':', out$error))
+   
+                     session_ <<- out$session
+   
+                     if ( !is.null(locale) )
+                     {
+                        .self$invoke('session.setlocale', list(locale=locale))
+                        if ( 'disposition' %in% names(results_) ) {
+                           if ( 'severity' %in% names(results_[['disposition']]) &&
+                                results_[['disposition']][['severity']] == 'Error' ) {
+                              stop(results_[['disposition']][['formattedStatus']])
+                           }
+                        } else {
+                            stop('Unknown error when setting locale')
+                        }
+   
+                        results_ <<- NULL
                      }
-                  } else {
-                      stop('Unknown error when setting locale')
+
+                     break
                   }
+                  else
+                  {
+                     url <- paste(current_baseurl_, 'cas', 'sessions', session, sep='/')
+                     res <- httr::GET(url, auth_)
+                     out <- httr::content(res, as='parsed')
+   
+                     if ( is.null(out$uuid) )
+                        stop(paste(url, ':', out$error))
 
-                  results_ <<- NULL
-               }
-            }
-            else
-            {
-               url <- paste(baseurl_, 'cas', 'sessions', session, sep='/')
-               res <- httr::GET(url, auth_)
-               out <- httr::content(res, as='parsed')
+                     session_ <<- session
 
-               if ( is.null(out$uuid) )
-                   stop(paste(url, ':', out$error))
-
-               session_ <<- session
+                     break
+                  }
+               }, error=function (e) {
+                   .self$set_next_connection_()
+               })
             }
         },
 
+        set_next_connection_ = function() {
+            host_index_ <<- host_index_ + 1
+            tryCatch({
+                current_hostname_ <<- hostname_[[host_index_]]
+                current_baseurl_ <<- baseurl_[[host_index_]]
+                current_port_ <<- port_[[host_index_]]
+            }, error=function (e) {
+                current_hostname_ <<- ''
+                current_baseurl_ <<- ''
+                current_port_ <<- -1
+                stop('Unable to connect to any specified URL')
+            })
+        },
+
         invoke = function( action_name, params ) {
-            .trace_actions( action_name, params)
-            results_ <<- httr::content(httr::POST(paste(baseurl_, 'cas',
-                                                        'sessions', session_, 'actions',
-                                                  action_name, sep='/'), auth_,
-                                                  httr::accept_json(), 
-                                                  httr::content_type_json(),
-                                                  body=jsonlite::toJSON(params, auto_unbox=TRUE)
-                                                  #, verbose()
-                                                  ),
-                                 as='parsed')
+            body <- jsonlite::toJSON(params, auto_unbox=TRUE)
+            while ( TRUE ) 
+            {
+                out <- tryCatch({
+                    .trace_actions( action_name, params)
+                    results_ <<- httr::content(httr::POST(paste(current_baseurl_, 'cas',
+                                                                'sessions', session_, 'actions',
+                                                          action_name, sep='/'), auth_,
+                                                          httr::accept_json(), 
+                                                          httr::content_type_json(),
+                                                          body=body
+                                                          #, verbose()
+                                                          ),
+                                         as='parsed')
+                    break
+                }, error=function (e) {
+                    .self$set_next_connection_()
+
+                    # Get ID of results
+                    action_name <- 'session.listresults'
+                    body <- ''
+
+                    res <- httr::content(httr::POST(paste(current_baseurl_, 'cas',
+                                                          'sessions', session_, 'actions',
+                                                    action_name, sep='/'), auth_,
+                                                    httr::accept_json(),
+                                                    httr::content_type_json(),
+                                                    body=body
+                                                    #, verbose()
+                                                    ),
+                                   as='parsed')
+
+                    result_id <- res$result$`Queued Results`$rows[[1]][[1]]
+
+                    # Setup retrieval of results from ID
+                    return( list(action_name='session.fetchresult',
+                                 body=paste('{"id":', result_id, '}', sep='')) )
+                })
+
+                if ( !is.null(out) )
+                {
+                    action_name <- out$action_name
+                    body <- out$body
+                }
+            }
+
             if ( !('disposition' %in% names(results_)) ) {
                 if ( 'error' %in% names(results_) ) {
                     stop(results_$error)
@@ -968,13 +1043,13 @@ REST_CASConnection <- setRefClass(
         },
 
         copy = function() {
-            return( REST_CASConnection(hostname_, port_, username_,
+            return( REST_CASConnection(orig_hostname_, orig_port_, username_,
                                        rawToChar(jsonlite::base64_dec(password_)),
                                        soptions_, error_) )
         },
 
         getHostname = function() {
-            return( hostname_ )
+            return( current_hostname_ )
         },
 
         getUsername = function() {
@@ -982,7 +1057,7 @@ REST_CASConnection <- setRefClass(
         },
 
         getPort = function() {
-            return( port_ )
+            return( current_port_ )
         },
 
         getSession = function() {
@@ -990,13 +1065,13 @@ REST_CASConnection <- setRefClass(
         },
 
         close = function() {
-            httr::DELETE(paste(baseurl_, 'cas', 'sessions', session_, sep='/'))
+            httr::DELETE(paste(current_baseurl_, 'cas', 'sessions', session_, sep='/'))
             session_ <<- ''
             return( 0 )
         },
 
         upload = function( file_name, params ) {
-            results_ <<- httr::content(httr::PUT(paste(baseurl_, 'cas', 'sessions',
+            results_ <<- httr::content(httr::PUT(paste(current_baseurl_, 'cas', 'sessions',
                                                        session_, 'actions',
                                                        'table.upload', sep='/'), auth_,
                                                  httr::accept_json(),

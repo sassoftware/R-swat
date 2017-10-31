@@ -642,47 +642,43 @@ CAS <- setRefClass(
             prototype <- options$prototype
          }
 
-         # Handle URL connection specifications
-         if ( grepl('^\\w+?\\:', .self$hostname, perl=TRUE) )
+         if ( is.null(.self$protocol) )
+             protocol <<- 'auto'
+
+         if ( .self$protocol == 'auto' )
          {
-            url <- httr::parse_url(.self$hostname)
-
-            protocol <<- url$scheme
-
-            # Attempt to auto-detect protocol
-            if ( protocol == 'auto' )
+            for ( i in 1:length(.self$hostname) )
             {
+               url <- httr::parse_url(.self$hostname[[i]])
+               if ( is.null(url$hostname) )
+                   url$hostname <- .self$hostname[[i]]
+               if ( is.null(url$port) )
+                   url$port <- port
+               if ( is.null(url$scheme) )
+                   url$scheme <- 'auto'
+
+               if ( url$scheme != 'auto' )
+               {
+                   protocol <<- url$scheme
+                   break
+               }
+
                tryCatch({
-                  if ( is.null(url$port) ) { url$port <- port }
-                  httr::GET(paste('http://', url$hostname, ':', url$port, '/', sep=''))
-                  protocol <<- 'http'
-                  hostname <<- gsub('^auto', 'http', .self$hostname, perl=TRUE)
-               }, error=function (e) {
-                  protocol <<- 'cas'
-               })
+                    httr::GET(paste('http://', url$hostname, ':', url$port, '/cas', sep=''))
+                    protocol <<- 'http'
+                    hostname <<- gsub('^auto', 'http', .self$hostname, perl=TRUE)
+                    port <<- as.integer(url$port)
+               }, error=function (e) { })
+
+               if ( .self$protocol == 'http' )
+                  break
             }
 
-            # Let REST class parse this out itself
-            if ( protocol == 'cas' )
-            {
-               hostname <<- url$hostname
-               if ( !is.null(url$port) )
-                  port <<- as.integer(url$port)
-            }
-         }
-
-         # Attempt to auto-detect protocol
-         if ( protocol == 'auto' || is.null(protocol) ) 
-         {
-            tryCatch({
-               httr::GET(paste('http://', .self$hostname, ':', .self$port, '/', sep=''))
-               protocol <<- 'http'
-            }, error=function (e) {
+            if ( .self$protocol == 'auto' )
                protocol <<- 'cas'
-            })
          }
 
-         if ( protocol == 'http' || protocol == 'https' )
+         if ( .self$protocol == 'http' || .self$protocol == 'https' )
          {
             sw_error <<- REST_CASError(soptions)
             CASConnection <- REST_CASConnection
@@ -697,14 +693,20 @@ CAS <- setRefClass(
                           'on a platform\n that only supports the CAS REST interface.'))
             })
             CASConnection <- SW_CASConnection
+            for ( i in 1:length(.self$hostname) )
+            {
+               url <- httr::parse_url(.self$hostname[[i]])
+               if ( is.null(url$hostname) )
+                   url$hostname <- .self$hostname[[i]]
+               if ( is.null(url$port) )
+                   url$port <- port
+               hostname[[i]] <<- url$hostname
+               port <<- as.integer(url$port)
+            }
          }
 
          if ( is.null(prototype) )
          {
-            if (class(.self$hostname) == "list") {
-               hostname <<- paste(.self$hostname, collapse=' ')
-            }
-
             conn <- CASConnection(.self$hostname, .self$port, username, password, soptions, sw_error)
             swat::errorcheck(sw_error)
             sw_connection <<- conn

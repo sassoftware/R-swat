@@ -181,7 +181,7 @@ test_that("test.test_summary", {
                    caslib = "castesttmp")
   out = caz$retrieve("summary", table = list(name = "datasources.cars_single"))
   summ = out$results$Summary
-  expect_true(dim(summ)[[2]] == 15)
+  expect_true(dim(summ)[[2]] >= 15)
   n <- names(summ)
   expect_true(n[[1]] == "Column")
   expect_true(n[[2]] == "Min")
