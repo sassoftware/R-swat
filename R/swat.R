@@ -930,7 +930,7 @@ CAS <- setRefClass(
             tmp <- tempfile()
             filename <- tmp
             name <- basename(tmp)
-            write.csv(data, file=tmp, row.names=FALSE, na='')
+            write.csv(data, file=tmp, row.names=FALSE, na='', fileEncoding='UTF-8')
          }
 
          if ( is.null(args) ) args = list()
