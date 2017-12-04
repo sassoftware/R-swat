@@ -31,7 +31,7 @@ if ( !is.null(PORT) ) { PORT <- as.numeric(PORT) }
 
 USERNAME <- Sys.getenv('CASUSER', '')
 PASSWORD <- Sys.getenv('CASPASSWORD', '')
-PROTOCOL <- Sys.getenv('CASPROTOCOL', 'cas')
+PROTOCOL <- Sys.getenv('CASPROTOCOL', 'auto')
 
 # Check for .casrc file
 if ( is.null(HOSTNAME) ) 

@@ -646,6 +646,20 @@ REST_CASResponse <- setRefClass(
             return( disposition_$debug )
         },
 
+        getPerformanceNExtended = function() {
+            if ( 'extend' %in% names(metrics_) ) {
+               return( length(metrics_$extend) )
+            }
+            return( 0 )
+        },
+
+        getPerformanceExtended = function() {
+           if ( 'extend' %in% names(metrics_) ) {
+              return( metrics_$extend )
+           }
+           return( list() )
+        },
+
         getElapsedTime = function() {
             return( metrics_$elapsed_time )
         },
@@ -777,7 +791,8 @@ REST_CASConnection <- setRefClass(
         current_baseurl_ = 'character',
         current_hostname_ = 'character',
         current_port_ = 'numeric',
-        host_index_ = 'numeric'
+        host_index_ = 'numeric',
+        config_ = 'ANY'
     ),
 
     methods = list(
@@ -790,6 +805,18 @@ REST_CASConnection <- setRefClass(
             session <- NULL
             orig_hostname_ <<- hostname
             orig_port_ <<- port
+
+            if ( !is.na(Sys.getenv('SSLCALISTLOC', unset=NA)) )
+            {
+                config_ <<- httr::config(cainfo=Sys.getenv('SSLCALISTLOC'))
+            }
+            else if ( !is.na(Sys.getenv('CAS_CLIENT_SSL_CA_LIST', unset=NA)) )
+            {
+                config_ <<- httr::config(cainfo=Sys.getenv('CAS_CLIENT_SSL_CA_LIST'))
+            }
+            else {
+                config_ <<- httr::config()
+            }
 
             if ( is.null(password) )
             {
@@ -894,7 +921,7 @@ REST_CASConnection <- setRefClass(
                   if ( is.null(session) )
                   {
                      url <- paste(current_baseurl_, 'cas', 'sessions', sep='/')
-                     res <- httr::PUT(url, auth_)
+                     res <- httr::PUT(url, auth_, config_)
                      out <- httr::content(res, as='parsed')
    
                      if ( is.null(out$session) )
@@ -922,7 +949,7 @@ REST_CASConnection <- setRefClass(
                   else
                   {
                      url <- paste(current_baseurl_, 'cas', 'sessions', session, sep='/')
-                     res <- httr::GET(url, auth_)
+                     res <- httr::GET(url, auth_, config_)
                      out <- httr::content(res, as='parsed')
    
                      if ( is.null(out$uuid) )
@@ -963,6 +990,7 @@ REST_CASConnection <- setRefClass(
                                                           action_name, sep='/'), auth_,
                                                           httr::accept_json(), 
                                                           httr::content_type_json(),
+                                                          config_,
                                                           body=body
                                                           #, verbose()
                                                           ),
@@ -980,6 +1008,7 @@ REST_CASConnection <- setRefClass(
                                                     action_name, sep='/'), auth_,
                                                     httr::accept_json(),
                                                     httr::content_type_json(),
+                                                    config_,
                                                     body=body
                                                     #, verbose()
                                                     ),
@@ -1065,7 +1094,8 @@ REST_CASConnection <- setRefClass(
         },
 
         close = function() {
-            httr::DELETE(paste(current_baseurl_, 'cas', 'sessions', session_, sep='/'))
+            httr::DELETE(paste(current_baseurl_, 'cas', 'sessions', session_, sep='/'),
+                         auth_, config_)
             session_ <<- ''
             return( 0 )
         },
@@ -1077,6 +1107,7 @@ REST_CASConnection <- setRefClass(
                                                  httr::accept_json(),
                                                  httr::add_headers('JSON-Parameters'=jsonlite::toJSON(params, auto_unbox=TRUE),
                                                                    'Content-Type'='application/octet-stream'),
+                                                 config_,
                                                  body=httr::upload_file(file_name)
                                                  #, verbose()
                                                  ),
