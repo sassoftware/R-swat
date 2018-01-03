@@ -288,8 +288,20 @@ setMethod("[",
 
                #No columns passed
                if (missing(j))
-                 return(new("CASTable", x@conn, x@tname, x@caslib, x@names, where, x@orderby, 
-                            x@groupby, x@gbmode, FALSE, x@computedVars, x@computedVarsProgram))
+                  {
+                  if (x@where != '')
+                     {
+                     if (where != '')
+                        {
+                        where = paste('(', x@where, ' AND ', where, ')', sep='')
+                        }
+                     else
+                        where = x@where
+                     }
+                  
+                  return(new("CASTable", x@conn, x@tname, x@caslib, x@names, where, x@orderby, 
+                             x@groupby, x@gbmode, FALSE, x@computedVars, x@computedVarsProgram))
+                  }
                else
                   ci = j
                }
@@ -426,6 +438,16 @@ setMethod("[",
             else
                compvpgm = ""
 
+            if (x@where != '')
+               {
+               if (where != '')
+                  {
+                  where = paste('(', x@where, ' AND ', where, ')', sep='')
+                  }
+               else
+                  where = x@where
+               }
+                  
             ret = new("CASTable", x@conn, x@tname, x@caslib, vars, where, x@orderby, 
                        x@groupby, x@gbmode, FALSE, compvars, compvpgm)
             ret@XcomputedVars = xcompvars 
