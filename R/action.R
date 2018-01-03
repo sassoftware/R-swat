@@ -99,7 +99,6 @@
 #}
 #
 runAction <-  function(CASorCASTab='',actn, ...) {
-
    if (class(CASorCASTab) == 'CASTable')
       {
       tp  = swat::gen.table.parm(CASorCASTab)
@@ -111,8 +110,19 @@ runAction <-  function(CASorCASTab='',actn, ...) {
    else
       {
       cas = CASorCASTab
-      pms = list('caz'=cas, 'actn'=actn, ...)
-      res <- do.call('casRetrieve', pms)
+      if (actn == 'builtins.loadActionSet')
+         {
+         stopifnot(class(cas) == 'CAS') 
+         actionSet=list(...)[[1]]
+         res <- casRetrieve(cas, 'builtins.loadActionSet', actionSet=actionSet)
+         gen.functions(cas, actionSet)
+         swat::check_for_cas_errors(res)
+         }
+      else
+         {
+         pms = list('caz'=cas, 'actn'=actn, ...)
+         res <- do.call('casRetrieve', pms)
+         }
       }
 
   as.list(res$results)
@@ -167,7 +177,7 @@ loadActionSet <- function(conn, actionSet=""){
 #'
 listActionSets <- function(conn){
   stopifnot(class(conn) == 'CAS')
-  res <- casRetrieve(conn, 'builtins.actionSetInfo', all='TRUE')
+  res <- casRetrieve(conn, 'builtins.actionSetInfo', all='FALSE')
   swat::check_for_cas_errors(res)
   as.list(res$results$setinfo)
 }

@@ -50,9 +50,9 @@ setMethod("head",
                   if (! (Xcmp %in% x@computedVars))
                      fv = fv[fv != Xcmp]
 
-            if (x@orderby != "")
+            if (length(x@orderby))
                {
-               tp$orderby = ""
+               tp$orderby = NULL
                tp = tp[tp !=""]
                res <- casRetrieve(x@conn, 'table.fetch', table=tp, fetchVars=fv, index = FALSE, to=n, from=1, sortby=x@orderby)
                }
@@ -98,9 +98,9 @@ setMethod("tail",
                   if (! (Xcmp %in% x@computedVars))
                      fv = fv[fv != Xcmp]
 
-            if (x@orderby != "")
+            if (length(x@orderby))
                {
-               tp$orderby = ""
+               tp$orderby = NULL
                tp = tp[tp !=""]
                res <- casRetrieve(x@conn, 'table.fetch', table=tp, fetchVars=fv, index = FALSE, to=r, from=r-n+1, sortby=x@orderby)
                }

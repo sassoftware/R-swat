@@ -54,8 +54,8 @@ setClass("CASTable",
                       tname               = "character",
                       caslib              = "character",
                       where               = "character",
-                      orderby             = "character",
-                      groupby             = "character",
+                      orderby             = "ANY",
+                      groupby             = "ANY",
                       gbmode              = "character",
                       computedOnDemand    = "logical",
                       computedVars        = "character",
@@ -68,7 +68,7 @@ setClass("CASTable",
 #' @export
 #' @rawRd % Copyright SAS Institute
 setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib, columns,
-                                             where='', orderby='', groupby='', gbmode='',
+                                             where='', orderby=list(), groupby=list(), gbmode='',
                                              computedOnDemand=FALSE, computedVars='',
                                                                      computedVarsProgram='') {
   .Object@conn                 <- conn
@@ -234,10 +234,10 @@ as.casTable <- function(conn, df, casOut = '')  {
 #'
 #' # Create another CASTable instance to the same in-memory table,
 #' # but specify that CAS actions are performed by groups of species.
-#' irisct.grouped <- defCasTable(s, tablename="irisct", groupby="species")
+#' irisct.grouped <- defCasTable(s, tablename="irisct", groupby=list("species"))
 #' }
 defCasTable <- function(conn, tablename, caslib = '', columns = '',where = '',
-                        orderby = '', groupby = '', gbmode = '') {
+                        orderby = list(), groupby = list(), gbmode = '') {
   if (class(conn) != 'CAS') {
     stop("The first parameter must be a CAS object")
   }
@@ -895,9 +895,9 @@ setMethod("nrow",
           signature(x = "CASTable"),
           function(x) {
             tp = gen.table.parm(x)
-            if (x@orderby != "")
+            if (length(x@orderby))
                {
-               tp$orderby = ""
+               tp$orderby = NULL
                tp = tp[tp !=""]
                }
             res <- casRetrieve(x@conn, 'simple.numRows', table=tp)
@@ -1019,9 +1019,9 @@ setMethod("rownames",
           signature(x = "CASTable"),
           function(x) {
             tp = gen.table.parm(x)
-            if (x@orderby != "")
+            if (length(x@orderby))
                {
-               tp$orderby = ""
+               tp$orderby = NULL
                tp = tp[tp !=""]
                }
             res <- casRetrieve(x@conn, 'simple.numRows', table=tp)

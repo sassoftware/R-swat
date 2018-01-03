@@ -61,7 +61,7 @@ setMethod("plot",
       }
       else{
         # sample rows
-        if (nchar(x@groupby)==0){ # SRS
+        if (length(x@groupby)){ # SRS
           name <- paste(x@tname, random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
           res <- runAction(x@conn, "sampling.srs", 
                             samppct=eval(downloadObs/nrow(x)*100),

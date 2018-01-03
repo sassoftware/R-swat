@@ -52,9 +52,10 @@ gen.table.parm <- function(ct) {
   if (class(ct)  == 'CASTable') tp <- c(    name        = ct@tname)
   if (ct@caslib  != ''        ) tp <- c(tp, caslib      = ct@caslib)
   if (ct@where   != ''        ) tp <- c(tp, where       = ct@where)
-  if (ct@orderby != ''        ) tp <- c(tp, orderby     = ct@orderby)
-  if (ct@groupby != ''        ) tp <- c(tp, groupby     = ct@groupby)
+  if (length(ct@orderby)      ) tp <- c(tp, orderby     = list(ct@orderby))
+  if (length(ct@groupby)      ) tp <- c(tp, groupby     = list(ct@groupby))
   if (ct@gbmode  != ''        ) tp <- c(tp, groupbymode = ct@gbmode)
+
   if (length(ct@computedVars) > 1 || ct@computedVars != "")
      {
                      if (sum(nchar(ct@XcomputedVars)))
