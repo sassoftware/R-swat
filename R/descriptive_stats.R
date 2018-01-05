@@ -236,7 +236,7 @@ setMethod("cor",
 
               res <- casRetrieve(x@conn, 'simple.correlation', table=tp, 
                                  simple=FALSE, inputs=as.list(vars))
-              cormat <- unique(res$results$Correlation)
+              cormat <- unique(res$results$Correlation[1:length(tp$vars)+1])
               rownames(cormat) <- as.list(unlist(t(cormat[1])))
               cormat2 <- cormat[-1]
 
@@ -270,7 +270,7 @@ setMethod("cor",
               
               tp = swat::gen.table.parm(x)
               res <- casRetrieve(x@conn, 'simple.correlation', table=tp, simple=FALSE, inputs=as.list(vars))
-              cormat <- res$results$Correlation
+              cormat <- unique(res$results$Correlation[1:length(tp$vars)+1, 1:length(tp$vars)+1])
               rownames(cormat) <- as.list(unlist(t(cormat[1])))
               cormat2 <- cormat[-1]
               
@@ -338,6 +338,7 @@ setMethod("cov",
                 }
               }
               else {
+                #cor <- cor(table[vars])[1:length(vars),1:length(vars)]
                 cor <- cor(table[vars])
               }
               if ( startsWith(use, 'c')){ stdev <-as.numeric(unlist(t(cas.sd(table, na.rm=TRUE)[2])))}
