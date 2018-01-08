@@ -233,12 +233,12 @@ setMethod("cor",
                   v2@where <- paste("(", w, ") and (", complete, ")")
                 }
               }
-
               res <- casRetrieve(x@conn, 'simple.correlation', table=tp, 
                                  simple=FALSE, inputs=as.list(vars))
-              cormat <- unique(res$results$Correlation[1:length(tp$vars)+1])
+              cormat <- unique(res$results$Correlation)
               rownames(cormat) <- as.list(unlist(t(cormat[1])))
               cormat2 <- cormat[-1]
+              cormat2 <- cormat2[c(vars)]
 
               cormat3 <- cormat2[1:length(x),(nrow(cormat2)-length(y)+1):nrow(cormat2)]
               if (is.null(dim(cormat3))) {
@@ -270,9 +270,10 @@ setMethod("cor",
               
               tp = swat::gen.table.parm(x)
               res <- casRetrieve(x@conn, 'simple.correlation', table=tp, simple=FALSE, inputs=as.list(vars))
-              cormat <- unique(res$results$Correlation[1:length(tp$vars)+1, 1:length(tp$vars)+1])
+              cormat <- unique(res$results$Correlation)
               rownames(cormat) <- as.list(unlist(t(cormat[1])))
               cormat2 <- cormat[-1]
+              cormat2 <- cormat2[c(vars)]
               
               # check if use != complete and there are any missing values then return NA
               if ( ! startsWith(use, 'c')){
@@ -338,7 +339,6 @@ setMethod("cov",
                 }
               }
               else {
-                #cor <- cor(table[vars])[1:length(vars),1:length(vars)]
                 cor <- cor(table[vars])
               }
               if ( startsWith(use, 'c')){ stdev <-as.numeric(unlist(t(cas.sd(table, na.rm=TRUE)[2])))}
@@ -1072,7 +1072,6 @@ setMethod("summary",
                 myDF <- fres$results$'Result Set'
                 myDF[myDF==''] <- "NA's"
                 f2 <- unlist(fres$results$'Result Set'[2])
-                # browser()
                 names(f2) <- unlist(myDF[1])
                 f3 <- f2
                 if (names(f2[1]) =="NA's"){
