@@ -25,7 +25,8 @@
 .cas.arith <- function(e1, op, e2) {
          if (class(e1) == "CASTable")
             {
-            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names)
+            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names, 
+                      where=e1@where, orderby=e1@orderby, groupby=e1@groupby)
             rct@compcomp = e1@compcomp
             if (nchar(e1@XcomputedVarsProgram))
                {
@@ -51,7 +52,8 @@
             }
          else
             {
-            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names)
+            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names, 
+                      where=e2@where, orderby=e2@orderby, groupby=e2@groupby)
             rct@compcomp = e2@compcomp
             e1p = e1
             }
@@ -296,7 +298,8 @@ setMethod("%/%",
 .cas.compare <- function(e1, op, e2) {
          if (class(e1) == "CASTable")
             {
-            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names)
+            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names, 
+                      where=e1@where, orderby=e1@orderby, groupby=e1@groupby)
             rct@compcomp = e1@compcomp
             if (nchar(e1@XcomputedVarsProgram))
                {
@@ -322,7 +325,8 @@ setMethod("%/%",
             }
          else
             {
-            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names)
+            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names, 
+                      where=e2@where, orderby=e2@orderby, groupby=e2@groupby)
             rct@compcomp = e2@compcomp
             if (class(e1) == "character")
                e1p = paste("'", e1, "'", sep='')
@@ -540,7 +544,8 @@ setMethod("!=",
 .cas.logic <- function(e1, op, e2) {
          if (class(e1) == "CASTable")
             {
-            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names)
+            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names, 
+                      where=e1@where, orderby=e1@orderby, groupby=e1@groupby)
             rct@compcomp = e1@compcomp
             if (nchar(e1@XcomputedVarsProgram))
                {
@@ -566,7 +571,8 @@ setMethod("!=",
             }
          else
             {
-            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names)
+            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names, 
+                      where=e2@where, orderby=e2@orderby, groupby=e2@groupby)
             rct@compcomp = e2@compcomp
             e1p = e1
             }
@@ -675,7 +681,8 @@ setMethod("|",
 setMethod("!",
           signature(x = "CASTable"),
           function(x) {
-            rct = new("CASTable", x@conn, x@tname, x@caslib, x@names)
+            rct = new("CASTable", x@conn, x@tname, x@caslib, x@names, 
+                      where=x@where, orderby=x@orderby, groupby=x@groupby)
             rct@compcomp = x@compcomp
             if (sum(nchar(x@XcomputedVarsProgram)))
                {
