@@ -195,8 +195,9 @@ setMethod("unique", signature(x = "CASTable"),
   if (length(vars) > 1)
     for (i in 2:length(vars)) 
       cols = paste(cols, ',"', vars[i], '"', sep='')
-  
-  q  <-paste(' select distinct ', cols, ' from ', tmp1@tname, ';')
+
+  tname = paste('"',tmp1@tname,'"', sep='')
+  q  <-paste(' select distinct ', cols, ' from ', tname, ';')
   res <- casRetrieve(x@conn, 'fedSql.execDirect', query=q)
   
   if (delete)
