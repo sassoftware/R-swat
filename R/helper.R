@@ -87,14 +87,14 @@ gen.table.parm <- function(ct) {
                         }
      }
 
-
   if ((!sum(nchar(ct@XcomputedVars))) & sum(nchar(ct@XcomputedVarsProgram)))
+     {
+     cw = paste(ct@XcomputedVarsProgram, sep='', collapse=' AND ')
      if (ct@where != '')
-           tp$where = paste('(', ct@where, ' AND ', ct@XcomputedVarsProgram, ')', sep='')
+           tp$where = paste('(', ct@where, ' AND ', cw, ')', sep='')
         else
-           tp$where = ct@XcomputedVarsProgram
-
-
+           tp$where = cw
+     }
 
   return (tp)
 }
