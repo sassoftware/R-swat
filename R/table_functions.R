@@ -50,12 +50,8 @@ setMethod("head",
                   if (! (Xcmp %in% x@computedVars))
                      fv = fv[fv != Xcmp]
 
-            if (length(x@orderby))
-               {
-               tp$orderby = NULL
-               tp = tp[tp !=""]
-               res <- casRetrieve(x@conn, 'table.fetch', table=tp, fetchVars=fv, index = FALSE, to=n, from=1, sortby=x@orderby)
-               }
+            if (length(tp$orderby))
+               res <- casRetrieve(x@conn, 'table.fetch', table=tp, fetchVars=fv, index = FALSE, to=n, from=1, sortby=tp$orderby)
             else
                res <- casRetrieve(x@conn, 'table.fetch', table=tp, fetchVars=fv, index = FALSE, to=n, from=1 )
             check_for_cas_errors(res)
@@ -98,12 +94,8 @@ setMethod("tail",
                   if (! (Xcmp %in% x@computedVars))
                      fv = fv[fv != Xcmp]
 
-            if (length(x@orderby))
-               {
-               tp$orderby = NULL
-               tp = tp[tp !=""]
-               res <- casRetrieve(x@conn, 'table.fetch', table=tp, fetchVars=fv, index = FALSE, to=r, from=r-n+1, sortby=x@orderby)
-               }
+            if (length(tp$orderby))
+               res <- casRetrieve(x@conn, 'table.fetch', table=tp, fetchVars=fv, index = FALSE, to=r, from=r-n+1, sortby=tp$orderby)
             else
                res <- casRetrieve(x@conn, 'table.fetch', table=tp, fetchVars=fv, index = FALSE, to=r, from=r-n+1)
 
