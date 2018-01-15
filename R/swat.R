@@ -862,6 +862,7 @@ CAS <- setRefClass(
             output <- list()
             results <- list()
             messages <- list()
+            events <- list()
             idx <- 1
             while ( TRUE ) {
                nextresp <- getnext(.self, datamsghandler=datamsghandler)
@@ -877,6 +878,10 @@ CAS <- setRefClass(
                      {
                         results[[idx]] <- result[[i]]
                         idx <- idx + 1
+                     }
+                     else if ( substr(key, 1, 1) == '$' )
+                     {
+                         events[[key]] <- result[[i]]
                      }
                      else
                      {
@@ -896,6 +901,7 @@ CAS <- setRefClass(
          }
          output[['messages']] <- messages
          output[['results']] <- results
+         output[['events']] <- events
          return (output)
       },
 
