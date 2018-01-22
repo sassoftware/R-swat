@@ -99,7 +99,6 @@
 #}
 #
 runAction <-  function(CASorCASTab='',actn, ...) {
-
    if (class(CASorCASTab) == 'CASTable')
       {
       tp  = swat::gen.table.parm(CASorCASTab)
@@ -111,8 +110,19 @@ runAction <-  function(CASorCASTab='',actn, ...) {
    else
       {
       cas = CASorCASTab
-      pms = list('caz'=cas, 'actn'=actn, ...)
-      res <- do.call('casRetrieve', pms)
+      if (actn == 'builtins.loadActionSet')
+         {
+         stopifnot(class(cas) == 'CAS') 
+         actionSet=list(...)[[1]]
+         res <- casRetrieve(cas, 'builtins.loadActionSet', actionSet=actionSet)
+         gen.functions(cas, actionSet)
+         swat::check_for_cas_errors(res)
+         }
+      else
+         {
+         pms = list('caz'=cas, 'actn'=actn, ...)
+         res <- do.call('casRetrieve', pms)
+         }
       }
 
   as.list(res$results)
@@ -167,7 +177,7 @@ loadActionSet <- function(conn, actionSet=""){
 #'
 listActionSets <- function(conn){
   stopifnot(class(conn) == 'CAS')
-  res <- casRetrieve(conn, 'builtins.actionSetInfo', all='TRUE')
+  res <- casRetrieve(conn, 'builtins.actionSetInfo', all='FALSE')
   swat::check_for_cas_errors(res)
   as.list(res$results$setinfo)
 }
@@ -249,47 +259,54 @@ gen.functions2 <-  function(cas, actionSet) {
 }
 
 gen.functions <-  function(cas, actionSet) {
-  #message(paste("get action set list", Sys.time()))
-  res = casRetrieve(cas, 'listActions', 'actionSet'=actionSet)
-  #message(paste("got action set list", Sys.time()))
-  if (length(res$results)>0)
+  res = casRetrieve(cas, 'actionSetInfo', 'extensions'=actionSet)
+  if (toupper(res$results$setinfo$actionset[1]) != toupper(actionSet))
+     message(paste("ActionSet ",actionSet, " not found"))
+  else
      {
-     acts = as.data.frame(res$results)[,1]
-     env = globalenv()
-     for (name in acts)
+     actionSet = res$results$setinfo$actionset[1] 
+     #message(paste("get action set list", Sys.time()))
+     res = casRetrieve(cas, 'listActions', 'actionSet'=actionSet)
+     #message(paste("got action set list", Sys.time()))
+     if (length(res$results)>0)
         {
-        #message(paste("for action", Sys.time()))
-        if (!as.logical(getOption('cas.gen.function.sig')))
+        acts = as.data.frame(res$results)[,1]
+        env = globalenv()
+        for (name in acts)
            {
-           val = paste("cas.", actionSet, ".", name, " <- function(object, ...) {runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
-           defn = eval(parse(text=val, env))
-           environment(defn) <- env
-           fname = paste("cas.", actionSet, ".", name, sep="")
-           setGeneric(name=fname, def=defn, package='swat', where=env)
-           #message(paste("function defined", Sys.time()))
-           }
-        else
-           {
-           val = .gen.sig(cas, paste(actionSet, name, sep="."))
-           tryCatch(
+           #message(paste("for action", Sys.time()))
+           if (!as.logical(getOption('cas.gen.function.sig')))
               {
+              val = paste("cas.", actionSet, ".", name, " <- function(object, ...) {runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
               defn = eval(parse(text=val, env))
               environment(defn) <- env
               fname = paste("cas.", actionSet, ".", name, sep="")
               setGeneric(name=fname, def=defn, package='swat', where=env)
               #message(paste("function defined", Sys.time()))
               }
-           , error=function(e)
+           else
               {
-              #message(paste("Action ", actionSet, ".", name, " Had invalid syntax: \n", val, sep=""))
-              message(paste("Error was: ", e))
-              message('Defining syntax as function(object, ...) instead. Use listActionParms() to see the actual paramters for this function')
-              val = paste("cas.", actionSet, ".", name, " <- function(object, ...) {runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
-              defn = eval(parse(text=val, env))
-              environment(defn) <- env
-              fname = paste("cas.", actionSet, ".", name, sep="")
-              setGeneric(name=fname, def=defn, package='swat', where=env)
-              })
+              val = .gen.sig(cas, paste(actionSet, name, sep="."))
+              tryCatch(
+                 {
+                 defn = eval(parse(text=val, env))
+                 environment(defn) <- env
+                 fname = paste("cas.", actionSet, ".", name, sep="")
+                 setGeneric(name=fname, def=defn, package='swat', where=env)
+                 #message(paste("function defined", Sys.time()))
+                 }
+              , error=function(e)
+                 {
+                 #message(paste("Action ", actionSet, ".", name, " Had invalid syntax: \n", val, sep=""))
+                 message(paste("Error was: ", e))
+                 message('Defining syntax as function(object, ...) instead. Use listActionParms() to see the actual paramters for this function')
+                 val = paste("cas.", actionSet, ".", name, " <- function(object, ...) {runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
+                 defn = eval(parse(text=val, env))
+                 environment(defn) <- env
+                 fname = paste("cas.", actionSet, ".", name, sep="")
+                 setGeneric(name=fname, def=defn, package='swat', where=env)
+                 })
+              }
            }
         }
      }

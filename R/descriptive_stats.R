@@ -1062,10 +1062,10 @@ setMethod("summary",
                 
               }
               else {
-                
-                query <- paste('select', v, ',', 'count(*) as frequency', 'from', tp$name, 'group by', v, 'order by', v, 'limit', n, ';')
+                tname = paste('"',tp$name,'"', sep='')
+                query <- paste('select', v, ',', 'count(*) as frequency', 'from', tname, 'group by', v, 'order by', v, 'limit', n, ';')
                 if (length(object@where)>1) {
-                  query <- paste('select', v, ',', 'count(*) as frequency', 'from', tp$name, "where", object@where, 'group by', v, 'order by', v, 'limit', n, ';')
+                  query <- paste('select', v, ',', 'count(*) as frequency', 'from', tname, "where", object@where, 'group by', v, 'order by', v, 'limit', n, ';')
                 }
                 fres <- casRetrieve(object@conn, 'fedSql.execDirect', query=query)
                 myDF <- fres$results$'Result Set'

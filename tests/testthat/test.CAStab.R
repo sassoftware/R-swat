@@ -181,18 +181,18 @@ test_that("defCasTable", {
   df_cmpct <- as.casTable(caz, df_cmp, casOut="df_cmpct")
   
   # groupby option
-  esophct.grouped <- defCasTable(caz, tablename="esophct", groupby="alcgp")
+  esophct.grouped <- defCasTable(caz, tablename="esophct", groupby=list("alcgp"))
   expect_silent(esophct.grouped)
   
-  df_cmpct.grouped <- defCasTable(caz, tablename="df_cmpct", groupby="s")
+  df_cmpct.grouped <- defCasTable(caz, tablename="df_cmpct", groupby=list("s"))
   expect_silent(df_cmpct.grouped)
   
   # orderby
-  esophct.orderby <- defCasTable(caz, tablename="esophct", orderby="ncontrols")
+  esophct.orderby <- defCasTable(caz, tablename="esophct", orderby=list("ncontrols"))
   esophr.orderby<-esoph[order(esoph$ncontrols),]
   expect_equivalent(esophct.orderby, as.casTable(caz, esophr.orderby))
   
-  df_cmpct.orderby <- defCasTable(caz, tablename="df_cmpct", orderby="s")
+  df_cmpct.orderby <- defCasTable(caz, tablename="df_cmpct", orderby=list("s"))
   df_cmpr.orderby<-df_cmp[order(df_cmp$s),]
   expect_equivalent(df_cmpct.orderby, as.casTable(caz, df_cmpr.orderby))
   

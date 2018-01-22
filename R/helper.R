@@ -52,10 +52,12 @@ gen.table.parm <- function(ct) {
   if (class(ct)  == 'CASTable') tp <- c(    name        = ct@tname)
   if (ct@caslib  != ''        ) tp <- c(tp, caslib      = ct@caslib)
   if (ct@where   != ''        ) tp <- c(tp, where       = ct@where)
-  if (ct@orderby != ''        ) tp <- c(tp, orderby     = ct@orderby)
-  if (ct@groupby != ''        ) tp <- c(tp, groupby     = ct@groupby)
+  if (length(ct@orderby)      ) tp <- c(tp, orderby     = list(ct@orderby))
+  if (length(ct@groupby)      ) tp <- c(tp, groupby     = list(ct@groupby))
   if (ct@gbmode  != ''        ) tp <- c(tp, groupbymode = ct@gbmode)
-  if (length(ct@computedVars) > 1 || ct@computedVars != "")
+
+# if (length(ct@computedVars) > 1 || ct@computedVars != "")
+  if (sum(nchar(ct@computedVars)))
      {
                      if (sum(nchar(ct@XcomputedVars)))
                         {
@@ -68,8 +70,8 @@ gen.table.parm <- function(ct) {
                      else                           
                         tp <- c(tp, computedVars        = list(c(ct@computedVars)))
 
-                        tp <- c(tp, computedOnDemand    = ct@computedOnDemand)
-                        tp <- c(tp, computedVarsProgram = paste(paste(ct@computedVarsProgram,collapse=';'),';',sep=''))
+                     tp <- c(tp, computedOnDemand       = ct@computedOnDemand)
+                     tp <- c(tp, computedVarsProgram    = paste(paste(ct@computedVarsProgram,collapse=';'),';',sep=''))
 
                      if (length(ct@names) > 1 || nchar(ct@names))
                         tp <- c(tp, vars                = list(c(ct@names)))
@@ -82,8 +84,18 @@ gen.table.parm <- function(ct) {
                         {
                         tp <- c(tp, computedVars        = list(c(ct@XcomputedVars)))
                         tp <- c(tp, computedVarsProgram = paste(paste(ct@computedVarsProgram,collapse=';'),';',sep=''))
-                     }
+                        }
      }
+
+  if ((!sum(nchar(ct@XcomputedVars))) & sum(nchar(ct@XcomputedVarsProgram)))
+     {
+     cw = paste(ct@XcomputedVarsProgram, sep='', collapse=' AND ')
+     if (ct@where != '')
+           tp$where = paste('(', ct@where, ' AND ', cw, ')', sep='')
+        else
+           tp$where = cw
+     }
+
   return (tp)
 }
 
