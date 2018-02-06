@@ -925,7 +925,12 @@ REST_CASConnection <- setRefClass(
                      out <- httr::content(res, as='parsed')
    
                      if ( is.null(out$session) )
-                        stop(paste(url, ':', out$error))
+                     {
+                        if ( is.null(out$details) )
+                            stop(paste(url, ':', out$error))
+                        else
+                            stop(paste(url, ':', out$error, '(', out$details, ')'))
+                     }
    
                      session_ <<- out$session
    
@@ -960,12 +965,12 @@ REST_CASConnection <- setRefClass(
                      break
                   }
                }, error=function (e) {
-                   .self$set_next_connection_()
+                   .self$set_next_connection_(e)
                })
             }
         },
 
-        set_next_connection_ = function() {
+        set_next_connection_ = function(connection_error) {
             host_index_ <<- host_index_ + 1
             tryCatch({
                 current_hostname_ <<- hostname_[[host_index_]]
@@ -975,7 +980,7 @@ REST_CASConnection <- setRefClass(
                 current_hostname_ <<- ''
                 current_baseurl_ <<- ''
                 current_port_ <<- -1
-                stop('Unable to connect to any specified URL')
+                stop(connection_error)
             })
         },
 
