@@ -592,7 +592,7 @@ CAS <- setRefClass(
             if ( Sys.getenv('CASPORT') != '' )
                port <<- as.integer(Sys.getenv('CASPORT'))
             else
-               port <<- 0
+               port <<- 5570
          }
          else
          {

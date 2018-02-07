@@ -825,6 +825,7 @@ REST_CASConnection <- setRefClass(
 
             if ( grepl('^https?:', hostname[[1]], perl=TRUE) )
             {
+                is_https <- grepl('^https', hostname[[1]], perl=TRUE)
                 url <- httr::parse_url(hostname[[1]])
                 baseurl_ <<- character()
                 hostname_ <<- character()
@@ -835,10 +836,12 @@ REST_CASConnection <- setRefClass(
                     hostname_ <<- c(.self$hostname_, url$hostname)
                     if ( is.null(url$port) )
                     {
-                        if ( !is.null(port) )
+                        if ( !is.null(port) && port > 0 )
                             port_ <<- c(.self$port_, port)
+                        else if ( is_https )
+                            port_ <<- c(.self$port_, 443)
                         else
-                            port_ <<- c(.self$port_, 0)
+                            port_ <<- c(.self$port_, 80)
                     } else {
                         port_ <<- as.integer(url$port)
                     }
@@ -848,12 +851,16 @@ REST_CASConnection <- setRefClass(
             }
             else if ( grepl('protocol=https', soptions) )
             {
+                if ( is.null(port) )
+                    port <- 443
                 baseurl_ <<- paste('https://', hostname, ':', port, sep='')
                 hostname_ <<- hostname
                 port_ <<- rep(port, length(hostname))
             }
             else
             {
+                if ( is.null(port) )
+                    port <- 80
                 baseurl_ <<- paste('http://', hostname, ':', port, sep='')
                 hostname_ <<- hostname
                 port_ <<- rep(port, length(hostname))
