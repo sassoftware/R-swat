@@ -94,7 +94,9 @@
           cas.message.level='note',
           cas.message.level.ui='error',
           cas.max.download.rows=10000,
-          cas.gen.function.sig=FALSE 
+          cas.gen.function.sig=FALSE,
+          cas.bygroup.mode='raw',  # raw, formatted, both, none
+          cas.bygroup.dup.suffix='_f'
       )
    }
 
@@ -1443,6 +1445,55 @@ cas2r <- function(sw_value) {
           return( table )
       }
 
+      add_bygroup_columns <- function ( table )
+      {
+          if ( getOption('cas.bygroup.mode') == 'none' )
+          {
+              return( table )
+          }
+
+          grpnum <- 1
+          grpvar_lbl <- paste('ByVar', grpnum, sep='')
+          grpval_lbl <- paste('ByVar', grpnum, 'Value', sep='')
+          grpvalf_lbl <- paste('ByVar', grpnum, 'ValueFormatted', sep='')
+
+          while ( !is.null(attrs[[grpvar_lbl]]) )
+          {
+             varname <- attrs[[grpvar_lbl]]
+             rawval <- attrs[[grpval_lbl]]
+             fmtval <- attrs[[grpvalf_lbl]]
+
+             if ( getOption('cas.bygroup.mode') == 'raw' )
+             {
+                 table <- add_column(table, varname, rep(rawval, nRows))
+             }
+             else if ( getOption('cas.bygroup.mode') == 'formatted' )
+             {
+                 table <- add_column(table, varname, rep(fmtval, nRows))
+             }
+             else if ( getOption('cas.bygroup.mode') == 'both' )
+             {
+                 table <- add_column(table, varname, rep(rawval, nRows))
+                 table <- add_column(table,
+                                     paste(varname,
+                                           getOption('cas.bygroup.dup.suffix'), sep=''),
+                                     rep(fmtval, nRows))
+             } 
+             else
+             {
+                 stop(paste('Unrecognized value for cas.bygroup.mode:',
+                            getOption('cas.bygroup.mode')))
+             }
+
+             grpnum <- grpnum + 1
+             grpvar_lbl <- paste('ByVar', grpnum, sep='')
+             grpval_lbl <- paste('ByVar', grpnum, 'Value', sep='')
+             grpvalf_lbl <- paste('ByVar', grpnum, 'ValueFormatted', sep='')
+          }
+
+          return( table )
+      }
+
       int32_missval <- -2147483648
       int64_missval <- '-9223372036854775808'
       setMissing <- function (value, missval)
@@ -1460,6 +1511,8 @@ cas2r <- function(sw_value) {
       {
          columns <- list()
          colnames <- c()
+
+         table <- add_bygroup_columns(table)
 
          for (col in 0 : (nCols - 1))
          {
