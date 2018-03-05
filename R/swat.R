@@ -66,7 +66,17 @@
 #' \itemize{
 #'   \item{\url{http://developer.sas.com/guides/r.html}}
 #'   \item{\url{https://github.com/sassoftware/r-swat}}
-#'   \item{Enter issues at \url{https://github.com/sassoftware/r-swat/issues}}
+#'   \item{Enter issues at \url{https://github.com/sassoftware/r-swat/issues}
+#' }
+#'
+#' @section Action documentation:
+#' \itemize{
+#'   \item{\href{http://documentation.sas.com/?cdcId=cdcId=pgmsascdc&cdcVersion=9.4_3.3
+#' &docsetId=allprodsactions&docsetTarget=actionsByName.htm}{SAS 9.4
+#' and SAS Viya 3.3 Programming: Actions and Action Sets by Name and Product}}
+#'   \item{\href{http://documentation.sas.com/?cdcId=vdmmlcdc&cdcVersion=8.11 
+#' &docsetId=allprodsactions&docsetTarget=actionsByName.htm}{SAS Viya 3.2 
+#' Programming: Actions and Action Sets by Name and Product}
 #' }
 #'
 #' @docType package
