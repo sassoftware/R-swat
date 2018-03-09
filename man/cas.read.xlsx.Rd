@@ -109,6 +109,7 @@ CAS (the server).
 \dontrun{
 myCasTable <- cas.read.xlsx(s, file="/path/to/data_out.xlsx", 
   sheetIndex = 1, 
+  casOut=list(name="mycastable", replace=TRUE))
 }
 }
 \seealso{

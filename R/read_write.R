@@ -509,7 +509,7 @@ cas.read.csv <- function(conn,
 #' \dontrun{
 #' myCasTable <- cas.read.xlsx(s, file="/path/to/data_out.xlsx", 
 #'   sheetIndex = 1, 
-#"   casOut=list(name="mycastable", replace=TRUE))
+#'   casOut=list(name="mycastable", replace=TRUE))
 #' }
 cas.read.xlsx <- function(conn,
                           file,

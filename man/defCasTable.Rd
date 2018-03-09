@@ -5,7 +5,7 @@
 \title{Create a CASTable Object for an Existing CAS Table}
 \usage{
 defCasTable(conn, tablename, caslib = "", columns = "", where = "",
-  orderby = "", groupby = "", gbmode = "")
+  orderby = list(), groupby = list(), gbmode = "")
 }
 \arguments{
 \item{conn}{A \code{\link{CAS}} object that represents
@@ -52,7 +52,7 @@ irisct <- as.casTable(s, iris, casOut="irisct")
 
 # Create another CASTable instance to the same in-memory table,
 # but specify that CAS actions are performed by groups of species.
-irisct.grouped <- defCasTable(s, tablename="irisct", groupby="species")
+irisct.grouped <- defCasTable(s, tablename="irisct", groupby=list("species"))
 }
 }
 % Copyright SAS Institute
