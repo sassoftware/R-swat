@@ -41,10 +41,10 @@ REDISTRIBUTE. See the CAS product documentation for more information.}
 the computed variables are created when the table is loaded (False) or to compute
 them when an action begins (True).}
 
-\item{\code{computedVars}}{An optional \code{character} string that identifies the
+\item{\code{computedVars}}{An optional \code{character} string list that identifies the
 name and optional information such as a format and label.}
 
-\item{\code{computedVarsProgram}}{An optional \code{character} string. Specify the
+\item{\code{computedVarsProgram}}{An optional \code{character} string list. Specify the
 expression to use for computing each of the computed variables.}
 
 \item{\code{names}}{An optional \code{list} of column names.}
