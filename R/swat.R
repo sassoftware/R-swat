@@ -855,12 +855,20 @@ CAS <- setRefClass(
 
       retrieve = function(actn, ...) {
          args <- list(...)
+         for ( name in names(args) )
+         {
+            if ( class(args[[name]]) == 'CASTable' )
+            {
+                args[[name]] <- swat::gen.table.parm(args[[name]])
+            }
+         }
          datamsghandler <- NULL
          if ( !is.null(args$datamsghandler) ) {
             datamsghandler <- args$datamsghandler
          }
+         args[['actn']] <- actn
          repeat {
-            .self$invoke(actn, ...)
+            do.call(.self$invoke, args)
             output <- list()
             results <- list()
             messages <- list()

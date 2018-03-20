@@ -182,16 +182,19 @@ as.casTable <- function(conn, df, casOut = '')  {
            }
         }
 
-  conn$upload(casOut = casOut, data = df,
+  tblres <- conn$upload(casOut=casOut, data=df,
               '_messagelevel'=as.character(getOption('cas.message.level.ui')),
-              '_apptag' = 'UI')
+              '_apptag'='UI')
 
-  if (caslib == "")
-     res <- casRetrieve(conn, 'table.columnInfo', table=tablename)
-  else
-     res <- casRetrieve(conn, 'table.columnInfo', table=list(name=tablename, caslib=caslib))
+  if ( !is.null(tblres$results$tableName) )
+  {
+     tablename <- tblres$results$tableName
+     caslib <- tblres$results$caslib
+  }
+
+  res <- casRetrieve(conn, 'table.columnInfo', table=list(name=tablename, caslib=caslib))
   columns <- res$results$ColumnInfo$Column
-  
+
   new("CASTable", conn, tablename, caslib, columns)
 }
 
@@ -250,6 +253,7 @@ defCasTable <- function(conn, tablename, caslib = '', columns = '',where = '',
     }
 
     res <- casRetrieve(conn, 'table.columnInfo', table=tab)
+    check_for_cas_errors(res)
     columns <- res$results$ColumnInfo$Column
   }
                   

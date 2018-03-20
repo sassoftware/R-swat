@@ -852,7 +852,14 @@ cas.read.sas7bdat <- function(conn, file, casOut = list(name='', replace=FALSE) 
   
   res <- conn$upload(file, casout=casOut)
   check_for_cas_errors(res, stop.on.error=FALSE)
-  return(swat::defCasTable(conn, casOut$name))
+  if ( !is.null(res$results$tableName) )
+  {
+     return(swat::defCasTable(conn, res$results$tableName, caslib=res$results$caslib))
+  }
+  else
+  {
+     return(swat::defCasTable(conn, casOut$name, caslib=casOut$caslib))
+  }
 }
 
 #' Upload a JMP File to a CAS Table
@@ -923,5 +930,12 @@ cas.read.jmp <- function(conn, file, casOut=NULL){
   
   res <- conn$upload(file, casout=casOut)
   check_for_cas_errors(res, stop.on.error=FALSE)
-  return(swat::defCasTable(conn, tablename))
+  if ( !is.null(res$results$tableName) )
+  {
+     return(swat::defCasTable(conn, res$results$tableName, caslib=res$results$caslib))
+  }
+  else
+  {
+     return(swat::defCasTable(conn, casOut$name, caslib=casOut$caslib))
+  }
 }

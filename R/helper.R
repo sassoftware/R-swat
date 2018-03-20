@@ -49,41 +49,42 @@ uniqueTableName <- function(prefix = "") {
 #
 # tp = swat::gen.table.parm(x)
 gen.table.parm <- function(ct) {
-  if (class(ct)  == 'CASTable') tp <- c(    name        = ct@tname)
-  if (ct@caslib  != ''        ) tp <- c(tp, caslib      = ct@caslib)
-  if (ct@where   != ''        ) tp <- c(tp, where       = ct@where)
-  if (length(ct@orderby)      ) tp <- c(tp, orderby     = list(ct@orderby))
-  if (length(ct@groupby)      ) tp <- c(tp, groupby     = list(ct@groupby))
-  if (ct@gbmode  != ''        ) tp <- c(tp, groupbymode = ct@gbmode)
+  tp <- list()
+  if (class(ct)  == 'CASTable') tp[['name']] <- ct@tname
+  if (!is.null(ct@caslib) && ct@caslib  != ''   ) tp[['caslib']] <- ct@caslib
+  if (!is.null(ct@where) && ct@where   != ''    ) tp[['where']] <- ct@where
+  if (!is.null(ct@orderby) && length(ct@orderby)) tp[['orderby']] <- ct@orderby
+  if (!is.null(ct@groupby) && length(ct@groupby)) tp[['groupby']] <- ct@groupby
+  if (!is.null(ct@gbmode) && ct@gbmode  != ''   ) tp[['groupbymode']] <- ct@gbmode
 
 # if (length(ct@computedVars) > 1 || ct@computedVars != "")
   if (sum(nchar(ct@computedVars)))
      {
                      if (sum(nchar(ct@XcomputedVars)))
                         {
-                        cmpvars = ct@computedVars
+                        cmpvars <- ct@computedVars
                         for(Xcmp in ct@XcomputedVars)
                            if (!(Xcmp %in% ct@computedVars))
                               cmpvars = c(cmpvars, Xcmp)  
-                        tp <- c(tp, computedVars        = list(c(cmpvars)))
+                        tp[['computedVars']] <- c(cmpvars)
                         }
                      else                           
-                        tp <- c(tp, computedVars        = list(c(ct@computedVars)))
+                        tp[['computedVars']] <- c(ct@computedVars)
 
-                     tp <- c(tp, computedOnDemand       = ct@computedOnDemand)
-                     tp <- c(tp, computedVarsProgram    = paste(paste(ct@computedVarsProgram,collapse=';'),';',sep=''))
+                     tp[['computedOnDemand']] <- ct@computedOnDemand
+                     tp[['computedVarsProgram']] <- paste(paste(ct@computedVarsProgram,collapse=';'),';',sep='')
 
                      if (length(ct@names) > 1 || nchar(ct@names))
-                        tp <- c(tp, vars                = list(c(ct@names)))
+                        tp[['vars']] <- c(ct@names)
      }
   else
      {
                      if (length(ct@names) > 1 || nchar(ct@names))
-                        tp <- c(tp, vars                = list(c(ct@names)))
+                        tp[['vars']] <- c(ct@names)
                      if (sum(nchar(ct@XcomputedVars)))
                         {
-                        tp <- c(tp, computedVars        = list(c(ct@XcomputedVars)))
-                        tp <- c(tp, computedVarsProgram = paste(paste(ct@computedVarsProgram,collapse=';'),';',sep=''))
+                        tp[['computedVars']] <- c(ct@XcomputedVars)
+                        tp[['computedVarsProgram']] <- paste(paste(ct@computedVarsProgram,collapse=';'),';',sep='')
                         }
      }
 
@@ -91,9 +92,9 @@ gen.table.parm <- function(ct) {
      {
      cw = paste(ct@XcomputedVarsProgram, sep='', collapse=' AND ')
      if (ct@where != '')
-           tp$where = paste('(', ct@where, ' AND ', cw, ')', sep='')
+           tp[['where']] <- paste('(', ct@where, ' AND ', cw, ')', sep='')
         else
-           tp$where = cw
+           tp[['where']] <- cw
      }
 
   return (tp)
@@ -115,9 +116,8 @@ gen.table.parm <- function(ct) {
 #' @rawRd % Copyright SAS Institute
 # check_for_cas_errors(res)
 check_for_cas_errors <- function(result, stop.on.error = TRUE) {
-  if (length(result$messages) > 0L) {
-    if (length(grep('ERROR:', result$messages, value = TRUE)) > 0 &&
-        stop.on.error) {
+  if ( result$disposition$severity > 1 ) {
+    if (stop.on.error) {
       msgs = ''
       for (msg in result$messages)
         msgs = paste(msgs, msg[], '\n', sep='')
@@ -130,21 +130,17 @@ check_for_cas_errors <- function(result, stop.on.error = TRUE) {
       )
     }
     else{
-      if (length(grep('ERROR:', result$messages, value = TRUE)) > 0 &&
-          stop.on.error == FALSE) {
-        msgs = ''
-        for (msg in result$messages)
-          msgs = paste(msgs, msg[], '\n', sep='')
-        warning(
-          paste(
-            "\nError message(s) found in CAS action results:",
-            deparse(sys.call(-1)),
-            msgs, sep = "\n"
-          )
+      msgs = ''
+      for (msg in result$messages)
+        msgs = paste(msgs, msg[], '\n', sep='')
+      warning(
+        paste(
+          "\nError message(s) found in CAS action results:",
+          deparse(sys.call(-1)),
+          msgs, sep = "\n"
         )
-      }
+      )
     }
-    
   }
 }
 
