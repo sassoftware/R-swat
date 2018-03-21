@@ -873,13 +873,6 @@ CAS <- setRefClass(
 
       retrieve = function(actn, ...) {
          args <- list(...)
-         for ( name in names(args) )
-         {
-            if ( class(args[[name]]) == 'CASTable' )
-            {
-                args[[name]] <- swat::gen.table.parm(args[[name]])
-            }
-         }
          datamsghandler <- NULL
          if ( !is.null(args$datamsghandler) ) {
             datamsghandler <- args$datamsghandler
@@ -1830,6 +1823,10 @@ setListValue <- function(sw_values, i, key, value) {
       sw_values$setString(i, key, value[[1]])
       swat::errorcheck(sw_values)
       return (i + 1)
+   }
+   else if (t == 'CASTable')
+   {
+      return (setListValue(sw_values, i, key, swat::gen.table.parm(value)))
    }
    else
    {

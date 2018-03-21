@@ -771,6 +771,28 @@ REST_CASMessage <- setRefClass(
 
 )
 
+expand_tables <- function (params)
+{
+   out <- list()
+   for (name in names(params))
+   {
+      cls <- class(params[[name]])
+      if (cls == 'CASTable')
+      {
+         out[[name]] <- swat::gen.table.parm(params[[name]])
+      }
+      else if (cls == 'list' && length(names(params[[name]])))
+      {
+         out[[name]] <- expand_tables(params[[name]])
+      } 
+      else
+      {
+         out[[name]] <- params[[name]]
+      }
+   }
+   return (out)
+}
+
 REST_CASConnection <- setRefClass(
 
     Class = 'REST_CASConnection',
@@ -992,7 +1014,7 @@ REST_CASConnection <- setRefClass(
         },
 
         invoke = function( action_name, params ) {
-            body <- jsonlite::toJSON(params, auto_unbox=TRUE)
+            body <- jsonlite::toJSON(expand_tables(params), auto_unbox=TRUE)
             while ( TRUE ) 
             {
                 out <- tryCatch({
