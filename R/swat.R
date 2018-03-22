@@ -1912,3 +1912,14 @@ rbind.bygroups <- function(res) {
 
    return( tables )
 }
+
+cas.close <- function(conn)
+{
+   conn$close()
+}
+
+cas.terminate <- function(conn)
+{
+   conn$retrieve('session.endsession', `_messagelevel`='error')
+   conn$close() 
+}
