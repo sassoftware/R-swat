@@ -1913,13 +1913,57 @@ rbind.bygroups <- function(res) {
    return( tables )
 }
 
+#' Close a CAS connection while leaving the session alive
+#'
+#' @param CAS The CAS connection object
 cas.close <- function(conn)
 {
    conn$close()
 }
 
+#' End a CAS session and close the connection
+#'
+#' @param CAS The CAS connection object
 cas.terminate <- function(conn)
 {
    conn$retrieve('session.endsession', `_messagelevel`='error')
    conn$close() 
+}
+
+#' Upload a data.frame or file to a CAS table
+#'
+#' @param CAS The CAS connection object
+#' @param data.frame/character The data.frame, filename, or URL to upload.
+#' @param \dots Optional parameters that are passed to the table.loadtable action.
+#'
+#' @return \code{list}
+cas.upload <- function(conn, ...)
+{
+   return( conn$upload(...) )
+}
+
+#' Upload a data.frame to a CAS table
+#'
+#' @param CAS The CAS connection object
+#' @param data.frame The data.frame to upload
+#' @param \dots Optional parameters that are passed to the table.loadtable action.
+#'
+#' @return \code{\link{CASTable}}
+cas.upload.frame <- function(conn, ...)
+{
+    res <- conn$upload(...)
+    return( defCasTable(conn, res$results$tableName, caslib=res$results$caslib) )
+}
+
+#' Upload a data file to a CAS table
+#'
+#' @param CAS The CAS connection object
+#' @param character The filename to upload
+#' @param \dots Optional parameters that are passed to the table.loadtable action.
+#'
+#' @return \code{\link{CASTable}}
+cas.upload.file <- function(conn, ...)
+{
+    res <- conn$upload(...)
+    return( defCasTable(conn, res$results$tableName, caslib=res$results$caslib) )
 }
