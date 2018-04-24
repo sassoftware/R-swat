@@ -1064,7 +1064,7 @@ setMethod("summary",
                 names(s1) <- c('1st Qu.','Median','3rd Qu.')
                 s2 <- unlist(ret[ret$Column==v, c(2,5,3)])
                 names(s2) <- c('Min.','Mean','Max.')
-                s3 <- distinct_res$results$Distinct[distinct_res$results$Distinct$Column==v,2]
+                s3 <- distinct_res$results$Distinct[distinct_res$results$Distinct$Column==v,3]
                 if (s3 > 0){
                   names(s3) <- "NA's"
                   s3[1] <- as.character(s3[1])
