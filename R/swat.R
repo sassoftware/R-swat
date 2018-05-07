@@ -580,13 +580,20 @@ CAS <- setRefClass(
 
    fields = list(
       sw_connection = 'ANY',
-      sw_error = 'ANY',
-      soptions = 'character',
-      hostname = 'character',
-      port = 'numeric',
-      protocol = 'character',
-      username = 'character',
-      session = 'character'
+      sw_error      = 'ANY',
+      soptions      = 'character',
+      hostname      = 'character',
+      port          = 'numeric',
+      protocol      = 'character',
+      username      = 'character',
+      session       = 'character',
+      performance   = 'ANY',                         
+      severity      = 'ANY',            
+      statusCode    = 'ANY',             
+      reason        = 'ANY',            
+      status        = 'ANY',             
+      messages      = 'ANY',                         
+      events        = 'ANY'                        
    ),
 
    methods = list(
@@ -923,6 +930,15 @@ CAS <- setRefClass(
          output[['messages']] <- messages
          output[['results']] <- results
          output[['events']] <- events
+
+         .self$performance = output[['performance']] 
+         .self$severity    = output[['disposition']][['severity']] 
+         .self$statusCode  = output[['disposition']][['statusCode']] 
+         .self$reason      = output[['disposition']][['reason']] 
+         .self$status      = output[['disposition']][['status']] 
+         .self$messages    = output[['messages']]   
+         .self$events      = output[['events']]      
+
          return (output)
       },
 
