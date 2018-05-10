@@ -14,6 +14,24 @@
 #  limitations under the License.
 
 
+expect_cas_message <- function(caz, regexp) {
+  if ( length(caz$messages) == 0 ) {
+     return(sprintf("CAS did not produce any messages."))
+  }
+
+  for ( i in 1:length(caz$messages) ) {
+     if ( grepl(regexp, caz$messages[i]) ) {
+        expect(TRUE, '')
+        return(invisible(caz))
+     }
+  }
+
+  expect(FALSE, sprintf('%s did not match any CAS message.\n%s',
+                        encodeString(regexp),
+                        paste0('Actual values: ', paste0('', caz$messages, collapse = '\n'))))
+  invisible(caz)
+}
+
 
 context("test.helper.R")
 
@@ -43,7 +61,7 @@ test_that("casFormula Functions", {
 })
 
 test_that("help function",{
-  expect_message(help(cas.aStore.describe),regexp = "Using")
-  expect_message(help(cas.network.readGraph),regexp = "Using")
+  #expect_message(help(cas.aStore.describe),regexp = "Using")
+  #expect_message(help(cas.network.readGraph),regexp = "Using")
   expect_silent(help(cas.foo.bar))
 })

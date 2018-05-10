@@ -889,8 +889,8 @@ CAS <- setRefClass(
             do.call(.self$invoke, args)
             output <- list()
             results <- list()
-            messages <- list()
-            events <- list()
+            msgs <- list()
+            evts <- list()
             idx <- 1
             while ( TRUE ) {
                nextresp <- getnext(.self, datamsghandler=datamsghandler)
@@ -909,7 +909,7 @@ CAS <- setRefClass(
                      }
                      else if ( substr(key, 1, 1) == '$' )
                      {
-                         events[[key]] <- result[[i]]
+                         evts[[key]] <- result[[i]]
                      }
                      else
                      {
@@ -918,7 +918,7 @@ CAS <- setRefClass(
                   }
                }
 
-               messages <- c(messages, nextresp$response$messages)
+               msgs <- c(msgs, nextresp$response$messages)
 
                output[['performance']] <- nextresp$response$performance
                output[['disposition']] <- nextresp$response$disposition
@@ -927,9 +927,9 @@ CAS <- setRefClass(
                 break
             }
          }
-         output[['messages']] <- messages
+         output[['messages']] <- msgs
          output[['results']] <- results
-         output[['events']] <- events
+         output[['events']] <- evts
 
          .self$performance = output[['performance']] 
          .self$severity    = output[['disposition']][['severity']] 
@@ -1005,7 +1005,7 @@ CAS <- setRefClass(
 
          output <- list()
          results <- list()
-         messages <- list()
+         msgs <- list()
          idx <- 1
          if ( !is.null(response) )
          {
@@ -1029,12 +1029,12 @@ CAS <- setRefClass(
                }
             }
 
-            messages <- c(messages, response$messages)
+            msgs <- c(msgs, response$messages)
 
             output[['performance']] <- response$performance
             output[['disposition']] <- response$disposition
          }
-         output[['messages']] <- messages
+         output[['messages']] <- msgs
          output[['results']] <- results
          return (output)
       }

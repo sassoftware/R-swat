@@ -14,6 +14,24 @@
 #  limitations under the License.
 
 
+expect_cas_message <- function(caz, regexp) {
+  if ( length(caz$messages) == 0 ) {
+     return(sprintf("CAS did not produce any messages."))
+  }
+
+  for ( i in 1:length(caz$messages) ) {
+     if ( grepl(regexp, caz$messages[i]) ) {
+        expect(TRUE, '')
+        return(invisible(caz))
+     }
+  }
+
+  expect(FALSE, sprintf('%s did not match any CAS message.\n%s',
+                        encodeString(regexp),
+                        paste0('Actual values: ', paste0('', caz$messages, collapse = '\n'))))
+  invisible(caz)
+}
+
 
 context("test.CAStab.R")
 
@@ -233,16 +251,20 @@ options(cas.print.messages=TRUE)
 test_that("as.castable and dropTable", {
   # Testing that an existing CAS table can't be overwriten by default
   df_cmpct1<-as.casTable(caz, df_cmp, casOut="df_cmpct1")
-  expect_message(df_cmpct2<-as.casTable(caz, df, casOut="df_cmpct1"), "already exists")
+  df_cmpct2<-as.casTable(caz, df, casOut="df_cmpct1")
+  expect_cas_message(caz, "already exists")
   
   # Testing that an existing CAS table can't be overwriten with replace=FALSE
-  expect_message(as.casTable(caz, df, casOut=list(name="df_cmpct1", replace=FALSE)), "already exists")
+  as.casTable(caz, df, casOut=list(name="df_cmpct1", replace=FALSE))
+  expect_cas_message(caz, "already exists")
 
   dropTable(df_cmpct1)
-  expect_message(df_cmpct1<-as.casTable(caz, df_cmp, casOut=list(name="df_cmpct1", replace=FALSE)), "uploaded file available")
+  df_cmpct1<-as.casTable(caz, df_cmp, casOut=list(name="df_cmpct1", replace=FALSE))
+  expect_cas_message(caz, "uploaded file available")
 
   # Testing that an existing CAS table can be overwriten with replace option
-  expect_message(df_cmpct1<-as.casTable(caz, df_cmp, casOut=list(name="df_cmpct1", replace=TRUE)), "uploaded file available")
+  df_cmpct1<-as.casTable(caz, df_cmp, casOut=list(name="df_cmpct1", replace=TRUE))
+  expect_cas_message(caz, "uploaded file available")
   
 
 
