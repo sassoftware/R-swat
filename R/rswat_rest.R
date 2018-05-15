@@ -951,7 +951,7 @@ REST_CASConnection <- setRefClass(
                   {
                      url <- paste(current_baseurl_, 'cas', 'sessions', sep='/')
                      res <- httr::PUT(url, auth_, config_)
-                     out <- httr::content(res, as='parsed')
+                     out <- httr::content(res, as='parsed', type='application/json')
    
                      if ( is.null(out$session) )
                      {
@@ -984,7 +984,7 @@ REST_CASConnection <- setRefClass(
                   {
                      url <- paste(current_baseurl_, 'cas', 'sessions', session, sep='/')
                      res <- httr::GET(url, auth_, config_)
-                     out <- httr::content(res, as='parsed')
+                     out <- httr::content(res, as='parsed', type='application/json')
    
                      if ( is.null(out$uuid) )
                         stop(paste(url, ':', out$error))
@@ -1028,7 +1028,7 @@ REST_CASConnection <- setRefClass(
                                                           body=body
                                                           #, verbose()
                                                           ),
-                                         as='parsed')
+                                         as='parsed', type='application/json')
                     break
                 }, error=function (e) {
                     .self$set_next_connection_()
@@ -1046,7 +1046,7 @@ REST_CASConnection <- setRefClass(
                                                     body=body
                                                     #, verbose()
                                                     ),
-                                   as='parsed')
+                                   as='parsed', type='application/json')
 
                     result_id <- res$result$`Queued Results`$rows[[1]][[1]]
 
@@ -1145,7 +1145,7 @@ REST_CASConnection <- setRefClass(
                                                  body=httr::upload_file(file_name)
                                                  #, verbose()
                                                  ),
-                                 as='parsed')
+                                 as='parsed', type='application/json')
 
             if ( !('disposition' %in% names(results_)) ) {
                 if ( 'error' %in% names(results_) ) {
