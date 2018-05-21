@@ -951,7 +951,7 @@ REST_CASConnection <- setRefClass(
                   {
                      url <- paste(current_baseurl_, 'cas', 'sessions', sep='/')
                      res <- httr::PUT(url, auth_, config_)
-                     out <- httr::content(res, as='parsed', type='application/json')
+                     out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
    
                      if ( is.null(out$session) )
                      {
@@ -984,7 +984,7 @@ REST_CASConnection <- setRefClass(
                   {
                      url <- paste(current_baseurl_, 'cas', 'sessions', session, sep='/')
                      res <- httr::GET(url, auth_, config_)
-                     out <- httr::content(res, as='parsed', type='application/json')
+                     out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
    
                      if ( is.null(out$uuid) )
                         stop(paste(url, ':', out$error))
@@ -1028,7 +1028,7 @@ REST_CASConnection <- setRefClass(
                                                           body=body
                                                           #, verbose()
                                                           ),
-                                         as='parsed', type='application/json')
+                                         as='text', encoding='utf-8')
                     break
                 }, error=function (e) {
                     .self$set_next_connection_()
@@ -1046,7 +1046,7 @@ REST_CASConnection <- setRefClass(
                                                     body=body
                                                     #, verbose()
                                                     ),
-                                   as='parsed', type='application/json')
+                                   as='parsed', type='application/json', encoding='utf-8')
 
                     result_id <- res$result$`Queued Results`$rows[[1]][[1]]
 
@@ -1060,6 +1060,12 @@ REST_CASConnection <- setRefClass(
                     action_name <- out$action_name
                     body <- out$body
                 }
+            }
+
+            if ( class(results_) == 'character' ) {
+                results_ <<- jsonlite::fromJSON(gsub('\f', '\\\\f', 
+                                                gsub('\r', '\\\\r', results_)),
+                                                simplifyVector=FALSE)
             }
 
             if ( !('disposition' %in% names(results_)) ) {
@@ -1145,7 +1151,7 @@ REST_CASConnection <- setRefClass(
                                                  body=httr::upload_file(file_name)
                                                  #, verbose()
                                                  ),
-                                 as='parsed', type='application/json')
+                                 as='parsed', type='application/json', encoding='utf-8')
 
             if ( !('disposition' %in% names(results_)) ) {
                 if ( 'error' %in% names(results_) ) {
