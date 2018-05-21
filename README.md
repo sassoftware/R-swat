@@ -24,8 +24,9 @@ the following requirements:
 * Use 64-bit Linux or 64-bit Windows. 
 * Use a 64-bit version of R. 
 * Use R 3.1.0 or later.
-* Install the ``httr`` and ``jsonlite`` packages. These packages have additional dependencies
-that are automatically installed from CRAN when you run install.packages(). 
+* Install the ``dplyr``, ``httr`` and ``jsonlite`` packages. These packages
+have additional dependencies that are automatically installed from CRAN
+when you run install.packages(). 
 
 ### Installation
 
@@ -43,6 +44,7 @@ You can also install from within R directly using a URL.
 
 ```
 # Make sure prerequisites are installed
+> install.packages('dplyr')
 > install.packages('httr')
 > install.packages('jsonlite')
 

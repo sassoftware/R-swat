@@ -575,13 +575,20 @@ CAS <- setRefClass(
 
    fields = list(
       sw_connection = 'ANY',
-      sw_error = 'ANY',
-      soptions = 'character',
-      hostname = 'character',
-      port = 'numeric',
-      protocol = 'character',
-      username = 'character',
-      session = 'character'
+      sw_error      = 'ANY',
+      soptions      = 'character',
+      hostname      = 'character',
+      port          = 'numeric',
+      protocol      = 'character',
+      username      = 'character',
+      session       = 'character',
+      performance   = 'ANY',                         
+      severity      = 'ANY',            
+      statusCode    = 'ANY',             
+      reason        = 'ANY',            
+      status        = 'ANY',             
+      messages      = 'ANY',                         
+      events        = 'ANY'                        
    ),
 
    methods = list(
@@ -877,8 +884,8 @@ CAS <- setRefClass(
             do.call(.self$invoke, args)
             output <- list()
             results <- list()
-            messages <- list()
-            events <- list()
+            msgs <- list()
+            evts <- list()
             idx <- 1
             while ( TRUE ) {
                nextresp <- getnext(.self, datamsghandler=datamsghandler)
@@ -897,7 +904,7 @@ CAS <- setRefClass(
                      }
                      else if ( substr(key, 1, 1) == '$' )
                      {
-                         events[[key]] <- result[[i]]
+                         evts[[key]] <- result[[i]]
                      }
                      else
                      {
@@ -906,7 +913,7 @@ CAS <- setRefClass(
                   }
                }
 
-               messages <- c(messages, nextresp$response$messages)
+               msgs <- c(msgs, nextresp$response$messages)
 
                output[['performance']] <- nextresp$response$performance
                output[['disposition']] <- nextresp$response$disposition
@@ -915,9 +922,18 @@ CAS <- setRefClass(
                 break
             }
          }
-         output[['messages']] <- messages
+         output[['messages']] <- msgs
          output[['results']] <- results
-         output[['events']] <- events
+         output[['events']] <- evts
+
+         .self$performance = output[['performance']] 
+         .self$severity    = output[['disposition']][['severity']] 
+         .self$statusCode  = output[['disposition']][['statusCode']] 
+         .self$reason      = output[['disposition']][['reason']] 
+         .self$status      = output[['disposition']][['status']] 
+         .self$messages    = output[['messages']]   
+         .self$events      = output[['events']]      
+
          return (output)
       },
 
@@ -984,7 +1000,7 @@ CAS <- setRefClass(
 
          output <- list()
          results <- list()
-         messages <- list()
+         msgs <- list()
          idx <- 1
          if ( !is.null(response) )
          {
@@ -1008,12 +1024,12 @@ CAS <- setRefClass(
                }
             }
 
-            messages <- c(messages, response$messages)
+            msgs <- c(msgs, response$messages)
 
             output[['performance']] <- response$performance
             output[['disposition']] <- response$disposition
          }
-         output[['messages']] <- messages
+         output[['messages']] <- msgs
          output[['results']] <- results
          return (output)
       }

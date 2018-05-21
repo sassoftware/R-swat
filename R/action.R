@@ -354,13 +354,13 @@ listActionParms <- function(conn, actn){
      actn = toString(substitute(actn))
   if (startsWith(actn, 'cas.'))
      actn = substr(actn, 5, nchar(actn))
-  res = cas.builtins.reflect(conn, action=actn)
+  res <- conn$retrieve('builtins.reflect', action=actn)
   swat::check_for_cas_errors(res)
-  str   = paste("cas.", actn,'(', sep='')
-  plist = list()
-  i     = 1
-  sep   = ''
-  for (parms in res[[1]]$actions[[1]]$params)
+  str   <- paste("cas.", actn,'(', sep='')
+  plist <- list()
+  i     <- 1
+  sep   <- ''
+  for (parms in res$results[[1]]$actions[[1]]$params)
      {
      str = paste(str, sep, parms$name, '=\"', parms$parmType, '\"', sep=''); sep = ', '
      plist[[i]] = list('name'=parms$name, 'parmType'=parms$parmType)
