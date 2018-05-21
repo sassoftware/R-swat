@@ -422,13 +422,9 @@ For a list of all the CAS actions that are available with
 SAS Visual Analytics, SAS Visual Statistics, and SAS Visual
 Data Mining and Machine Learning, see the following URL:
 
-\href{http://documentation.sas.com/?cdcId=cdcId=pgmsascdc&cdcVersion=9.4_3.3
-&docsetId=allprodsactions&docsetTarget=actionsByName.htm}{SAS 9.4 
-and SAS Viya 3.3 Programming: Actions and Action Sets by Name and Product}
-
-\href{http://documentation.sas.com/?cdcId=vdmmlcdc&cdcVersion=8.11
-&docsetId=allprodsactions&docsetTarget=actionsByName.htm}{SAS Viya
-3.2 Programming: Actions and Action Sets by Name and Product}
+\href{http://documentation.sas.com/http://documentation.sas.com/?softwareId=pgm
+&softwareVersion=production.a&softwareContextId=allProdsActions&showBanner=develop}{
+Actions and Action Sets by Name and Product}
 
 For the latest product documentation for SAS Viya, see 
 \href{http://support.sas.com/documentation/onlinedoc/viya/index.html}{
