@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
+library('dplyr')
 
 
 # CAS descriptive statistics
@@ -191,19 +191,19 @@ setMethod("cor",
               vars = c(x@names, y@names)
               vars = vars[vars != ""]
               if (length(vars) == 0)
-                 vars = ""
+                vars = ""
               cvars = c(x@computedVars, y@computedVars)
               cvars = cvars[cvars != ""]
               if (length(cvars) == 0)
-                 {
-                 cvars = ""
-                 cpgm  = ""
-                 }
+              {
+                cvars = ""
+                cpgm  = ""
+              }
               else
-                 {
-                 cpgm = c(x@computedVarsProgram, y@computedVarsProgram)
-                 cpgm = cpgm[cpgm != ""]
-                 }
+              {
+                cpgm = c(x@computedVarsProgram, y@computedVarsProgram)
+                cpgm = cpgm[cpgm != ""]
+              }
               v2 <- x
               v2@names               = vars
               v2@computedVars        = cvars
@@ -211,7 +211,7 @@ setMethod("cor",
               tp = swat::gen.table.parm(v2)
               vars = c(v2@names, v2@computedVars)
               vars = vars[vars != ""]
-
+              
               # check if use != complete and there are any missing values then return NA
               if ( ! startsWith(use, 'c')){
                 if (sum(cas.nmiss(v2)) > 0){
@@ -239,7 +239,7 @@ setMethod("cor",
               rownames(cormat) <- as.list(unlist(t(cormat[1])))
               cormat2 <- cormat[-1]
               cormat2 <- cormat2[c(vars)]
-
+              
               cormat3 <- cormat2[1:length(x),(nrow(cormat2)-length(y)+1):nrow(cormat2)]
               if (is.null(dim(cormat3))) {
                 return (as.numeric(cormat3))
@@ -355,19 +355,19 @@ setMethod("cov",
               vars = c(x@names, y@names)
               vars = vars[vars != ""]
               if (length(vars) == 0)
-                 vars = ""
+                vars = ""
               cvars = c(x@computedVars, y@computedVars)
               cvars = cvars[cvars != ""]
               if (length(cvars) == 0)
-                 {
-                 cvars = ""
-                 cpgm  = ""
-                 }
+              {
+                cvars = ""
+                cpgm  = ""
+              }
               else
-                 {
-                 cpgm = c(x@computedVarsProgram, y@computedVarsProgram)
-                 cpgm = cpgm[cpgm != ""]
-                 }
+              {
+                cpgm = c(x@computedVarsProgram, y@computedVarsProgram)
+                cpgm = cpgm[cpgm != ""]
+              }
               v2 <- x
               v2@names               = vars
               v2@computedVars        = cvars
@@ -385,7 +385,7 @@ setMethod("cov",
               cov <- cor2cov(x)
               return(as.matrix(cov))
             }
-})
+          })
 
 #' Column Means
 #'
@@ -1003,12 +1003,13 @@ setMethod("summary",
                    digits = max(3, getOption("digits")-3), ...) {
             tp = gen.table.parm(object)
             if (sum(nchar(tp$computedVars)))
-               {
-               tp$vars = c(tp$vars, tp$computedVars)
-               tp$vars = tp$vars[tp$vars != ""] 
-               }
+            {
+              tp$vars = c(tp$vars, tp$computedVars)
+              tp$vars = tp$vars[tp$vars != ""] 
+            }
             res <- casRetrieve(object@conn, 'table.columninfo', table=tp)
             d = dim(res$results$ColumnInfo)
+            # initialize variable lists
             ret   = list()
             nvars = list()
             cvars = list()
@@ -1022,20 +1023,22 @@ setMethod("summary",
                   cvars = c(cvars, res$results$ColumnInfo$Column[i])
               }
             }
-
+            # get distinct counts for NA's (missing values)
+            distinct_res <- casRetrieve(object@conn, 'simple.distinct', table=tp)
             if (length(nvars) > 0)
-              {
-                nres <- casRetrieve(object@conn, 'simple.summary', table=tp, inputs=nvars, subSet=list("NMISS", "MIN", "MEAN", "MAX"))
-                ret = nres$results$Summary
-                pctres <- casRetrieve(object@conn, 'percentile.percentile', table=tp, inputs=nvars, values=list('25', '50', '75'))
-                pet <- pctres$results$Percentile
-              }
-
+            {
+              # get statistics for numeric variables
+              nres <- casRetrieve(object@conn, 'simple.summary', table=tp, inputs=nvars, subSet=list("NMISS", "MIN", "MEAN", "MAX"))
+              ret = nres$results$Summary
+              pctres <- casRetrieve(object@conn, 'percentile.percentile', table=tp, inputs=nvars, values=list('25', '50', '75'))
+              pet <- pctres$results$Percentile
+            }
+            
             # format items to look like the summary function
             # create empty list
             z <- vector("list", length = nrow(res$results$ColumnInfo[1]))
             names(z) <-t(res$results$ColumnInfo[1])
-
+            
             ncw <- function(x) {
               z <- nchar(x, type = "w")
               if (any(na <- is.na(z))) {
@@ -1043,7 +1046,17 @@ setMethod("summary",
               }
               z
             }
-
+            if (length(cvars) > 0) {
+              # get statistics for character variables
+              freqres <- casRetrieve(object@conn, 'simple.freq', table=tp, inputs=cvars, includeMissing=FALSE)
+              fres <- freqres$results$Frequency %>% 
+                select(Column, FmtVar, Frequency) %>%
+                group_by(Column) %>%
+                arrange(Column, desc(Frequency)) %>%
+                top_n(n=5) %>%
+                filter(row_number() <=6)
+            } 
+            
             sumpop <- function(v, n=maxsum){
               # create numeric statistics
               if (v %in% nvars){
@@ -1051,7 +1064,7 @@ setMethod("summary",
                 names(s1) <- c('1st Qu.','Median','3rd Qu.')
                 s2 <- unlist(ret[ret$Column==v, c(2,5,3)])
                 names(s2) <- c('Min.','Mean','Max.')
-                s3 <- cas.nmiss(object[v])
+                s3 <- distinct_res$results$Distinct[distinct_res$results$Distinct$Column==v,3]
                 if (s3 > 0){
                   names(s3) <- "NA's"
                   s3[1] <- as.character(s3[1])
@@ -1060,18 +1073,14 @@ setMethod("summary",
                 else {
                   return (c(s2[1],s1[1],s1[2],s2[2],s1[3],s2[3]))
                 }
-                
               }
               else {
-                tname = paste('"',tp$name,'"', sep='')
-                query <- paste('select', v, ',', 'count(*) as frequency', 'from', tname, 'group by', v, 'order by', v, 'limit', n, ';')
-                if (length(object@where)>1) {
-                  query <- paste('select', v, ',', 'count(*) as frequency', 'from', tname, "where", object@where, 'group by', v, 'order by', v, 'limit', n, ';')
+                myDF <- as.data.frame(fres[fres$Column==v,2:3])
+                nmiss <- distinct_res$results$Distinct[distinct_res$results$Distinct$Column==v,3]
+                if ( nmiss > 0) {
+                  myDF <- rbind(myDF, c("NA's", nmiss))
                 }
-                fres <- casRetrieve(object@conn, 'fedSql.execDirect', query=query)
-                myDF <- fres$results$'Result Set'
-                myDF[myDF==''] <- "NA's"
-                f2 <- unlist(fres$results$'Result Set'[2])
+                f2 <- unlist(myDF[2])
                 names(f2) <- unlist(myDF[1])
                 f3 <- f2
                 if (names(f2[1]) =="NA's"){
@@ -1081,29 +1090,27 @@ setMethod("summary",
                 }
                 return (f3)
               }
-
+              
             }
             nm <- tp$vars
             nv <- length(nvars)+length(cvars)
             for (i in seq_len(nv)) {
               z[[i]] <- sumpop(names(z[i]))
             }
-
+            
             lw <- numeric(nv)
             nr <- if (nv)
               max(vapply(z, function(x) NROW(x) + (!is.null(attr(x, "NAs"))), integer(1)))
             else 0
-            #nr <- nrow(object)
             for (i in seq_len(nv)) {
               z[[i]] <- sumpop(names(z[i]))
-
+              
               sms <- z[[i]]
-              sms <- format(sms, digits = digits)
-              lbs <- format(names(sms))
-              sms <- paste0(lbs, ":", sms, "  ")
+              lbs <- format(trimws(names(sms)))
+              sms2 <- paste0(lbs, ":", format(as.numeric(sms), digits = digits), "  ")
               lw[i] <- ncw(lbs[1L])
-              length(sms) <- nr
-              z[[i]] <- sms
+              length(sms2) <- nr
+              z[[i]] <- sms2
             }
             if (nv) {
               z <- unlist(z, use.names = TRUE)
