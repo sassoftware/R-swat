@@ -422,7 +422,7 @@ For a list of all the CAS actions that are available with
 SAS Visual Analytics, SAS Visual Statistics, and SAS Visual
 Data Mining and Machine Learning, see the following URL:
 
-\href{http://documentation.sas.com/http://documentation.sas.com/?softwareId=pgm
+\href{http://documentation.sas.com/?softwareId=pgm
 &softwareVersion=production.a&softwareContextId=allProdsActions&showBanner=develop}{
 Actions and Action Sets by Name and Product}
 
