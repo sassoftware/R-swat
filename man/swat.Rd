@@ -80,14 +80,9 @@ You can also run an action using the generated \R function:
 
 \section{Action documentation}{
 
-\itemize{
-  \item{\href{http://documentation.sas.com/?cdcId=pgmsascdc&cdcVersion=9.4_3.3
-&docsetId=allprodsactions&docsetTarget=actionsByName.htm}{SAS 9.4
-and SAS Viya 3.3 Programming: Actions and Action Sets by Name and Product}}
-  \item{\href{http://documentation.sas.com/?cdcId=vdmmlcdc&cdcVersion=8.11
-&docsetId=allprodsactions&docsetTarget=actionsByName.htm}{SAS Viya 3.2 
-Programming: Actions and Action Sets by Name and Product}}
-}
+See the \href{http://documentation.sas.com/http://documentation.sas.com/?softwareId=pgm
+&softwareVersion=production.a&softwareContextId=allProdsActions&showBanner=develop}{
+Actions and Action Sets by Name and Product}
 }
 
 \author{
