@@ -78,7 +78,7 @@
 #' }
 #'
 #' @section Action documentation:
-#' See the \href{http://documentation.sas.com/http://documentation.sas.com/?softwareId=pgm
+#' See the \href{http://documentation.sas.com/?softwareId=pgm
 #' &softwareVersion=production.a&softwareContextId=allProdsActions&showBanner=develop}{
 #' Actions and Action Sets by Name and Product}
 #'
