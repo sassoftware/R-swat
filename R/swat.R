@@ -103,20 +103,16 @@
 }
 
 .onLoad <- function(lib, pkg) {
-    if ( is.null(getOption('cas.print.messages')) )
-    {
-       options(
-          cas.trace.actions=FALSE,
-          cas.trace.ui.actions=FALSE,
-          cas.print.messages=TRUE,
-          cas.message.level='note',
-          cas.message.level.ui='error',
-          cas.max.download.rows=10000,
-          cas.gen.function.sig=FALSE,
-          cas.bygroup.mode='raw',  # raw, formatted, both, none
-          cas.bygroup.dup.suffix='_f'
-      )
-   }
+   if ( is.null(getOption('cas.trace.actions')) ) { options(cas.trace.actions=FALSE) }
+   if ( is.null(getOption('cas.trace.ui.actions')) ) { options(cas.trace.ui.actions=FALSE) }
+   if ( is.null(getOption('cas.print.messages')) ) { options(cas.print.messages=TRUE) }
+   if ( is.null(getOption('cas.message.level')) ) { options(cas.message.level='note') }
+   if ( is.null(getOption('cas.message.level.ui')) ) { options(cas.message.level.ui='error') }
+   if ( is.null(getOption('cas.max.download.rows')) ) { options(cas.max.download.rows=10000) }
+   if ( is.null(getOption('cas.gen.function.sig')) ) { options(cas.gen.function.sig=FALSE) }
+   # raw, formatted, both, none
+   if ( is.null(getOption('cas.bygroup.mode')) ) { options(cas.bygroup.mode='raw') }
+   if ( is.null(getOption('cas.bygroup.dup.suffix')) ) { options(cas.bygroup.dup.suffix='_f') }
 
    if ( grepl('darwin', R.version$os) )
    {
