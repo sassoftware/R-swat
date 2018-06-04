@@ -1050,11 +1050,11 @@ setMethod("summary",
               # get statistics for character variables
               freqres <- casRetrieve(object@conn, 'simple.freq', table=tp, inputs=cvars, includeMissing=FALSE)
               fres <- freqres$results$Frequency %>% 
-                select(Column, FmtVar, Frequency) %>%
-                group_by(Column) %>%
-                arrange(Column, desc(Frequency)) %>%
-                top_n(n=5) %>%
-                filter(row_number() <=6)
+                dplyr::select(Column, FmtVar, Frequency) %>%
+                dplyr::group_by(Column) %>%
+                dplyr::arrange(Column, desc(Frequency)) %>%
+                dplyr::top_n(n=5) %>%
+                dplyr::filter(row_number() <=6)
             } 
             
             sumpop <- function(v, n=maxsum){
