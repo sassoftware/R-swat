@@ -31,13 +31,13 @@ when you run install.packages().
 ### Installation
 
 The SWAT package for R is available from SAS as a tar.gz file. You can download 
-releases from https://github.com/sassoftware/r-swat/releases.
+releases from https://github.com/sassoftware/R-swat/releases.
 
 After you download the package, you can install the package with a command that is 
 similar to the following: 
 
 ```
-R CMD INSTALL r-swat-X.X.X-platform.tar.gz
+R CMD INSTALL R-swat-X.X.X-platform.tar.gz
 ```
 
 You can also install from within R directly using a URL.
@@ -48,7 +48,7 @@ You can also install from within R directly using a URL.
 > install.packages('httr')
 > install.packages('jsonlite')
 
-> install.packages('https://github.com/sassoftware/r-swat/releases/download/vX.X.X/r-swat-X.X.X-platform.tar.gz',
+> install.packages('https://github.com/sassoftware/R-swat/releases/download/vX.X.X/R-swat-X.X.X-platform.tar.gz',
                    repos=NULL, type='file')
 ```
 
@@ -57,8 +57,15 @@ you should install the source code tar.gz.  These platforms will be
 limited to using the CAS REST interface only.
 
 ```
-> install.packages('https://github.com/sassoftware/r-swat/archive/vX.X.X.tar.gz', 
+> install.packages('https://github.com/sassoftware/R-swat/archive/vX.X.X.tar.gz', 
                    repos=NULL, type='file')
+```
+
+If you have devtools installed, you can install directly from GitHub.
+
+```
+library(devtools)
+devtools::install_github(repo='sassoftware/R-swat')
 ```
 
 ## Connecting to CAS
