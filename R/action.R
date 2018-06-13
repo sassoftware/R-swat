@@ -117,11 +117,23 @@ runAction <-  function(CASorCASTab='',actn, ...) {
    else
       {
       cas = CASorCASTab
+       if ( is.null(CASorCASTab) || ( is.character(CASorCASTab) && nchar(CASorCASTab) == 0 ) )
+       {
+           stop('No CAS connection was specified for the action')
+       }
       if (actn == 'builtins.loadActionSet')
          {
          stopifnot(class(cas) == 'CAS') 
          actionSet=list(...)[[1]]
          res <- casRetrieve(cas, 'builtins.loadActionSet', actionSet=actionSet)
+         gen.functions(cas, actionSet)
+         swat::check_for_cas_errors(res)
+         }
+      else if (actn == 'builtins.defineActionSet')
+         {
+         stopifnot(class(cas) == 'CAS') 
+         actionSet=list(...)$name
+         res <- casRetrieve(cas, 'builtins.defineActionSet', ...)
          gen.functions(cas, actionSet)
          swat::check_for_cas_errors(res)
          }
