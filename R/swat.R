@@ -1892,7 +1892,7 @@ casvaluelist2r <- function(sw_values, len) {
 }
 
 rbind.bygroups <- function(res) {
-   if ( is.null(res[['ByGroupInfo']]) && is.null(res[['BySet1.ByGroupInfo']]) )
+   if ( is.null(res[['ByGroupInfo']]) && is.null(res[['ByGroupSet1.ByGroupInfo']]) )
    {
       return( res )
    }
@@ -1901,9 +1901,9 @@ rbind.bygroups <- function(res) {
 
    for ( name in names(res) )
    {
-      if ( grepl('^(BySet\\d+\\.)?ByGroup\\d+\\.', name, perl=TRUE) )
+      if ( grepl('^(ByGroupSet\\d+\\.)?ByGroup\\d+\\.', name, perl=TRUE) )
       {
-          tblname <- gsub('^(BySet\\d+\\.)?ByGroup\\d+\\.', '\\1', name, perl=TRUE)
+          tblname <- gsub('^(ByGroupSet\\d+\\.)?ByGroup\\d+\\.', '\\1', name, perl=TRUE)
           if ( is.null(tables[[tblname]]) )
           {
               tables[[tblname]] <- list()
