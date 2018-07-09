@@ -1049,6 +1049,7 @@ setMethod("summary",
             if (length(cvars) > 0) {
               # get statistics for character variables
               freqres <- casRetrieve(object@conn, 'simple.freq', table=tp, inputs=cvars, includeMissing=FALSE)
+              `%>%` <- dplyr::`%>%`
               fres <- freqres$results$Frequency %>% 
                 dplyr::select(Column, FmtVar, Frequency) %>%
                 dplyr::group_by(Column) %>%
