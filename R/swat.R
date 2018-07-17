@@ -640,12 +640,32 @@ CAS <- setRefClass(
 
          if ( !is.null(options) && 'authinfo' %in% names(options) && password == '' )
          {
-            if ( class(options$authinfo) == 'character' )
+            if ( class(options$authinfo) == 'character' && length(options$authinfo) == 1 )
             {
-               password <- paste('authinfo={', options$authinfo, '}', sep='')
+               if ( !file.exists(options$authinfo) )
+               {
+                   stop(paste('The specified authinfo file does not exist:', options$authinfo))
+               }
+               password <- paste('authinfo={{', options$authinfo, '}}', sep='')
             }
-            else if ( class(options$authinfo) == 'list' )
+            else if ( class(options$authinfo) == 'list' || length(options$authinfo) > 1 )
             {
+               found = FALSE
+               for ( i in 1:length(options$authinfo) ) {
+                   if ( file.exists(options$authinfo[[i]]) )
+                   {
+                      found = TRUE
+                   }
+               }
+               if ( !found )
+               {
+                   msg <- 'None of the specified authinfo files exist:'
+                   for ( i in 1:length(options$authinfo) )
+                   {
+                       msg <- paste(msg, options$authinfo[[i]], sep='\n    ')
+                   }
+                   stop(msg)
+               }
                password <- ''
                for ( i in 1:length(options$authinfo) )
                {
