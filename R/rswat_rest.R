@@ -908,6 +908,8 @@ REST_CASConnection <- setRefClass(
             {
                 authinfo <- substr(password, 11, nchar(password) - 1)
                 authinfo <- strsplit(authinfo, '\\}\\{', perl=TRUE)[[1]]
+                authinfo <- gsub('^{', '', authinfo, perl=TRUE)
+                authinfo <- gsub('}$', '', authinfo, perl=TRUE)
                 authinfo <- query_authinfo(host=current_hostname_, user=username,
                                            protocol=current_port_, filepath=authinfo)
             }
