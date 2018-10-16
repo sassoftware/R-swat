@@ -61,13 +61,6 @@ limited to using the CAS REST interface only.
                    repos=NULL, type='file')
 ```
 
-If you have devtools installed, you can install directly from GitHub.
-
-```
-library(devtools)
-devtools::install_github(repo='sassoftware/R-swat')
-```
-
 ## Connecting to CAS
 
 ### Authinfo File
