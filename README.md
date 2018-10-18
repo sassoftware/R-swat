@@ -131,3 +131,8 @@ $Summary
 # Explore results
 > out$Summary[c('Column', 'Min', 'Max')]
 ```
+
+If you get an error message about the **TCP/IP negClientSSL support routine**, you 
+likely have an issue with your SSL certificate configuration.  See the 
+[Encryption](https://sassoftware.github.io/python-swat/encryption.html) documentation
+(the R configuration is the same as the Python client) for more information.
