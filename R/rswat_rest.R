@@ -539,7 +539,7 @@ REST_CASResponse <- setRefClass(
                 status = disp$formattedStatus,
                 reason = mapreason(disp$reason),
                 severity = mapseverity(disp$severity),
-                status_code = disp$statusCode
+                statusCode = disp$statusCode
             )
 
             update_flags_ <<- list()
@@ -631,7 +631,7 @@ REST_CASResponse <- setRefClass(
         },
 
         getDispositionStatusCode = function() {
-            return( disposition_$status_code )
+            return( disposition_$statusCode )
         },
 
         getDispositionStatus = function() {

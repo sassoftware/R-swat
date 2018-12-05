@@ -605,20 +605,42 @@ CAS <- setRefClass(
             hostname <<- hostname
          }
 
+         if ( Sys.getenv('CASPROTOCOL') != '' )
+             protocol <<- Sys.getenv('CASPROTOCOL')
+
+         # derive default port number
          if ( is.null(port) )
          {
             if ( Sys.getenv('CASPORT') != '' )
+            {
                port <<- as.integer(Sys.getenv('CASPORT'))
+            }
+            else if ( !is.null(protocol) && protocol != '' && protocol != 'auto' )
+            {
+               if ( protocol == 'http' ) 
+                  port <<- 8777
+               else if ( protocol == 'https' )
+                  port <<- 443
+               else
+                  port <<- 5570
+            }
+            else if ( grepl('^https:', hostname, perl=TRUE) )
+            {
+                port <<- 443
+            }
+            else if ( grepl('^http:', hostname, perl=TRUE) )
+            {
+                port <<- 8777
+            }
             else
-               port <<- 5570
+            {
+                port <<- 5570
+            }
          }
          else
          {
             port <<- port
          }
-
-         if ( Sys.getenv('CASPROTOCOL') != '' )
-             protocol <<- Sys.getenv('CASPROTOCOL')
 
          soptions <<- ''
 
@@ -934,7 +956,8 @@ CAS <- setRefClass(
                output[['performance']] <- nextresp$response$performance
                output[['disposition']] <- nextresp$response$disposition
             }
-            if ( output[['disposition']][['statusCode']] != RETRY_ACTION_CODE ) {
+            if ( !is.null(output[['disposition']][['statusCode']]) && 
+                 output[['disposition']][['statusCode']] != RETRY_ACTION_CODE ) {
                 break
             }
          }
