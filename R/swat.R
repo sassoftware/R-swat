@@ -605,41 +605,46 @@ CAS <- setRefClass(
             hostname <<- hostname
          }
 
-         if ( Sys.getenv('CASPROTOCOL') != '' )
-             protocol <<- Sys.getenv('CASPROTOCOL')
+         port <<- 5570
 
-         # derive default port number
-         if ( is.null(port) )
+         if ( Sys.getenv('CASPROTOCOL') != '' ) 
          {
-            if ( Sys.getenv('CASPORT') != '' )
-            {
-               port <<- as.integer(Sys.getenv('CASPORT'))
-            }
-            else if ( !is.null(protocol) && protocol != '' && protocol != 'auto' )
-            {
-               if ( protocol == 'http' ) 
-                  port <<- 8777
-               else if ( protocol == 'https' )
-                  port <<- 443
-               else
-                  port <<- 5570
-            }
-            else if ( grepl('^https:', hostname, perl=TRUE) )
-            {
-                port <<- 443
-            }
-            else if ( grepl('^http:', hostname, perl=TRUE) )
-            {
-                port <<- 8777
-            }
-            else
-            {
-                port <<- 5570
+            protocol <<- Sys.getenv('CASPROTOCOL')
+            if ( protocol == 'http' ) {
+               port <<- 8777     
+            } else if ( protocol == 'https' ) {
+               port <<- 443
+            } else {
+               port <<- 5570
             }
          }
-         else
-         {
-            port <<- port
+
+         if ( grepl('^https:', .self$hostname[[1]], perl=TRUE) ) {
+            protocol <<- 'https'
+            port <<- 443
+         } else if ( grepl('^http:', .self$hostname[[1]], perl=TRUE) ) {
+            protocol <<- 'http'
+            port <<- 8777
+         }
+
+         if ( Sys.getenv('CASPORT') != '' ) {
+            port <<- as.integer(Sys.getenv('CASPORT'))
+         }
+
+         if ( !is.null(port) ) {
+            port <<- as.integer(port)
+         }
+
+         if ( grepl('^https:', .self$hostname[[1]], perl=TRUE) ) {
+            url <- httr::parse_url(.self$hostname[[1]])
+            if ( !is.null(url$port) ) {
+                port <<- as.integer(port)
+            }
+         } else if ( grepl('^http:', .self$hostname[[1]], perl=TRUE) ) {
+            url <- httr::parse_url(.self$hostname[[1]])
+            if ( !is.null(url$port) ) {
+                port <<- as.integer(port)
+            }
          }
 
          soptions <<- ''
@@ -724,10 +729,9 @@ CAS <- setRefClass(
                }
 
                tryCatch({
-                    httr::GET(paste('http://', url$hostname, ':', url$port, '/cas', sep=''))
+                    httr::GET(paste('http://', url$hostname, ':', .self$port, '/cas', sep=''))
                     protocol <<- 'http'
                     hostname <<- gsub('^auto', 'http', .self$hostname, perl=TRUE)
-                    port <<- as.integer(url$port)
                }, error=function (e) { })
 
                if ( .self$protocol == 'http' )
@@ -758,10 +762,7 @@ CAS <- setRefClass(
                url <- httr::parse_url(.self$hostname[[i]])
                if ( is.null(url$hostname) )
                    url$hostname <- .self$hostname[[i]]
-               if ( is.null(url$port) )
-                   url$port <- port
                hostname[[i]] <<- url$hostname
-               port <<- as.integer(url$port)
             }
          }
 
