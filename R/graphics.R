@@ -63,13 +63,13 @@ setMethod("plot",
         # sample rows
         if (length(x@groupby)){ # SRS
           name <- paste(x@tname, random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
-          res <- runAction(x@conn, "sampling.srs", 
+          res <- runAction(x@conn, "sampling.srs", check_errors=TRUE, 
                             samppct=eval(downloadObs/nrow(x)*100),
                             table=x@tname,
                             output=list(casOut=list(name=name, 
                                                     replace=TRUE), copyvars=list(vars))
                             )
-          check_for_cas_errors(res)
+          #check_for_cas_errors(res)
           srs <- defCasTable(x@conn, name, columns = vars, where = x@where, 
                               orderby = x@orderby, groupby = x@groupby, gbmode = x@gbmode)
           m1 <-paste("sampling (SRS) was done prior to", sys.call(1), "because the nrows in", nrow(x), "which is greater than the max download size of", downloadObs)
@@ -79,13 +79,13 @@ setMethod("plot",
         }
         else { # Stratified
           name <- paste(x@tname, random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
-          res <- runAction(x@conn, "sampling.srs", 
+          res <- runAction(x@conn, "sampling.srs", check_errors=TRUE, 
                             samppct=eval(downloadObs/nrow(x)*100),
                             table=x@tname,
                             output=list(casOut=list(name=name, 
                                                     replace=TRUE), copyvars=list(vars))
           )
-          check_for_cas_errors(res)
+          #check_for_cas_errors(res)
           srs <- defCasTable(x@conn, name, columns = vars, where = x@where, 
                               orderby = x@orderby, groupby = x@groupby, gbmode = x@gbmode)
           m1 <-paste("sampling (Stratified) was done prior to", sys.call(1), "because the nrows in", nrow(x), "which is greater than the max download size of", downloadObs)
