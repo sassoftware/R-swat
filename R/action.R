@@ -98,7 +98,7 @@
 #  as.list(res$results)
 #}
 #
-runAction <-  function(CASorCASTab='',actn, ...) {
+runAction <-  function(CASorCASTab='', actn, check_errors=FALSE, ...) {
    if ( is.null(CASorCASTab) || ( is.character(CASorCASTab) && nchar(CASorCASTab) == 0 ) )
       {
          args <- list(...)
@@ -143,6 +143,9 @@ runAction <-  function(CASorCASTab='',actn, ...) {
          res <- do.call('casRetrieve', pms)
          }
       }
+
+  if (check_errors)
+     check_for_cas_errors(res)
 
   as.list(res$results)
 }
@@ -260,9 +263,9 @@ gen.functions2 <-  function(cas, actionSet) {
 
 .gen.sig <-  function(cas, actn) {
   #message(paste("get action list", Sys.time()))
-  res = runAction(cas, 'builtins.reflect', action=actn)
+  res = runAction(cas, 'builtins.reflect', check_errors=TRUE, action=actn)
   #message(paste("got action list", Sys.time()))
-  swat::check_for_cas_errors(res)
+  #swat::check_for_cas_errors(res)
   str  = ''
   str2 = ''
   for (parms in res[[1]]$actions[[1]]$params)
