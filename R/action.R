@@ -101,11 +101,11 @@
 runAction <-  function(CASorCASTab='', actn, check_errors=FALSE, ...) {
    if ( is.null(CASorCASTab) || ( is.character(CASorCASTab) && nchar(CASorCASTab) == 0 ) )
       {
-         args <- list(...)
-         if ( !is.null(args[['table']]) && class(args[['table']]) == 'CASTable' )
-            {
-            CASorCASTab <- args[['table']]@conn
-            }
+      args <- list(...)
+      if ( !is.null(args[['table']]) && class(args[['table']]) == 'CASTable' )
+         {
+         CASorCASTab <- args[['table']]@conn
+         }
       }
    if (class(CASorCASTab) == 'CASTable')
       {
@@ -268,15 +268,44 @@ gen.functions2 <-  function(cas, actionSet) {
   #swat::check_for_cas_errors(res)
   str  = ''
   str2 = ''
+  str3 = '   args <- list(...)\n'
   for (parms in res[[1]]$actions[[1]]$params)
      {
      #message(paste("for parm", Sys.time()))
-     str  = paste(str,  ", `", parms$name, '`=NULL',  sep = '')
-     str2 = paste(str2, ", `", parms$name, '`=`', parms$name, "`", sep = '')
+
+     if (! is.null(parms$isRequired))
+        {
+        str  = paste(str,  ", `", parms$name, '`',  sep = '')
+        str2 = paste(str2, ", `", parms$name, '`=`', parms$name, "`", sep = '')
+        }
+     else
+        if (! is.null(parms$default))
+           {
+           if (parms$parmType == "string")
+              {
+              s1   = if (parms$default =='') ' ' else parms$default
+              s1   = if (s1 =='\\') "\\\\" else parms$default
+              str  = paste(str,  ", `", parms$name, '`="', s1, '"', sep = '')
+              }
+           else
+              str  = paste(str,  ", `", parms$name, '`=', parms$default,  sep = '')
+
+           str2 = paste(str2, ", `", parms$name, '`=`', parms$name, "`", sep = '')
+           }
+        else
+           {
+           str  = paste(str,  ", `", parms$name, '`=NULL', sep = '')
+           }
+     str3 = paste(str3, "   if( ! missing(`",parms$name,"`)) args = c('", parms$name, "'=substitute(`", parms$name, "`), args)\n", sep = '')
      }
-  str1 = paste("cas.", actn,  " <- function(CASorCASTab", str, sep = '')
-  str1 = paste(str1, ", ...) {runAction(CASorCASTab, '", actn, "'", str2, ", ...) } ", sep="")
-  #message(str1)
+
+  str3 = paste(str3, "   args = c('actn'='", actn, "', args)\n", sep = '')
+  str3 = paste(str3, "   args = c('CASorCASTab'=substitute(CASorCASTab), args)\n", sep = '')
+
+  str1 = paste("cas.", actn,  " <- function(CASorCASTab", str, ", ...){\n" , sep = '')
+  str1 = paste(str1, str3, "do.call('runAction', args) \n}\n", sep="")
+
+  #message(paste('Defined ', actn, ' as:\n', str1, '\n'))
   return (str1)
 }
 
@@ -319,7 +348,7 @@ gen.functions <-  function(cas, actionSet) {
                  }
               , error=function(e)
                  {
-                 #message(paste("Action ", actionSet, ".", name, " Had invalid syntax: \n", val, sep=""))
+                 message(paste("Action ", actionSet, ".", name, " Had invalid syntax: \n", val, sep=""))
                  message(paste("Error was: ", e))
                  message('Defining syntax as function(object, ...) instead. Use listActionParms() to see the actual paramters for this function')
                  val = paste("cas.", actionSet, ".", name, " <- function(object=NULL, ...) {runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
