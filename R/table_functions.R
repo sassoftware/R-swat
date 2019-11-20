@@ -231,10 +231,10 @@ rbind2.casTable <- function (x, y, ...) {
                    call. = FALSE)
             }
             tableName <- paste("_rbind", random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
-            code <- paste("data", tableName,";", "set", x@tname, y@tname, "; run;")
+            code <- paste("data ", tableName, "(caslib='", x@caslib, "') ","; ", "set ", x@tname, "(caslib='", x@caslib, "') ", y@tname, "(caslib='", y@caslib, "'); run;", sep='')
             runSasCode(x@conn, code=code)
             # return new CASTable
-            return (defCasTable(x@conn, tableName))
+            return (defCasTable(x@conn, tableName, x@caslib))
           }
 
 #' Combine CAS Tables by Columns
@@ -296,10 +296,10 @@ cbind2.casTable <- function (x, y, ...) {
                    call. = FALSE)
             }
             tableName <- paste("_cbind", random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
-            code <- paste("data", tableName,";", "merge", x@tname, y@tname, "; run;")
+            code <- paste("data ", tableName, "(caslib='", x@caslib, "') ","; ", "merge ", x@tname, "(caslib='", x@caslib, "') ", y@tname, "(caslib='", y@caslib, "'); run;", sep='')
             runSasCode(x@conn, code=code)
             # return new CASTable
-            return (defCasTable(x@conn, tableName))
+            return (defCasTable(x@conn, tableName, x@caslib))
           }
 
 
