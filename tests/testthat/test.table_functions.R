@@ -36,7 +36,7 @@ test_that("unique", {
   
   # unique(CASTable) returns sorted values. unique(data.frame) does not.
   expect_failure(expect_equivalent(unique(i2$Sepal.Width), unique(iris$Sepal.Width)))
-  expect_equivalent(unique(i2$Sepal.Width), sort(unique(iris$Sepal.Width)))
+  expect_equivalent(sort(unique(i2$Sepal.Width)), sort(unique(iris$Sepal.Width)))
 })
 
 test_that("subset", {
