@@ -391,8 +391,11 @@ REST_CASValue <- setRefClass(
 
         getType = function() {
             if ( length(names(value_)) ) {
-                if ( !is.null(value_$`_ctb`) && value_$`_ctb` ) {
+                if ( !is.atomic(value_) && !is.null(value_$`_ctb`) && value_$`_ctb` ) {
                     return( 'table' )
+                }
+                if ( !is.atomic(value_) && !is.null(value_$`_blob`) && value_$`_blob` ) {
+                    return( 'blob' )
                 }
                 return( 'list' )
             }
@@ -460,6 +463,14 @@ REST_CASValue <- setRefClass(
         },
 
         getString = function() {
+            return( as.character(value_) )
+        },
+
+        getBlob = function() {
+            return( jsonlite::base64_dec(as.character(value_)) )
+        },
+
+        getBlobBase64 = function() {
             return( as.character(value_) )
         },
 
