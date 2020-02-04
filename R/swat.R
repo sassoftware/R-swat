@@ -1822,9 +1822,15 @@ cas2r <- function(sw_value) {
          }
       return (output)
       }
+   else if ( t == "blob" )
+      {
+         out <- sw_value$getBlobBase64()
+         swat::errorcheck(sw_value)
+         return (jsonlite::base64_dec(as.character(out)))
+      }
    else
       {
-      return ("Invalid type")
+      return (paste("Invalid type: ", t))
       }
 }
 
