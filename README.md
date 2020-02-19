@@ -85,7 +85,7 @@ conn <- swat::CAS('cloud.example.com', 8777, protocol='http', username='sasdemo'
 
 Communication between R and CAS can be performed in a binary format with proprietary C 
 libraries, or over HTTP to a REST interface on the server. The C libraries (and therefore 
-binary communication) are supported for 64-bit Linux only. Connections to CAS that use 
+binary communication) are supported for 64-bit Linux or Windows only. Connections to CAS that use 
 binary communication are similar to the following example: 
 
 ```
