@@ -780,9 +780,17 @@ CAS <- setRefClass(
             sw_connection <<- prototype$sw_connection$copy()
             swat::errorcheck(prototype$sw_connection)
          }
-
-         message("NOTE: Connecting to CAS and generating CAS action functions for loaded")
-         message("      action sets...")
+         if ( is.null(options) || !('gen_actions' %in% names(options)) ||
+              as.logical(options$gen_actions) )
+            {
+            message("NOTE: Connecting to CAS and generating CAS action functions for loaded")
+            message("      action sets...")
+            }
+         else
+            {
+            message("NOTE: Connecting to CAS and skipping generating CAS action functions for loaded")
+            message("      action sets. You can do this manually for an action set using gen.functions().")
+            }
          hostname <<- sw_connection$getHostname()
          swat::errorcheck(sw_connection)
          port <<- sw_connection$getPort()
@@ -797,19 +805,23 @@ CAS <- setRefClass(
                    soptions=.self$soptions, hostname=.self$hostname, port=.self$port,
                    username=.self$username, session=.self$session)
 
-         ml <- getOption('cas.message.level')
-         options(cas.message.level='error')
-         actsets = listActionSets(.self)
-         if (!as.logical(getOption('cas.gen.function.sig'))) {
-            message("NOTE: To generate the functions with signatures (for tab completion), set ")
-            message("      options(cas.gen.function.sig=TRUE).")
-         }
-         for (i in 1:length(actsets$actionset))
+         if ( is.null(options) || !('gen_actions' %in% names(options)) ||
+              as.logical(options$gen_actions) )
             {
-            if (actsets$loaded[i] == 1)
-               gen.functions(.self, actsets$actionset[i])
+            ml <- getOption('cas.message.level')
+            options(cas.message.level='error')
+            actsets = listActionSets(.self)
+            if (!as.logical(getOption('cas.gen.function.sig'))) {
+               message("NOTE: To generate the functions with signatures (for tab completion), set ")
+               message("      options(cas.gen.function.sig=TRUE).")
             }
-         options(cas.message.level=ml)
+            for (i in 1:length(actsets$actionset))
+               {
+               if (actsets$loaded[i] == 1)
+                  gen.functions(.self, actsets$actionset[i])
+               }
+            options(cas.message.level=ml)
+            }
 
          .self
       },
