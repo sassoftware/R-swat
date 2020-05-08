@@ -966,7 +966,7 @@ REST_CASConnection <- setRefClass(
                      res <- httr::PUT(url, auth_, config_)
                      out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
 
-                     cookies <<- httr::cookies(res)
+                     cookies <- httr::cookies(res)
                      tkhttp_id_ <<- as.character(cookies[ cookies$name=='tkhttp-id', ]$value)
    
                      if ( is.null(out$session) )
@@ -1002,7 +1002,7 @@ REST_CASConnection <- setRefClass(
                      res <- httr::GET(url, auth_, config_)
                      out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
    
-                     cookies <<- httr::cookies(res)
+                     cookies <- httr::cookies(res)
                      tkhttp_id_ <<- as.character(cookies[ cookies$name=='tkhttp-id', ]$value)
    
                      if ( is.null(out$uuid) )
