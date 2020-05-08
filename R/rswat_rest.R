@@ -825,7 +825,8 @@ REST_CASConnection <- setRefClass(
         current_hostname_ = 'character',
         current_port_ = 'numeric',
         host_index_ = 'numeric',
-        config_ = 'ANY'
+        config_ = 'ANY',
+        tkhttp_id_ = 'character'
     ),
 
     methods = list(
@@ -838,6 +839,7 @@ REST_CASConnection <- setRefClass(
             session <- NULL
             orig_hostname_ <<- hostname
             orig_port_ <<- port
+            tkhttp_id_ <<- ''
 
             if ( !is.na(Sys.getenv('SSLCALISTLOC', unset=NA)) )
             {
@@ -963,6 +965,9 @@ REST_CASConnection <- setRefClass(
                      url <- paste(current_baseurl_, 'cas', 'sessions', sep='/')
                      res <- httr::PUT(url, auth_, config_)
                      out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
+
+                     cookies <<- httr::cookies(res)
+                     tkhttp_id_ <<- as.character(cookies[ cookies$name=='tkhttp-id', ]$value)
    
                      if ( is.null(out$session) )
                      {
@@ -996,6 +1001,9 @@ REST_CASConnection <- setRefClass(
                      url <- paste(current_baseurl_, 'cas', 'sessions', session, sep='/')
                      res <- httr::GET(url, auth_, config_)
                      out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
+   
+                     cookies <<- httr::cookies(res)
+                     tkhttp_id_ <<- as.character(cookies[ cookies$name=='tkhttp-id', ]$value)
    
                      if ( is.null(out$uuid) )
                         stop(paste(url, ':', out$error))
@@ -1035,6 +1043,7 @@ REST_CASConnection <- setRefClass(
                                                           action_name, sep='/'), auth_,
                                                           httr::accept_json(), 
                                                           httr::content_type_json(),
+                                                          httr::add_headers('tkhttp-id'=tkhttp_id_),
                                                           config_,
                                                           body=body
                                                           #, verbose()
@@ -1053,6 +1062,7 @@ REST_CASConnection <- setRefClass(
                                                     action_name, sep='/'), auth_,
                                                     httr::accept_json(),
                                                     httr::content_type_json(),
+                                                    httr::add_headers('tkhttp-id'=tkhttp_id_),
                                                     config_,
                                                     body=body
                                                     #, verbose()
@@ -1146,6 +1156,7 @@ REST_CASConnection <- setRefClass(
 
         close = function() {
             httr::DELETE(paste(current_baseurl_, 'cas', 'sessions', session_, sep='/'),
+                         httr::add_headers('tkhttp-id'=tkhttp_id_),
                          auth_, config_)
             session_ <<- ''
             return( 0 )
@@ -1157,7 +1168,8 @@ REST_CASConnection <- setRefClass(
                                                        'table.upload', sep='/'), auth_,
                                                  httr::accept_json(),
                                                  httr::add_headers('JSON-Parameters'=jsonlite::toJSON(params, auto_unbox=TRUE),
-                                                                   'Content-Type'='application/octet-stream'),
+                                                                   'Content-Type'='application/octet-stream',
+                                                                   'tkhttp-id'=tkhttp_id_),
                                                  config_,
                                                  body=httr::upload_file(file_name)
                                                  #, verbose()
