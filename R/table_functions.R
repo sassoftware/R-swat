@@ -299,9 +299,9 @@ cbind2.casTable <- function (x, y, ...) {
 
   tableName <- paste("_cbind", random::randomStrings(n=1, len=9, unique=TRUE), sep='')
 
-  code <- paste("data ", tableName, "(caslib='", x@caslib, "'); ", 
-                "  merge ", x@tname, "(caslib='", x@caslib, "') ", 
-                            y@tname, "(caslib='", y@caslib, "'); ", 
+  code <- paste("data '", tableName, "'n(caslib='", x@caslib, "'); ", 
+                "  merge '", x@tname, "'n(caslib='", x@caslib, "') ", 
+                "        '", y@tname, "'n(caslib='", y@caslib, "'); ", 
                 "run;", sep='')
 
   runSasCode(x@conn, code=code)

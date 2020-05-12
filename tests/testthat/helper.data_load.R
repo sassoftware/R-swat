@@ -16,7 +16,7 @@
 library(swat)
 library(testthat)
 
-options(cas.gen.function.sig=FALSE, cas.print.messages=TRUE)
+options(cas.gen.function.sig=FALSE, cas.print.messages=FALSE)
 
 #
 # Helper package to seed data for tests
