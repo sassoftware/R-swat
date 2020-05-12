@@ -287,20 +287,28 @@ setMethod("rbind", "CASTable", rbind.casTable)
 #' cbind(ct1[1:3], ct2$X1)
 #' }
 cbind2.casTable <- function (x, y, ...) {
-            if (! class(y) == 'CASTable') {
-              stop("The parameter must be a CAS object")
-            }
-            if (!requireNamespace("random", quietly = TRUE)) {
-              stop(paste0("The 'random' package is required for this function ",
-                          "Use install.packages('random') to install the package."),
-                   call. = FALSE)
-            }
-            tableName <- paste("_cbind", random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
-            code <- paste("data ", tableName, "(caslib='", x@caslib, "') ","; ", "merge ", x@tname, "(caslib='", x@caslib, "') ", y@tname, "(caslib='", y@caslib, "'); run;", sep='')
-            runSasCode(x@conn, code=code)
-            # return new CASTable
-            return (defCasTable(x@conn, tableName, x@caslib))
-          }
+  if (!class(y) == 'CASTable') {
+    stop("The parameter must be a CASTable object")
+  }
+
+  if (!requireNamespace("random", quietly=TRUE)) {
+    stop(paste0("The 'random' package is required for this function ",
+                "Use install.packages('random') to install the package."),
+                call.=FALSE)
+  }
+
+  tableName <- paste("_cbind", random::randomStrings(n=1, len=9, unique=TRUE), sep='')
+
+  code <- paste("data ", tableName, "(caslib='", x@caslib, "'); ", 
+                "  merge ", x@tname, "(caslib='", x@caslib, "') ", 
+                            y@tname, "(caslib='", y@caslib, "'); ", 
+                "run;", sep='')
+
+  runSasCode(x@conn, code=code)
+
+  # return new CASTable
+  return (defCasTable(x@conn, tableName, x@caslib))
+}
 
 
 #' Combine CAS Tables by Columns

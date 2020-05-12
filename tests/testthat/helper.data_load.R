@@ -12,9 +12,12 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-options(cas.gen.function.sig=FALSE)
-cas.gen.function.sig=FALSE
+
+library(swat)
 library(testthat)
+
+options(cas.gen.function.sig=FALSE, cas.print.messages=TRUE)
+
 #
 # Helper package to seed data for tests
 #
@@ -57,12 +60,8 @@ if ( is.null(HOSTNAME) )
 
 message(cat('NOTE: Using HOSTNAME=', HOSTNAME, ' PORT=', PORT, ' PROTOCOL=', PROTOCOL, sep=''))
 
-orig_options <- options()
-
 # Create CAS connection
 caz <- swat::CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL)
-
-options(cas.print.messages=FALSE)
 
 #
 # Create test data
@@ -113,18 +112,18 @@ df3 <- data.frame(matrix(rnorm(20), 10))
 names(df3) <- c("V3", "V4")
 
 # Load data to CAS
-ct1 <- as.casTable(caz, df1)
-ct2 <- as.casTable(caz, df2)
-ct3 <- as.casTable(caz, df3)
+ct1 <- as.casTable(caz, df1, casOut=list(replace=TRUE))
+ct2 <- as.casTable(caz, df2, casOut=list(replace=TRUE))
+ct3 <- as.casTable(caz, df3, casOut=list(replace=TRUE))
 
-ct0.1 <- as.casTable(caz, df0.1)
-ct0 <- as.casTable(caz, df0)
-ct  <- as.casTable(caz, df)
-i2 <- as.casTable(caz, iris)
-df.ct<-as.casTable(caz, df_)
-df0.ct<-as.casTable(caz, df0_)
+ct0.1 <- as.casTable(caz, df0.1, casOut=list(replace=TRUE))
+ct0 <- as.casTable(caz, df0, casOut=list(replace=TRUE))
+ct  <- as.casTable(caz, df, casOut=list(replace=TRUE))
+i2 <- as.casTable(caz, iris, casOut=list(replace=TRUE))
+df.ct <- as.casTable(caz, df_, casOut=list(replace=TRUE))
+df0.ct <- as.casTable(caz, df0_, casOut=list(replace=TRUE))
 
-ctn  <- as.casTable(caz, dfn)
+ctn  <- as.casTable(caz, dfn, casOut=list(replace=TRUE))
 
 ct_cmp <- as.casTable(caz, df, casOut = list(name='ct_cmp', replace=TRUE))
 ct_cmp["cv1"] <- ct_cmp$n1 + 0
@@ -135,10 +134,8 @@ df_cmp <- to.data.frame(to.casDataFrame(ct_cmp))
 
 
 titanic <- read.csv('http://s3.amazonaws.com/assets.datacamp.com/course/Kaggle/train.csv')
-t <- as.casTable(caz, titanic)
+t <- as.casTable(caz, titanic, casOut=list(replace=TRUE))
 
 titanic.csv <- tempfile(pattern='titanic_', fileext='.csv')
 write.csv(titanic, file = 'titanic.csv')
-mtcars.ct = as.casTable(caz,mtcars)
-
-options(orig_options)
+mtcars.ct = as.casTable(caz, mtcars, casOut=list(replace=TRUE))

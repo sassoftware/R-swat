@@ -968,7 +968,7 @@ REST_CASConnection <- setRefClass(
 
                      cookies <- httr::cookies(res)
                      tkhttp_id_ <<- as.character(cookies[ cookies$name=='tkhttp-id', ]$value)
-   
+
                      if ( is.null(out$session) )
                      {
                         if ( is.null(out$details) )

@@ -1,5 +1,10 @@
 # test.analysis_compvars.R
 
+library(swat)
+
+options(cas.print.messages=FALSE)
+
+
 context("test.analysis_compvars.R")
 test_that("unique", {
   # Computed columns are not supported with the unique function

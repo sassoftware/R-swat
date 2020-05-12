@@ -177,14 +177,19 @@ as.casTable <- function(conn, df, casOut = '')  {
            }   
         else
            {
-           cat("casOut parameter must either be a list, or just a single string for the table name")
-           return (NULL)
+           stop("casOut parameter must either be a list, or just a single string for the table name")
            }
         }
 
   tblres <- conn$upload(casOut=casOut, data=df,
               '_messagelevel'=as.character(getOption('cas.message.level.ui')),
               '_apptag'='UI')
+  if ( tblres$disposition$severity > 1 )
+  {
+     if ( grepl('LOADTABLE_EXISTS', tblres$disposition$debug, fixed=TRUE) ) 
+         stop('table with the same name exists; use casOut=list(replace=TRUE) to overwrite')
+     check_for_cas_errors(tblres)
+  }
 
   if ( !is.null(tblres$results$tableName) )
   {
@@ -193,6 +198,11 @@ as.casTable <- function(conn, df, casOut = '')  {
   }
 
   res <- casRetrieve(conn, 'table.columnInfo', table=list(name=tablename, caslib=caslib))
+  if ( res$disposition$severity > 1 )
+  {
+     check_for_cas_errors(res)
+  }
+
   columns <- res$results$ColumnInfo$Column
 
   new("CASTable", conn, tablename, caslib, columns)

@@ -13,10 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+library(swat)
+
+options(cas.print.messages=FALSE)
 
 
 context("compvars_where.R")
-
 
 
 # Row indexing on character values , =="
@@ -119,16 +121,13 @@ test_that("Row indexing with multiple conditions, |", {
   expect_equivalent(dimnames(cas)[2], dimnames(r)[2])
 })
 
-# Row indexing with non-integer division
-test_that("Row indexing with non-integer division, !=", {
+# Row indexing with integer division
+test_that("Row indexing with integer division, !=", {
   r<-df_[df_["n4"]%/% df_["n5"]<= 11, c(4, 5)]
-  skip("Row index with non-integer division Failure Issue #117")
   cas<-df.ct[df.ct["n4"]%/% df.ct["n5"]<= 11, c(4, 5)]
   rdf<-as.data.frame(r)
-  skip("Row index with non-integer division Failure Issue #117")
   cdf=to.casDataFrame(cas)
   cas2rdf=to.data.frame(cdf)
-  skip("Row index with non-integer division Failure Issue #117")
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(length(dimnames(cas)[1]), length(dimnames(r)[1]))
   expect_equivalent(dimnames(cas)[2], dimnames(r)[2])
@@ -137,19 +136,18 @@ test_that("Row indexing with non-integer division, !=", {
 
 # Row indexing with non-integer division
 test_that("Row indexing with non-integer division, !=", {
-  df_$nonintdiv<-df_["n4"]%/% df_["n5"]
-  df.ct$nonintdiv<-df.ct["n4"]%/% df.ct["n5"]
-  df.ct$nonintdiv2<-"nonintdiv2 = n4/n5;"
+  df_$nonintdiv<-df_["n4"] / df_["n5"]
+  df_$nonintdiv2<-df_["n4"] / df_["n5"]
+  df.ct$nonintdiv<-df.ct["n4"] / df.ct["n5"]
+  df.ct$nonintdiv2<-"nonintdiv2 = n4 / n5;"
   rdf<-as.data.frame(df_$nonintdiv)
   cdf=to.casDataFrame(df.ct$nonintdiv)
   cdf2=to.casDataFrame(df.ct$nonintdiv2)
   cas2rdf=to.data.frame(cdf)
-  skip("Row index with non-integer division Failure Issue #117")
   expect_equivalent(cas2rdf, rdf)
-  skip("Row index with non-integer division Failure Issue #117")
   expect_equivalent(cdf, cdf2)
-  expect_equivalent(length(dimnames(cas)[1]), length(dimnames(r)[1]))
-  expect_equivalent(dimnames(cas)[2], dimnames(r)[2])
+  expect_equivalent(length(dimnames(df.ct)[1]), length(dimnames(df_)[1]))
+  expect_equivalent(dimnames(df.ct)[2], dimnames(df_)[2])
 })
 
 
@@ -459,9 +457,6 @@ test_that("Creating a duplicate column", {
 })
 
 
-# orig_options <- options()
-# options(cas.print.messages=TRUE)
-
 # Deleting a compvar
 test_that("Deleting a compvar", {
   
@@ -655,16 +650,3 @@ test_that("Replacing compvar with non-compvar", {
   
   
 })
-
-
-
-
-# options(orig_options)
-
-
-
-
-
-
-
-

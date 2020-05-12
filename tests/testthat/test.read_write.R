@@ -13,6 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+library(swat)
+
+options(cas.print.messages=FALSE)
 
 
 context("test.read_write.R")
@@ -20,7 +23,7 @@ context("test.read_write.R")
 # Read CSV files
 test_that("Read CSV files", {
   
-  from_df  <- as.casTable(caz, titanic, casOut = 'from_df')
+  from_df  <- as.casTable(caz, titanic, casOut=list(name='from_df', replace=TRUE))
   from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name='from_csv'), row.names = 1)
   expect_equivalent(head(from_df), head(from_csv))
   expect_error(read.csv.cas(caz, file = '', tablename = 'from_csv'))
@@ -35,7 +38,7 @@ test_that("Read CSV files", {
 # Read table files
 test_that("Read Table files", {
   
-  from_df  <- as.casTable(caz, titanic, casOut = 'from_df')
+  from_df  <- as.casTable(caz, titanic, casOut=list(name='from_df', replace=TRUE))
   from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name='from_csv', replace=TRUE), row.names = 1)
   expect_equivalent(from_df, from_csv)
   expect_error(read.csv.cas(caz, file = '', tablename = 'from_csv'))
@@ -46,7 +49,7 @@ test_that("Read Table files", {
   nastr=c("NA", "NaN")
   import_DF0_skipnul <- read.table("../data/MissingVals.txt", row.names = NULL, header=TRUE, na.strings = nastr)
   import_DF0_skipnul.cas <- cas.read.table(caz, "../data/MissingVals.txt", row.names = NULL, header=TRUE, na.strings = nastr)
-  expect_equivalent(as.casTable(caz, import_DF0_skipnul), import_DF0_skipnul.cas)
+  expect_equivalent(as.casTable(caz, import_DF0_skipnul, casOut=list(replace=TRUE)), import_DF0_skipnul.cas)
 })
 
 
@@ -132,7 +135,7 @@ test_that("Read RDS files", {
 
 # Write RDS Files
 test_that("Write RDS files", {
-  from_rds <-cas.readRDS(caz, "../data/class.rds", casOut = list(name = 'from_rds', casOut=list(replace=TRUE)))
+  from_rds <- cas.readRDS(caz, "../data/class.rds", casOut=list(name='from_rds', replace=TRUE))
   cas.saveRDS(from_rds, file="casSaveRDS.rds")
   cas.saveRDS(from_rds)
   expect_silent(cas.saveRDS(from_rds))
@@ -141,13 +144,17 @@ test_that("Write RDS files", {
 
 # Replace in-memory tables
 test_that("Replace in-memory table (titanic)", {
-  from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv'))
+  from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv', replace=TRUE))
+
+  ti <- cas.table.tableInfo(caz, table='from_csv')$TableInfo
+  create_time <- ti[ ti$Name=='FROM_CSV', ]$CreateTime
+  expect_true(create_time > 0)
+
   replace_it <-  cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv', replace=TRUE))
-  # NOTE: This check only works in the REST interface!!!
-  #       This needs to be checked some other way.
-  #  expect_match(caz$sw_connection$results_$log, 
-  #    "made the uploaded file available"
-  #  )
+
+  ti <- cas.table.tableInfo(caz, table='from_csv')$TableInfo
+  create_time_2 <- ti[ ti$Name=='FROM_CSV', ]$CreateTime
+  expect_true(create_time_2 > create_time)
 })
 
 
@@ -167,7 +174,7 @@ test_that("Read txt files", {
 # Read txt file
 test_that("Read txt files", {
   import_effort_txt <- read.table("../data/effort.txt", header=TRUE)
-  import_effort_txt.cas <- cas.read.table(caz, "../data/effort.txt", header=TRUE)
+  import_effort_txt.cas <- cas.read.table(caz, "../data/effort.txt", header=TRUE, casOut=list(replace=TRUE))
   expect_that(import_effort_txt.cas, is_a("CASTable"))
   expect_equivalent(dim(import_effort_txt), dim(import_effort_txt.cas))
 })
@@ -178,7 +185,8 @@ test_that("Read web dat file", {
   import_DF0_skipnul <- read.table("../data/MissingVals.txt", 
                                    row.names = NULL, header=TRUE, na.strings = nastr)
   import_DF0_skipnul.cas <- cas.read.table(caz, "../data/MissingVals.txt", 
-                                           row.names = NULL, header=TRUE, na.strings = nastr)
+                                           row.names = NULL, header=TRUE, na.strings = nastr,
+                                           casOut=list(replace=TRUE))
   import_DF0_skipnul.rdf<-as.data.frame(import_DF0_skipnul)
   import_DF0_skipnul.cdf <-to.casDataFrame(import_DF0_skipnul.cas)
   import_DF0_skipnul.cas2rdf=to.data.frame(import_DF0_skipnul.cdf)
@@ -192,20 +200,20 @@ test_that("Read web dat file", {
 # Do not replace in-memory tables, when requested
 test_that("Do not replace an in-memory table (titanic)", {
   from_csv <-
-    cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv'))
-  do_not_replace_it <-
-    cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv',
-                 replace = FALSE))
-# NOTE: This check only works in the REST interface!!!
-#       This needs to be checked some other way.
-#  expect_match(caz$sw_connection$results_$log, "already exists")
+    cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv', replace=TRUE))
+
+  ti <- cas.table.tableInfo(caz, table='from_csv')$TableInfo
+  expect_equivalent(nrow(ti[ ti$Name=='FROM_CSV', ]), 1)
+
+  expect_error(cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv',
+                 replace = FALSE)))
 })
 
 
 # Read comma separated csv files
 test_that("Read comma separated csv files", {
   import_HR_csv <- read.csv("../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".")
-  import_HR_csv.cas <- cas.read.csv(caz, "../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".")
+  import_HR_csv.cas <- cas.read.csv(caz, "../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".", casOut=list(replace=TRUE))
   write.csv2(import_HR_csv, "../data/HR_semicolon_sep.csv")
   expect_that(import_HR_csv.cas, is_a("CASTable"))
   expect_equivalent(dim(import_HR_csv), dim(import_HR_csv.cas))
@@ -215,7 +223,7 @@ test_that("Read comma separated csv files", {
 # Read comma separated csv files
 test_that("Read comma separated csv files", {
   import_HR_csv <- read.csv("../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".")
-  import_HR_csv.cas <- cas.read.csv(caz, "../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".")
+  import_HR_csv.cas <- cas.read.csv(caz, "../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".", casOut=list(replace=TRUE))
   write.csv2(import_HR_csv, "../data/HR_semicolon_sep.csv")
   expect_that(import_HR_csv.cas, is_a("CASTable"))
   expect_equivalent(dim(import_HR_csv), dim(import_HR_csv.cas))
@@ -227,7 +235,7 @@ colnames2=c("var1 ", "var 2", "var 3", "var 4")
 
 test_that("read dml file with skip and col.names", {
   import_effort_chknames <- read.table("../data/effort.txt", skip= 1, col.names=colnames2, check.names = FALSE)
-  import_effort_chknames.cas <- cas.read.table(caz, "../data/effort.txt", skip= 1, col.names=colnames2, check.names = FALSE)
+  import_effort_chknames.cas <- cas.read.table(caz, "../data/effort.txt", skip= 1, col.names=colnames2, check.names = FALSE, casOut=list(replace=TRUE))
   expect_that(import_effort_chknames.cas, is_a("CASTable"))
   expect_equivalent(dim(import_effort_chknames), dim(import_effort_chknames.cas))
 })
@@ -238,7 +246,7 @@ colnames=c("var1 ", "var 2", "var 3", "var 4", "var 5")
 
 test_that("read dml file with skip, col.names and check.names", {
   import_class_colnames <- read.table("../data/class.dlm", skip= 1, col.names=colnames)
-  import_class_colnames.cas <- cas.read.table(caz, "../data/class.dlm", skip= 1, col.names=colnames)
+  import_class_colnames.cas <- cas.read.table(caz, "../data/class.dlm", skip= 1, col.names=colnames, casOut=list(replace=TRUE))
   expect_that(import_class_colnames.cas, is_a("CASTable"))
   expect_equivalent(dim(import_class_colnames), dim(import_class_colnames.cas))
 })
@@ -273,7 +281,7 @@ test_that("read xlsx file with as.data.frame", {
 
 # write xlsx files with sheet name
 test_that("write xlsx files with sheet name", {
-  import_effort_txt.cas <- cas.read.table(caz, "../data/effort.txt", header=TRUE)
+  import_effort_txt.cas <- cas.read.table(caz, "../data/effort.txt", header=TRUE, casOut=list(replace=TRUE))
   cas.write.xlsx(import_effort_txt.cas, "../data/effort_CAS.xlsx", sheetName = "Effort data", col.names = FALSE)
   expect_true(file.exists("../data/effort_CAS.xlsx"))
 })
@@ -322,13 +330,18 @@ test_that("Read semicolon separated csv files with comma as decimal", {
 
 # Read web dat file
 test_that("Read web dat file", {
-  import_effort_dat <- read.table("http://data.princeton.edu/wws509/datasets/effort.dat", header=TRUE)
-  import_effort_dat.cas <- cas.read.table(caz, "http://data.princeton.edu/wws509/datasets/effort.dat", header=TRUE, casOut = list(replace=TRUE))
+  import_effort_dat <- read.table("https://data.princeton.edu/wws509/datasets/effort.dat", header=TRUE)
+  import_effort_dat.cas <- cas.read.table(caz, "https://data.princeton.edu/wws509/datasets/effort.dat", header=TRUE, casOut = list(replace=TRUE))
   expect_that(import_effort_dat.cas, is_a("CASTable"))
   expect_equivalent(dim(import_effort_dat), dim(import_effort_dat.cas))
 })
 
 
 test_that("Tear Down", {
-    file.remove("cas.write.csv", "titanic.csv", "from_rds.rds", "casSaveRDS.rds")
+    files <- list("cas.write.csv", "titanic.csv", "from_rds.rds", "FROM_RDS.rds", "casSaveRDS.rds")
+    for (f in files) {
+        if (file.exists(f)) {
+            file.remove(f)
+        }
+    }
 })

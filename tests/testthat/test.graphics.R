@@ -14,6 +14,10 @@
 #  limitations under the License.
 
 
+library(swat)
+
+options(cas.print.messages=FALSE)
+
 
 context("test.graphics.R")
 

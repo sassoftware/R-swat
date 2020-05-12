@@ -379,6 +379,8 @@ gen.functions <-  function(cas, actionSet) {
 #'   }
 #'   The third form matches the generated functions for
 #'   the CAS actions.
+#' @param display Should the parameters be printed to the 
+#'   screen?
 #' 
 #' @export
 #' @rawRd % Copyright SAS Institute
@@ -393,7 +395,7 @@ gen.functions <-  function(cas, actionSet) {
 #' # specify the generated function name
 #' listActionParms(s, cas.regression.logistic)
 #' }
-listActionParms <- function(conn, actn){
+listActionParms <- function(conn, actn, display=TRUE){
   if (typeof(actn) == 'closure')
      actn = toString(substitute(actn))
   if (startsWith(actn, 'cas.'))
@@ -411,6 +413,9 @@ listActionParms <- function(conn, actn){
      i = i +1
      }
   str = paste(str, ')\n')
-  cat(str)
+  if (display)
+     { 
+     cat(str)
+     }
   return (plist)
 }

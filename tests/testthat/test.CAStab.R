@@ -13,24 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+library(swat)
 
-expect_cas_message <- function(caz, regexp) {
-  if ( length(caz$messages) == 0 ) {
-     return(sprintf("CAS did not produce any messages."))
-  }
-
-  for ( i in 1:length(caz$messages) ) {
-     if ( grepl(regexp, caz$messages[i]) ) {
-        expect(TRUE, '')
-        return(invisible(caz))
-     }
-  }
-
-  expect(FALSE, sprintf('%s did not match any CAS message.\n%s',
-                        encodeString(regexp),
-                        paste0('Actual values: ', paste0('', caz$messages, collapse = '\n'))))
-  invisible(caz)
-}
+options(cas.print.messages=FALSE)
 
 
 context("test.CAStab.R")
@@ -195,8 +180,8 @@ test_that("drop multiple columns", {
 
 # Create object to reference an existing in-memory table in CAS
 test_that("defCasTable", {
-  esophct <- as.casTable(caz, esoph, casOut="esophct")
-  df_cmpct <- as.casTable(caz, df_cmp, casOut="df_cmpct")
+  esophct <- as.casTable(caz, esoph, casOut=list(name="esophct", replace=TRUE))
+  df_cmpct <- as.casTable(caz, df_cmp, casOut=list(name="df_cmpct", replace=TRUE))
   
   # groupby option
   esophct.grouped <- defCasTable(caz, tablename="esophct", groupby=list("alcgp"))
@@ -246,34 +231,36 @@ test_that("defCasTable", {
 })
 
 
-orig_options <- options()
-options(cas.print.messages=TRUE)
 test_that("as.castable and dropTable", {
   # Testing that an existing CAS table can't be overwriten by default
-  df_cmpct1<-as.casTable(caz, df_cmp, casOut="df_cmpct1")
-  df_cmpct2<-as.casTable(caz, df, casOut="df_cmpct1")
-  expect_cas_message(caz, "already exists")
+  df_cmpct1<-as.casTable(caz, df_cmp, casOut=list(name="df_cmpct1", replace=TRUE))
+  expect_error(as.casTable(caz, df, casOut="df_cmpct1"))
   
   # Testing that an existing CAS table can't be overwriten with replace=FALSE
-  as.casTable(caz, df, casOut=list(name="df_cmpct1", replace=FALSE))
-  expect_cas_message(caz, "already exists")
+  expect_error(as.casTable(caz, df, casOut=list(name="df_cmpct1", replace=FALSE)))
 
   dropTable(df_cmpct1)
-  df_cmpct1<-as.casTable(caz, df_cmp, casOut=list(name="df_cmpct1", replace=FALSE))
-  expect_cas_message(caz, "uploaded file available")
+
+  ti <- cas.table.tableInfo(caz)$TableInfo
+  expect_equivalent(nrow(ti[ ti$Name=='DF_CMPCT1', ]), 0)
+
+  as.casTable(caz, df_cmp, casOut=list(name="df_cmpct1", replace=FALSE))
+
+  ti <- cas.table.tableInfo(caz)$TableInfo
+  expect_equivalent(nrow(ti[ ti$Name=='DF_CMPCT1', ]), 1)
+  create_time <- ti[ ti$Name=='DF_CMPCT1', ]$CreateTime
 
   # Testing that an existing CAS table can be overwriten with replace option
   df_cmpct1<-as.casTable(caz, df_cmp, casOut=list(name="df_cmpct1", replace=TRUE))
-  expect_cas_message(caz, "uploaded file available")
-  
 
-
+  ti <- cas.table.tableInfo(caz)$TableInfo
+  expect_equivalent(nrow(ti[ ti$Name=='DF_CMPCT1', ]), 1)
+  expect_true(ti[ ti$Name=='DF_CMPCT1', ]$CreateTime > create_time)
 })
-options(orig_options)
 
 
 test_that("to.casDataFrame, as.data.frame, and rownames", {
-  df_cmpct<-as.casTable(caz, df_cmp, casOut="df_cmpct")
+  df_cmpct<-as.casTable(caz, df_cmp, casOut=list(name="df_cmpct", replace=TRUE))
   df_cmp_cdf<-to.casDataFrame(df_cmpct)
   df_cmp_rdf<-as.data.frame(df_cmp_cdf)
   df_cmp_cdf2<-to.casDataFrame(df_cmpct, obs=3)

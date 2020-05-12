@@ -13,11 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+library(swat)
 
+options(cas.print.messages=FALSE)
 
 
 # #test.descriptive_stats.R
 context("descriptive_stats.R")
+
 # overloaded functions
 test_that("Table Meta Functions", {
   expect_equivalent(rownames(ct), rownames(df))
@@ -191,9 +194,13 @@ test_that("head", {
 })
 
 test_that("tail", {
+  # Order is non-deterministic in CAS tables
+  i2@orderby <- list('Sepal.Length', 'Sepal.Width', 'Petal.Length', 'Petal.Width') 
+  iris.sorted <- iris[order(iris$Sepal.Length, iris$Sepal.Width, iris$Petal.Length, iris$Petal.Width), ]
   expect_equivalent(tail(df[1:4], 4), tail(ct[1:4], 4))
   expect_that(tail(ct,4), is_a("data.frame"))
-  expect_equivalent(tail(i2[1:4]), tail(iris[1:4]))
+  expect_equivalent(tail(i2[1:4]), tail(iris.sorted[1:4]))
+  i2@orderby <- list()
   
   # check that row index numbering is correct
   expect_equivalent(rownames(tail(i2[1:4])), rownames(tail(iris[1:4])))

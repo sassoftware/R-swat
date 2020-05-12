@@ -729,7 +729,9 @@ CAS <- setRefClass(
                }
 
                tryCatch({
-                    httr::GET(paste('http://', url$hostname, ':', .self$port, '/cas', sep=''))
+                    url <- paste('http://', url$hostname, ':', .self$port, '/cas', sep='')
+                    httr::GET(url)
+                    httr::handle_reset(url)
                     protocol <<- 'http'
                     hostname <<- gsub('^auto', 'http', .self$hostname, perl=TRUE)
                }, error=function (e) { })

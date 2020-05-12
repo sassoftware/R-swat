@@ -13,30 +13,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+library(swat)
+library(testthat)
 
-expect_cas_message <- function(caz, regexp) {
-  if ( length(caz$messages) == 0 ) {
-     return(sprintf("CAS did not produce any messages."))
-  }
-
-  for ( i in 1:length(caz$messages) ) {
-     if ( grepl(regexp, caz$messages[i]) ) {
-        expect(TRUE, '')
-        return(invisible(caz))
-     }
-  }
-
-  expect(FALSE, sprintf('%s did not match any CAS message.\n%s',
-                        encodeString(regexp),
-                        paste0('Actual values: ', paste0('', caz$messages, collapse = '\n'))))
-  invisible(caz)
-}
+options(cas.print.messages=FALSE)
 
 
 context("test.helper.R")
-
-library(swat)
-library(testthat)
 
 test_that("casFormula Functions", {
   t1 <- y ~ x1

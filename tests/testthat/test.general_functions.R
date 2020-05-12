@@ -13,45 +13,26 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+library(swat)
 
-expect_cas_message <- function(caz, regexp) {
-  if ( length(caz$messages) == 0 ) {
-     return(sprintf("CAS did not produce any messages."))
-  }
-
-  for ( i in 1:length(caz$messages) ) {
-     if ( grepl(regexp, caz$messages[i], perl = TRUE) ) {
-        expect(TRUE, '')
-        return(invisible(caz))
-     }
-  }
-
-  expect(FALSE, sprintf('%s did not match any CAS message.\n%s',
-                        encodeString(regexp),
-                        paste0('Actual values: ', paste0('', caz$messages, collapse = '\n'))))
-  invisible(caz)
-}
+options(cas.print.messages=FALSE)
 
 
 context("general_functions")
 
-orig_options <- options()
-options(cas.print.messages=TRUE)
-
 test_that("Load ActionSet and List ActionSet Functions", {
-  expect_that(swat::loadActionSet(caz,"foobar"), testthat::throws_error())
-  expect_null(swat::loadActionSet(caz,"builtins"))
-  #testthat::expect_cas_message(swat::load.actionset(s,"foobar"), "ERROR:")
-  # Notes have been removed by default
-  #testthat::expect_cas_message(swat::load.actionset(s,"network"), "NOTE: Added action set 'network'.")
+  expect_error(swat::loadActionSet(caz, "foobar"))
+  expect_null(swat::loadActionSet(caz, "builtins"))
   
-  loadActionSet(caz, actionSet = "simple")
-  expect_cas_message(caz, "NOTE:\\s+simple")
+  loadActionSet(caz, actionSet="simple")
   expect_true("simple" %in% listActionSets(caz)$actionset)
-  listActionParms(caz, actn="summary")
-  expect_cas_message(caz, 'cas.summary')
+
+  p <- listActionParms(caz, actn="summary", display=FALSE)
+  expect_true(length(p) > 15)
+  expect_equivalent(p[[1]]$name, 'table')
+  expect_equivalent(p[[1]]$parmType, 'value_list')
 })
-options(orig_options)
+
 
 test_that("Test that the class for R-SWAT objects is returned correctly", {
   expect_is(caz, "CAS")
