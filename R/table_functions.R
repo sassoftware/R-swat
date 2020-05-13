@@ -287,6 +287,9 @@ setMethod("rbind", "CASTable", rbind.casTable)
 #' cbind(ct1[1:3], ct2$X1)
 #' }
 cbind2.casTable <- function (x, y, ...) {
+  if (!class(x) == 'CASTable') {
+    stop("The parameter must be a CASTable object")
+  }
   if (!class(y) == 'CASTable') {
     stop("The parameter must be a CASTable object")
   }
@@ -295,6 +298,18 @@ cbind2.casTable <- function (x, y, ...) {
     stop(paste0("The 'random' package is required for this function ",
                 "Use install.packages('random') to install the package."),
                 call.=FALSE)
+  }
+
+  xInfo <- casRetrieve(x@conn, 'table.columnInfo', table=list(name=x@tname, caslib=x@caslib))
+  swat::check_for_cas_errors(xInfo)
+  yInfo <- casRetrieve(y@conn, 'table.columnInfo', table=list(name=y@tname, caslib=y@caslib))
+  swat::check_for_cas_errors(yInfo)
+
+  xCols <- tolower(xInfo$results$ColumnInfo$Column)
+  yCols <- tolower(yInfo$results$ColumnInfo$Column)
+
+  if ( length(intersect(xCols, yCols)) > 0 ) {
+    stop("Column names in tables must have unique names")
   }
 
   tableName <- paste("_cbind", random::randomStrings(n=1, len=9, unique=TRUE), sep='')

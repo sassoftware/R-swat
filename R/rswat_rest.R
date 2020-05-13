@@ -912,7 +912,7 @@ REST_CASConnection <- setRefClass(
             }
 
             host_index_ <<- 0
-            .self$set_next_connection_()
+            .self$set_next_connection_(NULL)
 
             authinfo <- NULL
             if ( grepl('^authinfo={', password, perl=TRUE) )
@@ -963,6 +963,7 @@ REST_CASConnection <- setRefClass(
                   if ( is.null(session) )
                   {
                      url <- paste(current_baseurl_, 'cas', 'sessions', sep='/')
+                     httr::handle_reset(url)
                      res <- httr::PUT(url, auth_, config_)
                      out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
 
@@ -999,6 +1000,7 @@ REST_CASConnection <- setRefClass(
                   else
                   {
                      url <- paste(current_baseurl_, 'cas', 'sessions', session, sep='/')
+                     httr::handle_reset(url)
                      res <- httr::GET(url, auth_, config_)
                      out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
    
@@ -1028,6 +1030,9 @@ REST_CASConnection <- setRefClass(
                 current_hostname_ <<- ''
                 current_baseurl_ <<- ''
                 current_port_ <<- -1
+                if (is.null(connection_error)) {
+                    stop(e)
+                }
                 stop(connection_error)
             })
         },
@@ -1038,36 +1043,50 @@ REST_CASConnection <- setRefClass(
             {
                 out <- tryCatch({
                     .trace_actions( action_name, params)
-                    results_ <<- httr::content(httr::POST(paste(current_baseurl_, 'cas',
-                                                                'sessions', session_, 'actions',
-                                                          action_name, sep='/'), auth_,
-                                                          httr::accept_json(), 
-                                                          httr::content_type_json(),
-                                                          httr::add_headers('tkhttp-id'=tkhttp_id_),
-                                                          config_,
-                                                          body=body
-                                                          #, verbose()
-                                                          ),
-                                         as='text', encoding='utf-8')
+                    res <- httr::POST(paste(current_baseurl_, 'cas',
+                                            'sessions', session_, 'actions',
+                                            action_name, sep='/'), auth_,
+                                            httr::accept_json(), 
+                                            httr::content_type_json(),
+                                            httr::add_headers('tkhttp-id'=tkhttp_id_),
+                                            config_,
+                                            body=body
+                                            #, verbose()
+                                            )
+
+                    cookies <- httr::cookies(res)
+                    tkhttp_id_ <<- as.character(cookies[ cookies$name=='tkhttp-id', ]$value)
+
+                    results_ <<- httr::content(res, as='text', encoding='utf-8')
+
                     break
                 }, error=function (e) {
-                    .self$set_next_connection_()
+                    .self$set_next_connection_(e)
+
+                    if (length(hostname_) > host_index_) {
+                      stop(e)          
+                    }
 
                     # Get ID of results
                     action_name <- 'session.listresults'
                     body <- ''
 
-                    res <- httr::content(httr::POST(paste(current_baseurl_, 'cas',
-                                                          'sessions', session_, 'actions',
-                                                    action_name, sep='/'), auth_,
-                                                    httr::accept_json(),
-                                                    httr::content_type_json(),
-                                                    httr::add_headers('tkhttp-id'=tkhttp_id_),
-                                                    config_,
-                                                    body=body
-                                                    #, verbose()
-                                                    ),
-                                   as='parsed', type='application/json', encoding='utf-8')
+                    res <- httr::POST(paste(current_baseurl_, 'cas',
+                                            'sessions', session_, 'actions',
+                                            action_name, sep='/'), auth_,
+                                            httr::accept_json(),
+                                            httr::content_type_json(),
+                                            httr::add_headers('tkhttp-id'=tkhttp_id_),
+                                            config_,
+                                            body=body
+                                            #, verbose()
+                                            )
+
+                    cookies <- httr::cookies(res)
+                    tkhttp_id_ <<- as.character(cookies[ cookies$name=='tkhttp-id', ]$value)
+
+                    results_ <<- httr::content(res, as='parsed',
+                                               type='application/json', encoding='utf-8')
 
                     result_id <- res$result$`Queued Results`$rows[[1]][[1]]
 
@@ -1163,18 +1182,21 @@ REST_CASConnection <- setRefClass(
         },
 
         upload = function( file_name, params ) {
-            results_ <<- httr::content(httr::PUT(paste(current_baseurl_, 'cas', 'sessions',
-                                                       session_, 'actions',
-                                                       'table.upload', sep='/'), auth_,
-                                                 httr::accept_json(),
-                                                 httr::add_headers('JSON-Parameters'=jsonlite::toJSON(params, auto_unbox=TRUE),
-                                                                   'Content-Type'='application/octet-stream',
-                                                                   'tkhttp-id'=tkhttp_id_),
-                                                 config_,
-                                                 body=httr::upload_file(file_name)
-                                                 #, verbose()
-                                                 ),
-                                 as='parsed', type='application/json', encoding='utf-8')
+            res <- httr::PUT(paste(current_baseurl_, 'cas', 'sessions',
+                                   session_, 'actions', 'table.upload', sep='/'), auth_,
+                                   httr::accept_json(),
+                                   httr::add_headers('JSON-Parameters'=jsonlite::toJSON(params, auto_unbox=TRUE),
+                                                     'Content-Type'='application/octet-stream',
+                                                     'tkhttp-id'=tkhttp_id_),
+                                   config_,
+                                   body=httr::upload_file(file_name)
+                                   #, verbose()
+                                   )
+
+            cookies <- httr::cookies(res)
+            tkhttp_id_ <<- as.character(cookies[ cookies$name=='tkhttp-id', ]$value)
+
+            results_ <<- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
 
             if ( !('disposition' %in% names(results_)) ) {
                 if ( 'error' %in% names(results_) ) {

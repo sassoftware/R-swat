@@ -118,10 +118,8 @@ test_that("subset", {
  
  
  test_that("cbind", {
-   expect_equivalent(colSums(cbind(ct1,ct3)), colSums(cbind(df1,df3)))
-   # this difference is expected because CAS can't have multiple columns with the same name
-   expect_failure(expect_equivalent(colSums(cbind(ct1,ct1)), colSums(cbind(df1,df1))))
-   expect_equivalent(dim(cbind(ct1,ct1, ct3)), c(10, 4))
+   expect_equivalent(colSums(cbind(ct1, ct3)), colSums(cbind(df1, df3)))
+   expect_equivalent(dim(cbind(ct1, ct3)), c(10, 4))
  })
  
  test_that("rbind numeric, different data", {
@@ -167,27 +165,24 @@ test_that("subset", {
  })
  
  test_that("cbind numeric and character with missing", {
-   skip('cbind does not work properly yet')   
-   df_bind <- cbind(df, df0)
-   ct_bind <- cbind(ct, ct0)
- print(df)
- print(df0)
- print(df_bind)
- print(ct)
- print(ct0)
- print(ct_bind)
+
+   df_bind <- cbind(df1, df3)
+   ct_bind <- cbind(ct1, ct3)
    expect_equivalent(as.casTable(caz, df_bind, casOut=list(replace=TRUE)), ct_bind)
  })
  
- # this difference is expected because CAS can't have multiple columns with the same name
  test_that("cbind numeric and character with missing", {
    
-   df_bind <- cbind(df1,df1)
-   ct_bind <- cbind(ct1,ct1)
+   df_bind <- cbind(df1, df3)
+   ct_bind <- cbind(ct1, ct3)
    
    ct_df = to.casDataFrame(ct_bind)
    ct_df = to.data.frame(ct_df)
-   expect_failure(expect_equivalent(df_bind, ct_df))
+   expect_equivalent(df_bind, ct_df)
+ })
+
+ test_that("cbind failure since duplicate column names", {
+   expect_error(cbind(ct1, ct2))
  })
 
 # i2.sub1 = subset(i2,subset = Sepal.Length > 7, select = c('Sepal.Length', 'Sepal.Width'), drop=FALSE)
