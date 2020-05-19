@@ -542,6 +542,7 @@ REST_CASResponse <- setRefClass(
 
     methods = list(
         initialize = function( obj ) {
+
             obj_ <<- obj
 
             disp <- obj_$disposition
@@ -610,7 +611,7 @@ REST_CASResponse <- setRefClass(
                 result_idx_ <<- result_idx_ + 1
                 return( results_[[result_idx_ - 1]] )
             }
-            return( REST_CASValue( NULL, NULL ) )
+            return( NULL )
         },
 
         getTypeName = function() {
@@ -1118,7 +1119,10 @@ REST_CASConnection <- setRefClass(
         },
 
         receive = function() {
-            out <- REST_CASMessage(results_, connection=.self)
+            out <- NULL
+            if (!is.null(results_)) {
+                out <- REST_CASMessage(results_, connection=.self)
+            }
             results_ <<- NULL
             return( out )
         },

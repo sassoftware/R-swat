@@ -873,14 +873,14 @@ CAS <- setRefClass(
          }
          sw_message <- sw_connection$receive()
          swat::errorcheck(sw_connection)
-         if ( !sw_message$isNULL() )
+         if ( !is.null(sw_message) )
          {
             t <- sw_message$getType()
             if ( t == 'response' )
             {
                sw_response <- sw_message$toResponse(sw_connection)
                swat::errorcheck(sw_message)
-               if ( !sw_response$isNULL() )
+               if ( !is.null(sw_response) )
                {
                   output <- CASResponse$new(sw_response=sw_response)
                }
@@ -889,7 +889,7 @@ CAS <- setRefClass(
             {
                sw_request <- sw_message$toRequest(sw_connection)
                swat::errorcheck(sw_message)
-               if ( !sw_request$isNULL() )
+               if ( !is.null(sw_request) )
                {
                   output <- datamsghandler$call(CASRequest$new(sw_request=sw_request), .self)
                }
@@ -898,7 +898,7 @@ CAS <- setRefClass(
             {
                sw_request <- sw_message$toRequest(sw_connection)
                swat::errorcheck(sw_message)
-               if ( !sw_request$isNULL() )
+               if ( !is.null(sw_request) )
                {
                   output <- CASRequest$new(sw_request=sw_request)
                }
@@ -1170,7 +1170,7 @@ getnext <- function(...) {
    if ( length(responses) > 0 ) {
       sw_result <- responses[[1]]$sw_response$getNextResult()
       swat::errorcheck(responses[[1]]$sw_response)
-      if ( sw_result$isNULL() )
+      if ( is.null(sw_result) )
       {
          return (NULL)
       }

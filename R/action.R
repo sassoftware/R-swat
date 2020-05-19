@@ -223,7 +223,7 @@ casRetrieve <-  function(caz, ...) {
 
 gen.functions2 <-  function(cas, actionSet) {
   #message(paste("get action set list", Sys.time()))
-  res = runAction(cas, 'builtins.reflect', actionSet=actionSet)
+  res = swat::runAction(cas, 'builtins.reflect', actionSet=actionSet)
   #message(paste("got action set list", Sys.time()))
   env = globalenv()
   if (length(res[[1]]) > 0)
@@ -243,7 +243,7 @@ gen.functions2 <-  function(cas, actionSet) {
               }
            fname = paste("cas.", actionSet, ".", name, sep="")
            str1  = paste(fname,  " <- function(CASorCASTab", str, sep = '')
-           val   = paste(str1, ", ...) {runAction(CASorCASTab=NULL, '", actionSet, ".", name, "'", str2, ", ...) } ", sep="")
+           val   = paste(str1, ", ...) {swat::runAction(CASorCASTab=NULL, '", actionSet, ".", name, "'", str2, ", ...) } ", sep="")
            defn = eval(parse(text=val, env))
            environment(defn) <- env
            setGeneric(name=fname, def=defn, package='swat', where=env)
@@ -252,7 +252,7 @@ gen.functions2 <-  function(cas, actionSet) {
         else
            {
            fname = paste("cas.", actionSet, ".", name, sep="")
-           val   = paste(fname, " <- function(object, ...) {runAction(object=NULL, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
+           val   = paste(fname, " <- function(object, ...) {swat::runAction(object=NULL, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
            defn  = eval(parse(text=val, env))
            environment(defn) <- env
            setGeneric(name=fname, def=defn, package='swat', where=env)
@@ -263,7 +263,7 @@ gen.functions2 <-  function(cas, actionSet) {
 
 .gen.sig <-  function(cas, actn) {
   #message(paste("get action list", Sys.time()))
-  res = runAction(cas, 'builtins.reflect', check_errors=TRUE, action=actn)
+  res = swat::runAction(cas, 'builtins.reflect', check_errors=TRUE, action=actn)
   #message(paste("got action list", Sys.time()))
   #swat::check_for_cas_errors(res)
   str  = ''
@@ -303,7 +303,7 @@ gen.functions2 <-  function(cas, actionSet) {
   str3 = paste(str3, "   args = c('CASorCASTab'=substitute(CASorCASTab), args)\n", sep = '')
 
   str1 = paste("cas.", actn,  " <- function(CASorCASTab", str, ", ...){\n" , sep = '')
-  str1 = paste(str1, str3, "do.call('runAction', args) \n}\n", sep="")
+  str1 = paste(str1, str3, "do.call('swat::runAction', args) \n}\n", sep="")
 
   #message(paste('Defined ', actn, ' as:\n', str1, '\n'))
   return (str1)
@@ -328,7 +328,7 @@ gen.functions <-  function(cas, actionSet) {
            #message(paste("for action", Sys.time()))
            if (!as.logical(getOption('cas.gen.function.sig')))
               {
-              val = paste("cas.", actionSet, ".", name, " <- function(object=NULL, ...) {runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
+              val = paste("cas.", actionSet, ".", name, " <- function(object=NULL, ...) {swat::runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
               defn = eval(parse(text=val, env))
               environment(defn) <- env
               fname = paste("cas.", actionSet, ".", name, sep="")
@@ -351,7 +351,7 @@ gen.functions <-  function(cas, actionSet) {
                  message(paste("Action ", actionSet, ".", name, " Had invalid syntax: \n", val, sep=""))
                  message(paste("Error was: ", e))
                  message('Defining syntax as function(object, ...) instead. Use listActionParms() to see the actual paramters for this function')
-                 val = paste("cas.", actionSet, ".", name, " <- function(object=NULL, ...) {runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
+                 val = paste("cas.", actionSet, ".", name, " <- function(object=NULL, ...) {swat::runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
                  defn = eval(parse(text=val, env))
                  environment(defn) <- env
                  fname = paste("cas.", actionSet, ".", name, sep="")
