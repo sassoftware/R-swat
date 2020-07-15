@@ -109,45 +109,41 @@
    if ( is.null(getOption('cas.bygroup.mode')) ) { options(cas.bygroup.mode='raw') }
    if ( is.null(getOption('cas.bygroup.dup.suffix')) ) { options(cas.bygroup.dup.suffix='_f') }
 
-   if ( grepl('darwin', R.version$os) )
-   {
-      tryCatch(
-         {
-            library.dynam('rswat', pkg, lib, file.ext='.dylib')
-            if ( Sys.getenv('TKPATH') == '' &&
-                 file.exists(file.path(lib, pkg, 'libs', 'tkmk.dylib')) ) {
-               InitializeTK(file.path(lib, pkg, 'libs:'))
-            }
-         }
-         , error=function(e) {
-                   message('NOTE: The extension module for binary protocol support is not available.')
-                   message('      Only the CAS REST interface can be used.')
-               })
-   }
-   else
-   {
-      tryCatch(
-         {
-            library.dynam('rswat', pkg, lib)
-            if ( Sys.getenv('TKPATH') == '' ) {
-               if ( file.exists(file.path(lib, pkg, 'libs', 'tkmk.so')) ) {
-                  InitializeTK(file.path(lib, pkg, 'libs:'))
-               }
-               else if ( file.exists(file.path(lib, pkg, 'libs', 'x64', 'tkmk.dll')) ) {
-                  InitializeTK(file.path(lib, pkg, 'libs', 'x64;'))
-               }
-            }
-         }
-         , error=function(e) {
-                   message('NOTE: The extension module for binary protocol support is not available.')
-                   message('      Only the CAS REST interface can be used.')
-               })
+   if ( file.exists(file.path(lib, pkg, 'libs', 'rswat.so')) ) {
+      library.dynam('rswat', pkg, lib)
+      if ( file.exists(file.path(lib, pkg, 'libs', 'tkmk.so')) ) {
+         InitializeTK(file.path(lib, pkg, 'libs:'))
+      } else {
+         # TODO: InitializeTK('') once new extension has been released with support for that.
+      }
+   } else if ( file.exists(file.path(lib, pkg, 'libs', 'x64', 'rswat.dll')) ) {
+      library.dynam('rswat', pkg, lib)
+      if ( file.exists(file.path(lib, pkg, 'libs', 'x64', 'tkmk.dll')) ) {
+         InitializeTK(file.path(lib, pkg, 'libs', 'x64:'))
+      } else {
+         # TODO: InitializeTK('') once new extension has been released with support for that.
+      }
+   } else if ( file.exists(file.path(lib, pkg, 'libs', 'rswat.dylib')) ) {
+      library.dynam('rswat', pkg, lib, file.ext='.dylib')
+      if ( file.exists(file.path(lib, pkg, 'libs', 'tkmk.dylib')) ) {
+         InitializeTK(file.path(lib, pkg, 'libs:'))
+      } else {
+         # TODO: InitializeTK('') once new extension has been released with support for that.
+      }
+   } else {
+      message(paste('NOTE: The extension module for using the CAS binary protocol can not be located.',
+                    '      Only the CAS REST interface may be used.', sep='\n'))
    }
 }
 
 .onUnload <- function(lib)
 {
    try(library.dynam.unload('rswat', lib), silent=FALSE)
+}
+
+binaryEnabled <- function() 
+{
+   return( any(grepl('/rswat.(dll|so|dylib)', as.character(.dynLibs()))) )
 }
 
 cacheMetaData(1)
@@ -749,15 +745,14 @@ CAS <- setRefClass(
             sw_error <<- REST_CASError(soptions)
             CASConnection <- REST_CASConnection
          }
+         else if ( !binaryEnabled() ) {
+            message(paste('NOTE: The extension module for using the CAS binary protocol can not be located.',
+                          '      Only the CAS REST interface may be used.', sep='\n'))
+            stop()
+         }
          else
          {
-            tryCatch({
-               sw_error <<- SW_CASError(soptions)
-            }, error = function (e) {
-               stop(paste('Could not create object from the extension module.\n',
-                          'You may be attempting to create a binary CAS connection',
-                          'on a platform\n that only supports the CAS REST interface.'))
-            })
+            sw_error <<- SW_CASError(soptions)
             CASConnection <- SW_CASConnection
             for ( i in 1:length(.self$hostname) )
             {
@@ -773,25 +768,26 @@ CAS <- setRefClass(
             conn <- CASConnection(.self$hostname, .self$port, username, password, soptions, sw_error)
             swat::errorcheck(sw_error)
             sw_connection <<- conn
-
-            # This should always be disabled.  Messages are printed by CASResponse.
-            sw_connection$setBooleanOption('print_messages', FALSE)
          }
          else
          {
             sw_connection <<- prototype$sw_connection$copy()
             swat::errorcheck(prototype$sw_connection)
          }
+
+         # This should always be disabled.  Messages are printed by CASResponse.
+         sw_connection$setBooleanOption('print_messages', FALSE)
+
          if ( is.null(options) || !('gen_actions' %in% names(options)) ||
               as.logical(options$gen_actions) )
             {
-            message("NOTE: Connecting to CAS and generating CAS action functions for loaded")
-            message("      action sets...")
+            message(paste("NOTE: Connecting to CAS and generating CAS action functions for loaded",
+                          "      action sets...", sep="\n"))
             }
          else
             {
-            message("NOTE: Connecting to CAS and skipping generating CAS action functions for loaded")
-            message("      action sets. You can do this manually for an action set using gen.functions().")
+            message(paste("NOTE: Connecting to CAS and skipping generating CAS action functions for loaded",
+                          "      action sets. You can do this manually for an action set using gen.functions().", sep="\n"))
             }
          hostname <<- sw_connection$getHostname()
          swat::errorcheck(sw_connection)
@@ -814,8 +810,8 @@ CAS <- setRefClass(
             options(cas.message.level='error')
             actsets = listActionSets(.self)
             if (!as.logical(getOption('cas.gen.function.sig'))) {
-               message("NOTE: To generate the functions with signatures (for tab completion), set ")
-               message("      options(cas.gen.function.sig=TRUE).")
+               message(paste("NOTE: To generate the functions with signatures (for tab completion), set ",
+                             "      options(cas.gen.function.sig=TRUE).", sep="\n"))
             }
             for (i in 1:length(actsets$actionset))
                {

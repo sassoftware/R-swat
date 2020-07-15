@@ -114,6 +114,5 @@ exportMethods(summary)
 exportMethods(tail)
 exportMethods(unique)
 exportPattern("^[[:alpha:]]+")
-if ( grepl('linux', R.version$os) ) {useDynLib(rswat)}
 importFrom("methods", "as", "callNextMethod", "is", "new", "setClass", "setGeneric", "slot", "initialize", "show")
 importFrom("utils", "read.csv", "read.table", "str", "write.csv", "write.csv2", "write.table")

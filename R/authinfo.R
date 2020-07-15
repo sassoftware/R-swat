@@ -19,7 +19,7 @@ query_authinfo <- function( hostname, username=NULL, protocol=NULL, filepath=NUL
     hosts <- list()
     host <- NULL
     skipnext <- FALSE
-    path_sep <- '/'
+    path_sep <- .Platform$path.sep
 
     if ( !is.null(username) && username == '' ) {
         username <- NULL
