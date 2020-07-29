@@ -61,12 +61,7 @@ if ( is.null(HOSTNAME) )
   }
 }
 
-if ( PROTOCOL == 'http' || PROTOCOL == 'https' )
-{
-   message(cat('NOTE: Using URL=', HOSTNAME, sep=''))
-} else {
-   message(cat('NOTE: Using HOSTNAME=', HOSTNAME, ' PORT=', PORT, ' PROTOCOL=', PROTOCOL, sep=''))
-}
+message(cat('NOTE: Using HOSTNAME=', HOSTNAME, ' PORT=', PORT, ' PROTOCOL=', PROTOCOL, sep=''))
 
 # Create CAS connection
 caz <- swat::CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL)
