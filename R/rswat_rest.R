@@ -842,13 +842,17 @@ REST_CASConnection <- setRefClass(
             orig_port_ <<- port
             tkhttp_id_ <<- ''
 
-            if ( !is.na(Sys.getenv('SSLCALISTLOC', unset=NA)) )
-            {
-                config_ <<- httr::config(cainfo=Sys.getenv('SSLCALISTLOC'))
-            }
-            else if ( !is.na(Sys.getenv('CAS_CLIENT_SSL_CA_LIST', unset=NA)) )
+            if ( !is.na(Sys.getenv('CAS_CLIENT_SSL_CA_LIST', unset=NA)) )
             {
                 config_ <<- httr::config(cainfo=Sys.getenv('CAS_CLIENT_SSL_CA_LIST'))
+            }
+            else if ( !is.na(Sys.getenv('SAS_TRUSTED_CA_CERTIFICATES_PEM_FILE', unset=NA)) )
+            {
+                config_ <<- httr::config(cainfo=Sys.getenv('SAS_TRUSTED_CA_CERTIFICATES_PEM_FILE'))
+            }
+            else if ( !is.na(Sys.getenv('SSLCALISTLOC', unset=NA)) )
+            {
+                config_ <<- httr::config(cainfo=Sys.getenv('SSLCALISTLOC'))
             }
             else {
                 config_ <<- httr::config()
@@ -883,20 +887,9 @@ REST_CASConnection <- setRefClass(
                 {
                     url <- httr::parse_url(hostname[[i]])
                     hostname_ <<- c(.self$hostname_, url$hostname)
-                    if ( is.null(url$port) )
-                    {
-                        if ( !is.null(port) ) {
-                            port_ <<- c(.self$port_, port)
-                        } else if ( is_https ) {
-                            port_ <<- c(.self$port_, 443)
-                        } else {
-                            port_ <<- c(.self$port_, 8777)
-                        }
-                    } else {
-                        port_ <<- as.integer(url$port)
-                    }
+                    port_ <<- c(.self$port_, as.numeric(url$port))
                     url$port <- .self$port_
-                    baseurl_ <<- c(baseurl_, sub('/$', '', httr::build_url(url), perl=TRUE))
+                    baseurl_ <<- c(.self$baseurl_, sub('/$', '', httr::build_url(url), perl=TRUE)[[1]])
                 }
             }
 
@@ -1162,6 +1155,9 @@ REST_CASConnection <- setRefClass(
         },
 
         getHostname = function() {
+            if ( grepl('^https:', current_hostname_, perl=TRUE) ) {
+                return( httr:parse_url(current_hostname_)$hostname )
+            }
             return( current_hostname_ )
         },
 

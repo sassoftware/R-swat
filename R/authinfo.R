@@ -20,6 +20,7 @@ query_authinfo <- function( hostname, username=NULL, protocol=NULL, filepath=NUL
     host <- NULL
     skipnext <- FALSE
     path_sep <- .Platform$path.sep
+    file_sep <- .Platform$file.sep
 
     if ( !is.null(username) && username == '' ) {
         username <- NULL
@@ -68,7 +69,7 @@ query_authinfo <- function( hostname, username=NULL, protocol=NULL, filepath=NUL
         {
            for ( i in 1:length(authinfo_paths) )
            {
-               authinfo_paths[[i]] <- paste(homedir, authinfo_paths[[i]], sep=path_sep)
+               authinfo_paths[[i]] <- paste(homedir, authinfo_paths[[i]], sep=file_sep)
            } 
         }
     }

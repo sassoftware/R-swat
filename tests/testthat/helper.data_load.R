@@ -25,16 +25,19 @@ options(cas.gen.function.sig=FALSE, cas.print.messages=FALSE)
 #
 # Setup connection parameters
 #
-HOSTNAME <- Sys.getenv('CASHOST', '')
-if ( HOSTNAME == '' ) { HOSTNAME = NULL }
+info <- swat::.getConnectionInfo(NULL, NULL, NULL, NULL, NULL, NULL)
+HOSTNAME <- info$hostname
+PORT <- info$port
+USERNAME <- info$username
+PASSWORD <- info$password
+PROTOCOL <- info$protocol
 
-PORT <- Sys.getenv('CASPORT', '')
+if ( grepl('^https?:', HOSTNAME) ) {
+    HOSTNAME <- httr::parse_url(HOSTNAME)$hostname
+}
+if ( HOSTNAME == '' ) { HOSTNAME = NULL }
 if ( PORT == '' ) { PORT <- NULL }
 if ( !is.null(PORT) ) { PORT <- as.numeric(PORT) }
-
-USERNAME <- Sys.getenv('CASUSER', '')
-PASSWORD <- Sys.getenv('CASPASSWORD', '')
-PROTOCOL <- Sys.getenv('CASPROTOCOL', 'auto')
 
 # Check for .casrc file
 if ( is.null(HOSTNAME) ) 
@@ -58,7 +61,12 @@ if ( is.null(HOSTNAME) )
   }
 }
 
-message(cat('NOTE: Using HOSTNAME=', HOSTNAME, ' PORT=', PORT, ' PROTOCOL=', PROTOCOL, sep=''))
+if ( PROTOCOL == 'http' || PROTOCOL == 'https' )
+{
+   message(cat('NOTE: Using URL=', HOSTNAME, sep=''))
+} else {
+   message(cat('NOTE: Using HOSTNAME=', HOSTNAME, ' PORT=', PORT, ' PROTOCOL=', PROTOCOL, sep=''))
+}
 
 # Create CAS connection
 caz <- swat::CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL)

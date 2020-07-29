@@ -507,6 +507,215 @@ CASDataMsgHandler <- setRefClass(
    )
 )
 
+.detectProtocol <- function(hostname, port, protocol)
+{
+   if ( protocol[[1]] != 'auto' )
+      return( protocol[[1]] )
+
+   for ( i in 1:length(hostname) )
+   {
+      tryCatch({
+         url <- paste('http://', hostname[[i]], ':', port, '/cas', sep='')
+         r <- httr::GET(url)
+         httr::handle_reset(url)
+         if ( r$status_code == 400 )
+            return( 'https' )
+         else if ( r$status_code == 401 )
+            return( 'http' )
+      }, error=function (e) { })
+   }
+
+   return( 'cas' )
+}
+
+.expandURL <- function(hostname)
+{
+   final <- c()
+
+   for ( i in 1:length(hostname) )
+   {
+      totalItems <- 1
+      items <- list()
+      parts <- unlist(strsplit(hostname[[i]], '\\[|\\]'))
+      for ( i in 1:length(parts) )
+      {
+          if ( i %% 2 ) {
+             res <- list(parts[[i]])
+          } else {
+             res <- unlist(strsplit(parts[[i]], '\\s*,\\s*'))
+          }
+          totalItems <- totalItems * length(res)
+          items[[length(items)+1]] <- res
+      }
+
+      # Build all linear combinations of names
+      out <- vector(mode='character', length=totalItems)
+      for ( j in 1:length(items) )
+      {
+         n <- 1
+         item <- items[[j]]
+         while ( n <= totalItems )
+         {
+            for ( k in 1:length(item) )
+            {
+               out[[n]] <- paste(out[[n]], item[[k]], sep='') 
+               n <- n + 1
+            }
+         }
+      }
+
+      for ( i in 1:length(out) )
+      {
+         final[[length(final)+1]] <- out[[i]]
+      }
+   }
+
+   return( final )
+}
+
+.getConnectionInfo <- function(hostname, port, username, password, protocol, path) 
+{
+   # Get defaults from environment
+   hostname <- hostname[hostname != '']
+   if ( is.null(hostname) || length(hostname) == 0 )
+   {
+      if ( Sys.getenv('CAS_URL') != '' )
+         hostname <- Sys.getenv('CAS_URL')
+      else if ( Sys.getenv('CASURL') != '' )
+         hostname <- Sys.getenv('CASURL')
+      else if ( Sys.getenv('CAS_HOST') != '' )
+         hostname <- Sys.getenv('CAS_HOST')
+      else if ( Sys.getenv('CASHOST') != '' )
+         hostname <- Sys.getenv('CASHOST')
+      else
+         hostname <- 'localhost'
+      hostname <- unlist(strsplit(hostname, '\\s+'))
+   }
+
+   port <- port[port > 0]
+   if ( is.null(port) || length(port) == 0 )
+   {
+      if ( Sys.getenv('CAS_PORT') != '' ) {
+         port <- as.integer(Sys.getenv('CAS_PORT'))
+      } else if ( Sys.getenv('CASPORT') != '' ) {
+         port <- as.integer(Sys.getenv('CASPORT'))
+      } else {
+         port <- 0
+      }
+   }
+   port <- port[[1]]
+
+   protocol <- protocol[protocol != '']
+   if ( is.null(protocol) || length(protocol) == 0 || protocol[[1]] == 'auto' )
+   {
+      if ( Sys.getenv('CAS_PROTOCOL') != '' )
+          protocol <- Sys.getenv('CAS_PROTOCOL')
+      else if ( Sys.getenv('CASPROTOCOL') != '' )
+          protocol <- Sys.getenv('CASPROTOCOL')
+      else
+          protocol <- 'auto'
+   }
+   protocol <- protocol[[1]]
+
+   username <- username[username != '']
+   if ( is.null(username) || length(username) == 0 )
+   {
+      if ( Sys.getenv('CAS_USER') != '' )
+          username <- Sys.getenv('CAS_USER')
+      else if ( Sys.getenv('CASUSER') != '' )
+          username <- Sys.getenv('CASUSER')
+      else if ( Sys.getenv('CAS_USERNAME') != '' )
+          username <- Sys.getenv('CAS_USERNAME')
+      else if ( Sys.getenv('CASUSERNAME') != '' )
+          username <- Sys.getenv('CASUSERNAME')
+      else
+          username <- ''
+   }
+   username <- username[[1]]
+
+   password <- password[password != '']
+   if ( is.null(password) || length(password) == 0 )
+   {
+      if ( Sys.getenv('CAS_TOKEN') != '' )
+          password <- Sys.getenv('CAS_TOKEN')
+      else if ( Sys.getenv('CASTOKEN') != '' )
+          password <- Sys.getenv('CASTOKEN')
+      else if ( Sys.getenv('CAS_PASSWORD') != '' )
+          password <- Sys.getenv('CAS_PASSWORD')
+      else if ( Sys.getenv('CASPASSWORD') != '' )
+          password <- Sys.getenv('CASPASSWORD')
+      else
+          password <- ''
+   }
+   password <- password[[1]]
+
+   # Check hostname for other components
+   newHostname <- list()
+   for ( i in 1:length(hostname) )
+   {
+      if ( !grepl('^\\w+://', hostname[[1]], perl=TRUE) )
+         newHostname <- c(newHostname, paste(protocol, '://', hostname[[i]], sep=''))
+      else
+         newHostname <- c(newHostname, hostname[[i]])
+   } 
+
+   hostname <- .expandURL(newHostname)
+   urlp <- httr::parse_url(hostname[[1]])
+   protocol <- if (length(urlp$scheme[urlp$scheme != '']) != 0) urlp$scheme else protocol
+   newHostname <- list()
+   for ( i in 1:length(hostname) )
+   {
+      hurlp <- httr::parse_url(hostname[[i]])
+      if ( !is.null(hurlp$hostname) && hurlp$hostname != '' )
+      {
+         newHostname[[length(newHostname)+1]] <- hurlp$hostname
+      }
+   }
+   hostname <- newHostname
+   port <- if (length(urlp$port[urlp$port != 0]) != 0) urlp$port else port
+   username <- if (length(urlp$username[urlp$username != '']) != 0) urlp$username else username
+   password <- if (length(urlp$password[urlp$password != '']) != 0) urlp$password else password
+   path <- if (length(urlp$path[urlp$path != '']) != 0) urlp$path else path
+
+   # Set port based on protocol, if port number is missing
+   if ( length(port) == 0 || port[[1]] == 0 )
+   {
+      if ( protocol[[1]] == 'http' )
+         port <- 80
+      else if ( protocol[[1]] == 'https' )
+         port <- 443
+      else if ( protocol[[1]] == 'cas' )
+         port <- 5570
+      else
+         stop('CAS server port number was not specified')
+   }
+
+   # Auto-detect protocol if still missing
+   if ( protocol[[1]] == 'auto' )
+      protocol <- .detectProtocol(hostname, port, protocol)
+
+   if ( protocol[[1]] != 'http' && protocol[[1]] != 'https' && protocol[[1]] != 'cas' )
+      stop(paste('Unrecognized protocol for CAS server: ', protocol[[1]]))
+
+   # For http(s), construct URLs
+   if ( protocol[[1]] == 'http' || protocol[[1]] == 'https' )
+   {
+      urls <- list()
+      for ( i in 1:length(hostname) )
+      {
+         url <- paste(protocol, '://', hostname[[i]], ':', port, sep='')
+         if ( length(path) > 0 && path[[1]] != '' )
+             url <- paste(url, '/', gsub('^/+', '', path[[1]], perl=TRUE), sep='')
+         urls[[length(urls)+1]] <- url
+      }
+      hostname <- do.call('paste', urls)
+   } else {
+      hostname <- do.call('paste', hostname)
+   }
+
+   return( list(hostname=hostname, port=as.numeric(port), username=username, password=password, protocol=protocol) )
+}
+
 #' CAS Object Class
 #'
 #' An instance of this class represents a connection and session
@@ -584,64 +793,16 @@ CAS <- setRefClass(
    ),
 
    methods = list(
-      initialize = function( hostname=NULL, port=NULL, username='', password='', ... ) {
+      initialize = function( hostname=NULL, port=NULL, username=NULL, password=NULL, protocol='auto', path=NULL, ... ) {
          prototype <- NULL
-         protocol <<- 'auto'
          options <- list(...)
 
-         if ( is.null(hostname) )
-         {
-            if ( Sys.getenv('CASHOST') != '' )
-               hostname <<- Sys.getenv('CASHOST')
-            else
-               hostname <<- 'localhost'
-         }
-         else
-         {
-            hostname <<- hostname
-         }
-
-         port <<- 5570
-
-         if ( Sys.getenv('CASPROTOCOL') != '' ) 
-         {
-            protocol <<- Sys.getenv('CASPROTOCOL')
-            if ( protocol == 'http' ) {
-               port <<- 8777     
-            } else if ( protocol == 'https' ) {
-               port <<- 443
-            } else {
-               port <<- 5570
-            }
-         }
-
-         if ( grepl('^https:', .self$hostname[[1]], perl=TRUE) ) {
-            protocol <<- 'https'
-            port <<- 443
-         } else if ( grepl('^http:', .self$hostname[[1]], perl=TRUE) ) {
-            protocol <<- 'http'
-            port <<- 8777
-         }
-
-         if ( Sys.getenv('CASPORT') != '' ) {
-            port <<- as.integer(Sys.getenv('CASPORT'))
-         }
-
-         if ( !is.null(port) ) {
-            port <<- as.integer(port)
-         }
-
-         if ( grepl('^https:', .self$hostname[[1]], perl=TRUE) ) {
-            url <- httr::parse_url(.self$hostname[[1]])
-            if ( !is.null(url$port) ) {
-                port <<- as.integer(port)
-            }
-         } else if ( grepl('^http:', .self$hostname[[1]], perl=TRUE) ) {
-            url <- httr::parse_url(.self$hostname[[1]])
-            if ( !is.null(url$port) ) {
-                port <<- as.integer(port)
-            }
-         }
+         info <- .getConnectionInfo(hostname, port, username, password, protocol, path)
+         protocol <<- info$protocol
+         hostname <<- info$hostname
+         port <<- info$port
+         username <<- info$username
+         password <- info$password
 
          soptions <<- ''
 
@@ -655,11 +816,7 @@ CAS <- setRefClass(
             soptions <<- gsub('^\\s+|\\s+$', '', paste(soptions, paste('session=', options$session, sep=''), sep=' '))
          }
 
-         if ( !is.null(options) && 'protocol' %in% names(options) )
-         {
-            soptions <<- gsub('^\\s+|\\s+$', '', paste(soptions, paste('protocol=', options$protocol, sep=''), sep=' '))
-            protocol <<- options$protocol
-         }
+         soptions <<- gsub('^\\s+|\\s+$', '', paste(soptions, paste('protocol=', .self$protocol, sep=''), sep=' '))
 
          if ( !is.null(options) && 'authinfo' %in% names(options) && password == '' )
          {
@@ -703,43 +860,6 @@ CAS <- setRefClass(
             prototype <- options$prototype
          }
 
-         if ( is.null(.self$protocol) )
-             protocol <<- 'auto'
-
-         if ( .self$protocol == 'auto' )
-         {
-            for ( i in 1:length(.self$hostname) )
-            {
-               url <- httr::parse_url(.self$hostname[[i]])
-               if ( is.null(url$hostname) )
-                   url$hostname <- .self$hostname[[i]]
-               if ( is.null(url$port) )
-                   url$port <- port
-               if ( is.null(url$scheme) )
-                   url$scheme <- 'auto'
-
-               if ( url$scheme != 'auto' )
-               {
-                   protocol <<- url$scheme
-                   break
-               }
-
-               tryCatch({
-                    url <- paste('http://', url$hostname, ':', .self$port, '/cas', sep='')
-                    httr::GET(url)
-                    httr::handle_reset(url)
-                    protocol <<- 'http'
-                    hostname <<- gsub('^auto', 'http', .self$hostname, perl=TRUE)
-               }, error=function (e) { })
-
-               if ( .self$protocol == 'http' )
-                  break
-            }
-
-            if ( .self$protocol == 'auto' )
-               protocol <<- 'cas'
-         }
-
          if ( .self$protocol == 'http' || .self$protocol == 'https' )
          {
             sw_error <<- REST_CASError(soptions)
@@ -754,18 +874,11 @@ CAS <- setRefClass(
          {
             sw_error <<- SW_CASError(soptions)
             CASConnection <- SW_CASConnection
-            for ( i in 1:length(.self$hostname) )
-            {
-               url <- httr::parse_url(.self$hostname[[i]])
-               if ( is.null(url$hostname) )
-                   url$hostname <- .self$hostname[[i]]
-               hostname[[i]] <<- url$hostname
-            }
          }
 
          if ( is.null(prototype) )
          {
-            conn <- CASConnection(.self$hostname, .self$port, username, password, soptions, sw_error)
+            conn <- CASConnection(.self$hostname, .self$port, .self$username, password, soptions, sw_error)
             swat::errorcheck(sw_error)
             sw_connection <<- conn
          }
@@ -780,15 +893,16 @@ CAS <- setRefClass(
 
          if ( is.null(options) || !('gen_actions' %in% names(options)) ||
               as.logical(options$gen_actions) )
-            {
+         {
             message(paste("NOTE: Connecting to CAS and generating CAS action functions for loaded",
                           "      action sets...", sep="\n"))
-            }
+         }
          else
-            {
+         {
             message(paste("NOTE: Connecting to CAS and skipping generating CAS action functions for loaded",
                           "      action sets. You can do this manually for an action set using gen.functions().", sep="\n"))
-            }
+         }
+
          hostname <<- sw_connection$getHostname()
          swat::errorcheck(sw_connection)
          port <<- sw_connection$getPort()
@@ -805,7 +919,7 @@ CAS <- setRefClass(
 
          if ( is.null(options) || !('gen_actions' %in% names(options)) ||
               as.logical(options$gen_actions) )
-            {
+         {
             ml <- getOption('cas.message.level')
             options(cas.message.level='error')
             actsets = listActionSets(.self)
@@ -817,9 +931,9 @@ CAS <- setRefClass(
                {
                if (actsets$loaded[i] == 1)
                   gen.functions(.self, actsets$actionset[i])
-               }
-            options(cas.message.level=ml)
             }
+            options(cas.message.level=ml)
+         }
 
          .self
       },
