@@ -223,7 +223,7 @@ casRetrieve <-  function(caz, ...) {
 
 gen.functions2 <-  function(cas, actionSet) {
   #message(paste("get action set list", Sys.time()))
-  res = swat::runAction(cas, 'builtins.reflect', actionSet=actionSet)
+  res = swat::runAction(cas, 'builtins.reflect', actionSet=actionSet, showLabels=FALSE)
   #message(paste("got action set list", Sys.time()))
   env = globalenv()
   if (length(res[[1]]) > 0)
@@ -263,7 +263,7 @@ gen.functions2 <-  function(cas, actionSet) {
 
 .gen.sig <-  function(cas, actn) {
   #message(paste("get action list", Sys.time()))
-  res = swat::runAction(cas, 'builtins.reflect', check_errors=TRUE, action=actn)
+  res = swat::runAction(cas, 'builtins.reflect', check_errors=TRUE, action=actn, showLabels=FALSE)
   #message(paste("got action list", Sys.time()))
   #swat::check_for_cas_errors(res)
   str  = ''
@@ -400,7 +400,7 @@ listActionParms <- function(conn, actn, display=TRUE){
      actn = toString(substitute(actn))
   if (startsWith(actn, 'cas.'))
      actn = substr(actn, 5, nchar(actn))
-  res <- conn$retrieve('builtins.reflect', action=actn)
+  res <- conn$retrieve('builtins.reflect', action=actn, showLabels=FALSE)
   swat::check_for_cas_errors(res)
   str   <- paste("cas.", actn,'(', sep='')
   plist <- list()
