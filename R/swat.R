@@ -119,7 +119,7 @@
    } else if ( file.exists(file.path(lib, pkg, 'libs', 'x64', 'rswat.dll')) ) {
       library.dynam('rswat', pkg, lib)
       if ( file.exists(file.path(lib, pkg, 'libs', 'x64', 'tkmk.dll')) ) {
-         InitializeTK(file.path(lib, pkg, 'libs', 'x64:'))
+         InitializeTK(file.path(lib, pkg, 'libs', 'x64;'))
       } else {
          # TODO: InitializeTK('') once new extension has been released with support for that.
       }
