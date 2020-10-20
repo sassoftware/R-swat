@@ -789,7 +789,8 @@ CAS <- setRefClass(
       reason        = 'ANY',            
       status        = 'ANY',             
       messages      = 'ANY',                         
-      events        = 'ANY'                        
+      events        = 'ANY',
+      serverFeatures = 'character'
    ),
 
    methods = list(
@@ -916,6 +917,16 @@ CAS <- setRefClass(
          callSuper(sw_connection=.self$sw_connection, sw_error=.self$sw_error,
                    soptions=.self$soptions, hostname=.self$hostname, port=.self$port,
                    username=.self$username, session=.self$session)
+
+         # Get server features
+         res <- .self$retrieve('builtins.reflect', action='builtins.reflect',
+                               showLabels=FALSE, `_messagelevel`='error')
+         params <- res$results[[1]]$actions[[1]]$params
+         for (i in 1:length(params)) {
+            if ( params[[i]]$name == 'levels' ) {
+               serverFeatures <<- c(.self$serverFeatures, 'reflection.levels')
+            }
+         }
 
          if ( is.null(options) || !('gen_actions' %in% names(options)) ||
               as.logical(options$gen_actions) )
