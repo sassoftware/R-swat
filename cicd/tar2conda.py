@@ -193,6 +193,9 @@ def get_supported_versions(platform):
                 else:
                     raise
 
+            if [int(x) for x in rver.split('.')] < (3, 4, 3):
+                continue
+
             if i == 0:
                 vers[base].add(rver)
             elif rver not in vers[base]:
