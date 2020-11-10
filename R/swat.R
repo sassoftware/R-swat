@@ -537,12 +537,12 @@ CASDataMsgHandler <- setRefClass(
       totalItems <- 1
       items <- list()
       parts <- unlist(strsplit(hostname[[i]], '\\[|\\]'))
-      for ( i in 1:length(parts) )
+      for ( j in 1:length(parts) )
       {
-          if ( i %% 2 ) {
-             res <- list(parts[[i]])
+          if ( j %% 2 ) {
+             res <- list(parts[[j]])
           } else {
-             res <- unlist(strsplit(parts[[i]], '\\s*,\\s*'))
+             res <- unlist(strsplit(parts[[j]], '\\s*,\\s*'))
           }
           totalItems <- totalItems * length(res)
           items[[length(items)+1]] <- res

@@ -64,6 +64,7 @@ requirements:
         - r-dplyr
         - r-httr
         - r-jsonlite
+        - r-codetools
         - libnuma      # [linux64]
         - libuuid      # [linux64]
         - krb5         # [linux64]

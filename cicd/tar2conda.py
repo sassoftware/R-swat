@@ -174,8 +174,8 @@ def get_supported_versions(platform):
     vers = dict(r=set(), mro=set())
 
     for i, pkg in enumerate(['r::r-dplyr', 'r::r-httr', 'r::r-testthat', 'r::r-xlsx']):
-        cmd = ['conda', 'search', '-q', '--json', '--subdir', platform, pkg]
-        out = subprocess.check_output(cmd)
+        cmd = ['conda', 'search', '--json', '--platform', platform, pkg]
+        out = subprocess.check_output(cmd).decode('utf-8')
 
         for item in json.loads(out)[pkg.split('::')[-1]]:
             rver = [x for x in item['depends']
