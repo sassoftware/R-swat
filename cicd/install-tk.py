@@ -193,7 +193,7 @@ def main(args):
         args.release = 'vb020'
 
     # Directory for TK libraries
-    lib_root = os.path.join(args.root, 'R/src')
+    lib_root = os.path.join(args.root, 'src')
 
     # Create output directory
     os.makedirs(lib_root, exist_ok=True)
