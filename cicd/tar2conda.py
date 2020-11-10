@@ -251,6 +251,8 @@ def main(url, args):
 
                 cmd = ['conda', 'build', '-q', '--no-test']
                 cmd.extend(['--R', ver])
+                if args.debug:
+                    cmd.append('--debug')
                 if args.output_folder:
                     cmd.extend(['--output-folder', args.output_folder])
                 if args.override_channels:
