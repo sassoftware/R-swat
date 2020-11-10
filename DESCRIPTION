@@ -2,6 +2,7 @@ Package: swat
 Type: Package
 Title: SAS Scripting Wrapper for Analytics Transfer (SWAT)
 Version: 1.5.0.9000
+TKVersion: none
 Date: 06JUN2020
 Authors@R: c(person("Jared", "Dean", role = c("aut", "cre"),
                 email = "Jared.Dean@sas.com"),
@@ -10,6 +11,7 @@ Authors@R: c(person("Jared", "Dean", role = c("aut", "cre"),
 Author: Jared Dean [aut, cre],
   Tom Weber [aut, cre],
   Kevin Smith [aut]
+Maintainer: Kevin Smith <Kevin.Smith@sas.com>
 Description: SWAT provides an R scripting interface to SAS Cloud Analytic Services (CAS).
   This enables R programmers to perform analytical functions provided by SAS.
 License: file LICENSE
