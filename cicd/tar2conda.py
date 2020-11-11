@@ -31,12 +31,6 @@ except NameError:
             exec(code, global_vars, local_vars)
 
 
-def print_err(*args, **kwargs):
-    ''' Print a message to stderr '''
-    sys.stderr.write(*args, **kwargs)
-    sys.stderr.write('\n')
-
-
 def get_platform():
     ''' Return the Anaconda platform name for the current platform '''
     plat = platform.system().lower()
@@ -51,32 +45,6 @@ def get_platform():
         if 'ppc' in machine:
             return 'linux-ppc64le'
     return 'unknown'
-
-
-def tar_filter(tar_name, tar_info):
-    '''
-    Filter out compiled pieces of tar file
-
-    Parameters
-    ----------
-    tar_name : string
-        Basename of the tar file
-    tar_info : TarInfo
-        The tar information structure
-
-    Returns
-    -------
-    :class:`TarInfo`
-
-    '''
-    if tar_info.name.endswith('.so'):
-        return None
-    if tar_info.name.endswith('.dll'):
-        return None
-    if tar_info.name.endswith('.dylib'):
-        return None
-    tar_info.name = re.sub(r'^[^\\/]+', tar_name, tar_info.name)
-    return tar_info
 
 
 def update_recipe(recipe, **kwargs):
@@ -225,7 +193,7 @@ def main(url, args):
 
     download = False
     if url.startswith('http:') or url.startswith('https:'):
-        print_err('> download %s' % url)
+        print('> download %s' % url)
         download = True
         url, headers = urlretrieve(url)
         urlcleanup()
@@ -265,7 +233,7 @@ def main(url, args):
                         cmd.extend(['--channel', chan])
                 cmd.append(args.recipe_dir)
 
-                print_err('>' + ' '.join(cmd))
+                print('> ' + ' '.join(cmd))
                 subprocess.check_output(cmd)
 
     os.chdir(cwd)
