@@ -62,6 +62,10 @@ def get_supported_versions(platform):
                 else:
                     raise
 
+            # Ignore versions older than 3.4.3
+            if tuple([int(x) for x in rver.split('.')]) < (3, 4, 3):
+                continue
+
             if i == 0:
                 vers[base].add(rver)
             elif rver not in vers[base]:
