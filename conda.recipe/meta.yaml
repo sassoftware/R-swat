@@ -65,9 +65,6 @@ requirements:
         - r-httr
         - r-jsonlite
         - r-codetools
-        - libnuma      # [linux64]
-        - libuuid      # [linux64]
-        - krb5         # [linux64]
 
     run:
         - {{ r_base }}
@@ -84,6 +81,8 @@ test:
         - r-devtools
         - r-testthat
         - r-roxygen2
+        - r-xlsx
+        - r-jpeg
     commands:
         - R -e "library('swat'); conn <- swat::CAS(); cas.builtins.serverStatus(conn); cas.terminate(conn)"   # [not win]
         - "\"%R%\" -e \"library('swat');conn=swat::CAS(); cas.builtins.serverStatus(conn);cas.terminate(conn)\""  # [win]

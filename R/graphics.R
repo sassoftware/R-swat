@@ -62,7 +62,7 @@ setMethod("plot",
       else{
         # sample rows
         if (length(x@groupby)){ # SRS
-          name <- paste(x@tname, random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
+          name <- uniqueTableName(x@tname)
           res <- runAction(x@conn, "sampling.srs", check_errors=TRUE, 
                             samppct=eval(downloadObs/nrow(x)*100),
                             table=x@tname,
@@ -78,7 +78,7 @@ setMethod("plot",
           return(plot(srs2, ... = ...))
         }
         else { # Stratified
-          name <- paste(x@tname, random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
+          name <- uniqueTableName(x@tname)
           res <- runAction(x@conn, "sampling.srs", check_errors=TRUE, 
                             samppct=eval(downloadObs/nrow(x)*100),
                             table=x@tname,

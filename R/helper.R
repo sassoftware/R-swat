@@ -35,7 +35,7 @@ translate <- function(df, col = 2L) {
 #' @export
 #' @rawRd % Copyright SAS Institute
 uniqueTableName <- function(prefix = "") {
-  a <- tempfile(prefix)
+  a <- gsub('\\', '/', tempfile(prefix), fixed=TRUE)
   b <- strsplit(a, split = '/')
   return (as.character(lapply(b, tail, n = 1L)))
 }

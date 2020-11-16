@@ -1054,8 +1054,8 @@ setMethod("summary",
                 dplyr::select(Column, FmtVar, Frequency) %>%
                 dplyr::group_by(Column) %>%
                 dplyr::arrange(Column, desc(Frequency)) %>%
-                dplyr::top_n(n=5) %>%
-                dplyr::filter(dplyr::row_number() <=6)
+                dplyr::top_n(n=6) %>%
+                dplyr::slice(1:6)
             } 
             
             sumpop <- function(v, n=maxsum){

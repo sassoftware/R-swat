@@ -169,7 +169,7 @@ setMethod("unique", signature(x = "CASTable"),
     stop("Not currently capable of finding unique rows when there are computedVars defined.")
     tp = gen.table.parm(x)
     tp$computedOnDemand = TRUE 
-    tmpname = paste('unique_tmp1', random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
+    tmpname = uniqueTableName('unique_tmp1')
     tmp1 = cas.table.partition(x@conn, casout=tmpname, table =tp)
     tmp1 = defCasTable(x@conn, tmpname)
     vars = c(x@names, x@computedVars)
@@ -225,12 +225,7 @@ rbind2.casTable <- function (x, y, ...) {
             if (! class(y) == 'CASTable') {
               stop("The parameter must be a CAS object")
             }
-            if (!requireNamespace("random", quietly = TRUE)) {
-              stop(paste0("The 'random' package is required for this function ",
-                          "Use install.packages('random') to install the package."),
-                   call. = FALSE)
-            }
-            tableName <- paste("_rbind", random::randomStrings(n = 1, len = 9, unique = TRUE), sep='')
+            tableName <- uniqueTableName("_rbind")
             code <- paste("data ", tableName, "(caslib='", x@caslib, "') ","; ", "set ", x@tname, "(caslib='", x@caslib, "') ", y@tname, "(caslib='", y@caslib, "'); run;", sep='')
             runSasCode(x@conn, code=code)
             # return new CASTable
@@ -294,12 +289,6 @@ cbind2.casTable <- function (x, y, ...) {
     stop("The parameter must be a CASTable object")
   }
 
-  if (!requireNamespace("random", quietly=TRUE)) {
-    stop(paste0("The 'random' package is required for this function ",
-                "Use install.packages('random') to install the package."),
-                call.=FALSE)
-  }
-
   xInfo <- casRetrieve(x@conn, 'table.columnInfo', table=list(name=x@tname, caslib=x@caslib))
   swat::check_for_cas_errors(xInfo)
   yInfo <- casRetrieve(y@conn, 'table.columnInfo', table=list(name=y@tname, caslib=y@caslib))
@@ -312,7 +301,7 @@ cbind2.casTable <- function (x, y, ...) {
     stop("Column names in tables must have unique names")
   }
 
-  tableName <- paste("_cbind", random::randomStrings(n=1, len=9, unique=TRUE), sep='')
+  tableName <- uniqueTableName("_cbind")
 
   code <- paste("data '", tableName, "'n(caslib='", x@caslib, "'); ", 
                 "  merge '", x@tname, "'n(caslib='", x@caslib, "') ", 
