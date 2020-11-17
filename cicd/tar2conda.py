@@ -248,13 +248,22 @@ def main(url, args):
         # Report available R versions
         print('')
         print('> Available verions for {}:'.format(args.platform))
-        vers = get_supported_versions(args.platform)
+        vers, exc = get_supported_versions(args.platform)
         for key, value in vers.items():
             if value:
                 print('  + {}-base'.format(key))
                 for item in sorted(value):
                     print('    {}'.format(item))
         print('')
+
+        if exc['r'] or exc['mro']:
+            print('> Excluded versions:')
+            for key, value in exc.items():
+                if value:
+                    print('  + {}-base'.format(key))
+                for k, v in sorted(value.items()):
+                    print('    {}: {}'.format(k, ', '.join(v)))
+            print('')
 
         # Create conda package for each R version
         for base, versions in vers.items():
