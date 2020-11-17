@@ -61,14 +61,12 @@ build:
 requirements:
     build:
         - {{ r_base }} ={{ r_version }}
-        - r-dplyr
         - r-httr
         - r-jsonlite
         - r-codetools
 
     run:
         - {{ r_base }}
-        - r-dplyr
         - r-httr
         - r-jsonlite
         - libnuma      # [linux64]
@@ -80,7 +78,6 @@ test:
         - {{ r_base }} ={{ r_version }}
         - r-devtools
         - r-testthat
-        - r-roxygen2
         - r-xlsx
         - r-jpeg
     commands:

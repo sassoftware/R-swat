@@ -2099,7 +2099,7 @@ rbind.bygroups <- function(res) {
 
    for ( name in names(tables) )
    {
-      tables[[name]] <- do.call(dplyr::bind_rows, tables[[name]])
+      tables[[name]] <- do.call(rbind, tables[[name]])
    }
 
    return( tables )

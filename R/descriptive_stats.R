@@ -13,8 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-library('dplyr')
-
 
 # CAS descriptive statistics
 
@@ -40,7 +38,7 @@ setMethod("max",
             tp = swat::gen.table.parm(x)
             vars = c(x@names, x@computedVars)
             vars = vars[vars != ""]
-            res <- casRetrieve(x@conn, 'topK', table=tp, inputs=vars, bottomk=0)
+            res <- casRetrieve(x@conn, 'simple.topK', table=tp, inputs=vars, bottomk=0)
             return (max(as.numeric(res$results$Topk$FmtVar)))
           })
 
@@ -1048,14 +1046,11 @@ setMethod("summary",
             }
             if (length(cvars) > 0) {
               # get statistics for character variables
-              freqres <- casRetrieve(object@conn, 'simple.freq', table=tp, inputs=cvars, includeMissing=FALSE)
-              `%>%` <- dplyr::`%>%`
-              fres <- freqres$results$Frequency@df %>%
-                dplyr::select(Column, FmtVar, Frequency) %>%
-                dplyr::group_by(Column) %>%
-                dplyr::arrange(Column, desc(Frequency)) %>%
-                dplyr::top_n(n=6) %>%
-                dplyr::slice(1:6)
+              freqres <- casRetrieve(object@conn, 'simple.topk', table=tp, inputs=cvars,
+                                     topk=6, bottomk=0, order='freq', includeMisc=FALSE,
+                                     includeMissing=FALSE)
+              fres <- freqres$results$Topk@df[,c('Column', 'FmtVar', 'Score')]
+              fres <- fres[order(fres$Column, fres$FmtVar, -fres$Score),]
             } 
             
             sumpop <- function(v, n=maxsum){

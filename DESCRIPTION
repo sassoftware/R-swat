@@ -24,7 +24,6 @@ Suggests:
     xlsx,
     knitr
 Imports:
-    dplyr,
     httr,
     jsonlite,
     tools,
