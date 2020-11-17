@@ -139,11 +139,31 @@ def redirect_stdout(target):
 
 def get_supported_versions(platform):
     ''' Get the versions of R that can be used for SWAT '''
-    vers = dict(r=set(), mro=set())
+    vers = dict()
+    exclusions = dict(r=dict(), mro=dict())
 
-    for i, pkg in enumerate(['r::r-dplyr', 'r::r-httr', 'r::r-testthat', 'r::r-xlsx']):
+    for base in ['r::r-base', 'r::mro-base']:
+        base_vers = set()
+
+        cmd = ['conda', 'search', '--json', '--platform', platform, base]
+        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
+
+        if base.split('::')[-1] not in out:
+            continue
+
+        for item in out[base.split('::')[-1]]:
+            ver = item['version']
+            if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
+                continue
+            base_vers.add(item['version'])
+
+        vers[base.split('::')[-1].split('-')[0]] = base_vers
+
+    for i, pkg in enumerate(['r::r-httr', 'r::r-jsonlite', 'r::r-testthat', 'r::r-xlsx']):
         cmd = ['conda', 'search', '--json', '--platform', platform, pkg]
         out = subprocess.check_output(cmd).decode('utf-8')
+
+        pkg_vers = set()
 
         for item in json.loads(out)[pkg.split('::')[-1]]:
             rver = [x for x in item['depends']
@@ -161,19 +181,30 @@ def get_supported_versions(platform):
                 else:
                     raise
 
+            int_rver = tuple([int(x) for x in rver.split('.')])
+
             # Ignore versions older than 3.4.3
-            if tuple([int(x) for x in rver.split('.')]) < (3, 4, 3):
+            if len(int_rver) < 3 and int_rver < (3, 4):
+                continue
+            if int_rver < (3, 4, 3):
                 continue
 
-            if i == 0:
-                vers[base].add(rver)
-            elif rver not in vers[base]:
-                vers[base].remove(rver)
+            if len(int_rver) < 3:
+                rver += '.0'
+
+            pkg_vers.add(rver)
+
+        for item in vers[base].difference(pkg_vers):
+            if item not in exclusions[base]:
+                exclusions[base][item] = []
+            exclusions[base][item].append(pkg.split('::')[-1])
+
+        vers[base] = vers[base].intersection(pkg_vers)
 
     vers['r'] = list(sorted(vers['r']))
     vers['mro'] = list(sorted(vers['mro']))
 
-    return vers
+    return vers, exclusions
 
 
 open = io.open
@@ -214,8 +245,19 @@ def main(url, args):
 
         url = os.path.join(temp, glob.glob('R-swat*')[0])
 
+        # Report available R versions
+        print('')
+        print('> Available verions for {}:'.format(args.platform))
+        vers = get_supported_versions(args.platform)
+        for key, value in vers.items():
+            if value:
+                print('  + {}-base'.format(key))
+                for item in sorted(value):
+                    print('    {}'.format(item))
+        print('')
+
         # Create conda package for each R version
-        for base, versions in get_supported_versions(args.platform).items():
+        for base, versions in vers.items():
 
             for ver in versions:
                 update_recipe(args.recipe_dir, url=url, version=get_version(url),
