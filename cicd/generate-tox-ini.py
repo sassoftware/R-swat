@@ -40,77 +40,78 @@ def get_platform():
 
 def get_supported_versions(platform):
     ''' Get the versions of R that can be used for SWAT '''
-    vers = dict()
-    exclusions = dict(r=dict(), mro=dict())
+    vers = dict(r=dict(), mro=dict())
 
-    for base in ['r::r-base', 'r::mro-base']:
-        base_vers = set()
+#   for base in ['r::r-base', 'r::mro-base']:
+#       base_vers = set()
 
-        cmd = ['conda', 'search', '--json', '--platform', platform, base]
-        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
+#       cmd = ['conda', 'search', '--json', '--platform', platform, base]
+#       out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
 
-        if base.split('::')[-1] not in out:
-            continue
+#       if base.split('::')[-1] not in out:
+#           continue
 
-        for item in out[base.split('::')[-1]]:
-            ver = item['version']
-            if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
-                continue
-            base_vers.add(item['version'])
+#       for item in out[base.split('::')[-1]]:
+#           ver = item['version']
+#           if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
+#               continue
+#           base_vers.add(item['version'])
 
-        vers[base.split('::')[-1].split('-')[0]] = base_vers
+#       vers[base.split('::')[-1].split('-')[0]] = base_vers
 
     for i, pkg in enumerate(['r::r-httr', 'r::r-jsonlite', 'r::r-testthat', 'r::r-xlsx']):
         cmd = ['conda', 'search', '--json', '--platform', platform, pkg]
-        out = subprocess.check_output(cmd).decode('utf-8')
+        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))[pkg.split('::')[-1]]
 
-        pkg_vers = set()
+        pkg_vers = dict(r=set(), mro=set())
 
-        for item in json.loads(out)[pkg.split('::')[-1]]:
-            rver = [x for x in item['depends']
-                    if x.startswith('r-base') or x.startswith('mro-base')]
-            if not rver:
-                continue
-            rver = rver[0]
-            base = rver.split('-')[0]
-            try:
-                rver = re.findall(r'(\d+\.\d+(?:\.\d+)?)', rver)[0]
-            except IndexError:
-                # mro-base didn't include versions in the beginning
-                if base == 'mro':
-                    rver = '3.4.3'
-                else:
-                    raise
+        for base in ['r', 'mro']:
+            for item in out:
+                rver = [x for x in item['depends']
+                        if x.startswith('{}-base'.format(base))]
 
-            int_rver = tuple([int(x) for x in rver.split('.')])
+                if not rver:
+                    continue
 
-            # Ignore versions older than 3.4.3
-            if len(int_rver) < 3 and int_rver < (3, 4):
-                continue
-            if int_rver < (3, 4, 3):
-                continue
+                rver = rver[0]
+                try:
+                    rver = re.findall(r'(\d+\.\d+(?:\.\d+)?)', rver)[0]
+                except IndexError:
+                    # mro-base didn't include versions in the beginning
+                    if base == 'mro':
+                        rver = '3.4.3'
+                    else:
+                        raise
 
-            if len(int_rver) < 3:
-                rver += '.0'
+                int_rver = tuple([int(x) for x in rver.split('.')])
 
-            pkg_vers.add(rver)
+                # Ignore versions older than 3.4.3
+                if len(int_rver) < 3 and int_rver < (3, 4):
+                    continue
+                if int_rver < (3, 4, 3):
+                    continue
 
-        for item in vers[base].difference(pkg_vers):
-            if item not in exclusions[base]:
-                exclusions[base][item] = []
-            exclusions[base][item].append(pkg.split('::')[-1])
+                if len(int_rver) < 3:
+                    rver += '.0'
 
-        vers[base] = vers[base].intersection(pkg_vers)
+                pkg_vers[base].add(rver)
+
+        if i == 0:
+            vers['r'] = pkg_vers['r']
+            vers['mro'] = pkg_vers['mro']
+        else:
+            vers['r'] = vers['r'].intersection(pkg_vers['r'])
+            vers['mro'] = vers['mro'].intersection(pkg_vers['mro'])
 
     vers['r'] = list(sorted(vers['r']))
     vers['mro'] = list(sorted(vers['mro']))
 
-    return vers, exclusions
+    return vers
 
 
 def main(args):
     ''' Main routine '''
-    info, exc = get_supported_versions(args.platform)
+    info = get_supported_versions(args.platform)
 
     print('> Available versions for {}:'.format(args.platform))
     for key, value in info.items():
@@ -118,15 +119,6 @@ def main(args):
             print('  + {}-base'.format(key))
         for item in sorted(value):
             print('    {}'.format(item))
-
-    if exc['r'] or exc['mro']:
-        print('')
-        print('> Excluded versions:')
-        for key, value in exc.items():
-            if value:
-                print('  + {}-base'.format(key))
-            for k, v in sorted(value.items()):
-                print('    {}: {}'.format(k, ', '.join(v)))
 
     # Pick a subset of the matrix to test.
     subset = dict(r=set(), mro=set())
@@ -138,7 +130,7 @@ def main(args):
     if info['r']:
         subset['r'].add(info['r'][0])
         subset['r'].add(info['r'][-1])
-        if len(info['mro']) > 2:
+        if len(info['r']) > 2:
             subset['r'].add(random.choice(info['r'][1:-1]))
         print('  + r-base')
         for item in sorted(subset['r']):

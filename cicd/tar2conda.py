@@ -139,72 +139,73 @@ def redirect_stdout(target):
 
 def get_supported_versions(platform):
     ''' Get the versions of R that can be used for SWAT '''
-    vers = dict()
-    exclusions = dict(r=dict(), mro=dict())
+    vers = dict(r=dict(), mro=dict())
 
-    for base in ['r::r-base', 'r::mro-base']:
-        base_vers = set()
+#   for base in ['r::r-base', 'r::mro-base']:
+#       base_vers = set()
 
-        cmd = ['conda', 'search', '--json', '--platform', platform, base]
-        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
+#       cmd = ['conda', 'search', '--json', '--platform', platform, base]
+#       out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
 
-        if base.split('::')[-1] not in out:
-            continue
+#       if base.split('::')[-1] not in out:
+#           continue
 
-        for item in out[base.split('::')[-1]]:
-            ver = item['version']
-            if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
-                continue
-            base_vers.add(item['version'])
+#       for item in out[base.split('::')[-1]]:
+#           ver = item['version']
+#           if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
+#               continue
+#           base_vers.add(item['version'])
 
-        vers[base.split('::')[-1].split('-')[0]] = base_vers
+#       vers[base.split('::')[-1].split('-')[0]] = base_vers
 
     for i, pkg in enumerate(['r::r-httr', 'r::r-jsonlite', 'r::r-testthat', 'r::r-xlsx']):
         cmd = ['conda', 'search', '--json', '--platform', platform, pkg]
-        out = subprocess.check_output(cmd).decode('utf-8')
+        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))[pkg.split('::')[-1]]
 
-        pkg_vers = set()
+        pkg_vers = dict(r=set(), mro=set())
 
-        for item in json.loads(out)[pkg.split('::')[-1]]:
-            rver = [x for x in item['depends']
-                    if x.startswith('r-base') or x.startswith('mro-base')]
-            if not rver:
-                continue
-            rver = rver[0]
-            base = rver.split('-')[0]
-            try:
-                rver = re.findall(r'(\d+\.\d+(?:\.\d+)?)', rver)[0]
-            except IndexError:
-                # mro-base didn't include versions in the beginning
-                if base == 'mro':
-                    rver = '3.4.3'
-                else:
-                    raise
+        for base in ['r', 'mro']:
+            for item in out:
+                rver = [x for x in item['depends']
+                        if x.startswith('{}-base'.format(base))]
 
-            int_rver = tuple([int(x) for x in rver.split('.')])
+                if not rver:
+                    continue
 
-            # Ignore versions older than 3.4.3
-            if len(int_rver) < 3 and int_rver < (3, 4):
-                continue
-            if int_rver < (3, 4, 3):
-                continue
+                rver = rver[0]
+                try:
+                    rver = re.findall(r'(\d+\.\d+(?:\.\d+)?)', rver)[0]
+                except IndexError:
+                    # mro-base didn't include versions in the beginning
+                    if base == 'mro':
+                        rver = '3.4.3'
+                    else:
+                        raise
 
-            if len(int_rver) < 3:
-                rver += '.0'
+                int_rver = tuple([int(x) for x in rver.split('.')])
 
-            pkg_vers.add(rver)
+                # Ignore versions older than 3.4.3
+                if len(int_rver) < 3 and int_rver < (3, 4):
+                    continue
+                if int_rver < (3, 4, 3):
+                    continue
 
-        for item in vers[base].difference(pkg_vers):
-            if item not in exclusions[base]:
-                exclusions[base][item] = []
-            exclusions[base][item].append(pkg.split('::')[-1])
+                if len(int_rver) < 3:
+                    rver += '.0'
 
-        vers[base] = vers[base].intersection(pkg_vers)
+                pkg_vers[base].add(rver)
+
+        if i == 0:
+            vers['r'] = pkg_vers['r']
+            vers['mro'] = pkg_vers['mro']
+        else:
+            vers['r'] = vers['r'].intersection(pkg_vers['r'])
+            vers['mro'] = vers['mro'].intersection(pkg_vers['mro'])
 
     vers['r'] = list(sorted(vers['r']))
     vers['mro'] = list(sorted(vers['mro']))
 
-    return vers, exclusions
+    return vers
 
 
 open = io.open
@@ -248,22 +249,13 @@ def main(url, args):
         # Report available R versions
         print('')
         print('> Available verions for {}:'.format(args.platform))
-        vers, exc = get_supported_versions(args.platform)
+        vers = get_supported_versions(args.platform)
         for key, value in vers.items():
             if value:
                 print('  + {}-base'.format(key))
                 for item in sorted(value):
                     print('    {}'.format(item))
         print('')
-
-        if exc['r'] or exc['mro']:
-            print('> Excluded versions:')
-            for key, value in exc.items():
-                if value:
-                    print('  + {}-base'.format(key))
-                for k, v in sorted(value.items()):
-                    print('    {}: {}'.format(k, ', '.join(v)))
-            print('')
 
         # Create conda package for each R version
         for base, versions in vers.items():
