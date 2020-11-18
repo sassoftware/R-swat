@@ -22,24 +22,26 @@ context("test.read_write.R")
 
 # Read CSV files
 test_that("Read CSV files", {
+  class.csv <- system.file('tests', 'data', 'class.csv', package='swat')
   
   from_df  <- as.casTable(caz, titanic, casOut=list(name='from_df', replace=TRUE))
-  from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name='from_csv'), row.names = 1)
+  from_csv <- cas.read.csv(caz, file = titanic.csv, casOut = list(name='from_csv'), row.names = 1)
   expect_equivalent(head(from_df), head(from_csv))
   expect_error(read.csv.cas(caz, file = '', tablename = 'from_csv'))
   expect_error(read.csv.cas(caz))
-  c1 <- cas.read.csv(caz, "../data/class.csv")
-  c2 <- cas.read.csv(caz, "../data/class.csv", casOut=list(name="class2", replace=TRUE))
+  c1 <- cas.read.csv(caz, class.csv)
+  c2 <- cas.read.csv(caz, class.csv, casOut=list(name="class2", replace=TRUE))
   expect_equivalent(c1, c2)
   # tests for issue 2
-  c3 <- cas.read.csv(caz, "../data/class.csv", casOut="class3")
+  c3 <- cas.read.csv(caz, class.csv, casOut="class3")
 })
 
 # Read table files
 test_that("Read Table files", {
+  missing_vals.txt <- system.file('tests', 'data', 'missing_vals.txt', package='swat')
   
   from_df  <- as.casTable(caz, titanic, casOut=list(name='from_df', replace=TRUE))
-  from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name='from_csv', replace=TRUE), row.names = 1)
+  from_csv <- cas.read.csv(caz, file=titanic.csv, casOut = list(name='from_csv', replace=TRUE), row.names = 1)
   expect_equivalent(from_df, from_csv)
   expect_error(read.csv.cas(caz, file = '', tablename = 'from_csv'))
   expect_error(read.csv.cas(caz, file = '', casOut = list(name = 'from_csv')))
@@ -47,95 +49,102 @@ test_that("Read Table files", {
   expect_error(read.csv.cas(caz))
   
   nastr=c("NA", "NaN")
-  import_DF0_skipnul <- read.table("../data/MissingVals.txt", row.names = NULL, header=TRUE, na.strings = nastr)
-  import_DF0_skipnul.cas <- cas.read.table(caz, "../data/MissingVals.txt", row.names = NULL, header=TRUE, na.strings = nastr)
+  import_DF0_skipnul <- read.table(missing_vals.txt, row.names = NULL, header=TRUE, na.strings = nastr)
+  import_DF0_skipnul.cas <- cas.read.table(caz, missing_vals.txt, row.names = NULL, header=TRUE, na.strings = nastr)
   expect_equivalent(as.casTable(caz, import_DF0_skipnul, casOut=list(replace=TRUE)), import_DF0_skipnul.cas)
 })
 
 
 # Read Excel Files
 test_that("Read xlsx files", {
+  excel_test.xlsx <- system.file('tests', 'data', 'excel_test.xlsx', package='swat')
+
   tryCatch({
     library(xlsx)
   }, error=function (e) {
     skip('The xlsx package can not be loaded.')
   })
-  from_xlsx <- cas.read.xlsx(caz, file = '../data/excelTest.xlsx', sheetName = 'Sheet1')
+  from_xlsx <- cas.read.xlsx(caz, file = excel_test.xlsx, sheetName = 'Sheet1')
   expect_that(from_xlsx, is_a("CASTable"))
 })
 
 # Generic Read Function
 test_that("Generic Read Function", {
-  
-  from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name= 'from_csv', replace=TRUE), header = TRUE)
-  from_generic_csv <- cas.read.table(caz, file = 'titanic.csv', casOut = list(name = 'from_generic_csv', replace=TRUE), header = TRUE, sep = ",")
+  from_csv <- cas.read.csv(caz, file = titanic.csv, casOut = list(name= 'from_csv', replace=TRUE), header = TRUE)
+  from_generic_csv <- cas.read.table(caz, file = titanic.csv, casOut = list(name = 'from_generic_csv', replace=TRUE), header = TRUE, sep = ",")
   expect_equivalent(from_generic_csv, from_csv)
   
   # test for issue 2
-  from_generic_csv2 <- cas.read.table(caz, file = 'titanic.csv', casOut = 'from_generic_csv2', header = TRUE, sep = ",")
+  from_generic_csv2 <- cas.read.table(caz, file = titanic.csv, casOut = 'from_generic_csv2', header = TRUE, sep = ",")
   expect_equivalent(from_generic_csv2, from_csv)
 })
 
 # Write CSV files
 test_that("Write CSV files", {
+  cas.write.csv <- file.path(tempdir(), 'cas.write.csv')
   
   # write out the contents of t to a file.
-  cas.write.csv(t, "cas.write.csv")
-  expect_true(file.exists("cas.write.csv"))
+  cas.write.csv(t, cas.write.csv)
+  expect_true(file.exists(cas.write.csv))
   
   # read in the csv file and compare it to the standard
   # This is currently not working as expected.
-  #expect_output_file(cat(readLines("cas.write.csv")), "titanic.csv")
+  #expect_output_file(cat(readLines(cas.write.csv)), titanic.csv)
 })
 
 # Download an in-memory table from the CAS server
 test_that("Test that an in-memory can be downloaded and used within R", {
+  cas.write.txt <- file.path(tempdir(), 'cas.write.txt')
   
-  cas.write.table(ct, "cas.write.txt")
-  expect_true(file.exists("cas.write.txt"))
-  
-  #Additional tests should be written to cover options.
-  
-  # Cleanup
-  file.remove("cas.write.txt")
+  cas.write.table(ct, cas.write.txt)
+  expect_true(file.exists(cas.write.txt))
 })
 
 # Read sas7bdat files
 test_that("Read sas7bdat files", {
-  t1 <- cas.read.sas7bdat(caz, "../data/census2.sas7bdat")
-  t2 <- cas.read.sas7bdat(caz, "../data/census2.sas7bdat", casOut = list(name = 't2', replace=TRUE))
+  census2.sas7bdat <- system.file('tests', 'data', 'census2.sas7bdat', package='swat')
+
+  t1 <- cas.read.sas7bdat(caz, census2.sas7bdat)
+  t2 <- cas.read.sas7bdat(caz, census2.sas7bdat, casOut = list(name = 't2', replace=TRUE))
   expect_equivalent(t1, t2)
   expect_that(t2, is_a("CASTable"))
   
   # test for issue 2
-  st3 <- cas.read.sas7bdat(caz, "../data/census2.sas7bdat", casOut = 'st3')
+  st3 <- cas.read.sas7bdat(caz, census2.sas7bdat, casOut = 'st3')
   expect_equivalent(t1, st3)
 })
 
 
 # Read jmp files
 test_that("Read jmp files", {
-  t1 <- cas.read.jmp(caz, "../data/class.jmp", casOut = list(name = 'class', replace=TRUE))
-  t2 <- cas.read.jmp(caz, "../data/class.jmp", casOut = list(name = 't2', replace=TRUE))
+  class.jmp <- system.file('tests', 'data', 'class.jmp', package='swat')
+
+  t1 <- cas.read.jmp(caz, class.jmp, casOut = list(name = 'class', replace=TRUE))
+  t2 <- cas.read.jmp(caz, class.jmp, casOut = list(name = 't2', replace=TRUE))
   expect_equivalent(t1, t2)
   expect_that(t2, is_a("CASTable"))
   
   # test for issue 2
-  jt3 <- cas.read.jmp(caz, "../data/class.jmp", casOut = 'jt3')
+  jt3 <- cas.read.jmp(caz, class.jmp, casOut = 'jt3')
   expect_equivalent(t1, jt3)
 })
 
 # Read RDS files
 test_that("Read RDS files", {
-  from_rds <-cas.readRDS(caz, "../data/class.rds", casOut = list(name = 'from_rds'))
-  from_csv <-cas.read.csv(caz, "../data/class.csv", casOut = list(name = 'from_csv', replace=TRUE))
+  class.rds <- system.file('tests', 'data', 'class.rds', package='swat')
+  class.csv <- system.file('tests', 'data', 'class.csv', package='swat')
+
+  from_rds <- cas.readRDS(caz, class.rds, casOut = list(name = 'from_rds'))
+  from_csv <- cas.read.csv(caz, class.csv, casOut = list(name = 'from_csv', replace=TRUE))
   expect_equivalent(from_rds, from_csv)
   expect_that(from_rds, is_a("CASTable"))
 })
 
 # Write RDS Files
 test_that("Write RDS files", {
-  from_rds <- cas.readRDS(caz, "../data/class.rds", casOut=list(name='from_rds', replace=TRUE))
+  class.rds <- system.file('tests', 'data', 'class.rds', package='swat')
+
+  from_rds <- cas.readRDS(caz, class.rds, casOut=list(name='from_rds', replace=TRUE))
   cas.saveRDS(from_rds, file="casSaveRDS.rds")
   cas.saveRDS(from_rds)
   expect_silent(cas.saveRDS(from_rds))
@@ -144,13 +153,13 @@ test_that("Write RDS files", {
 
 # Replace in-memory tables
 test_that("Replace in-memory table (titanic)", {
-  from_csv <- cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv', replace=TRUE))
+  from_csv <- cas.read.csv(caz, file = titanic.csv, casOut = list(name = 'from_csv', replace=TRUE))
 
   ti <- cas.table.tableInfo(caz, table='from_csv')$TableInfo
   create_time <- ti[ ti$Name=='FROM_CSV', ]$CreateTime
   expect_true(create_time > 0)
 
-  replace_it <-  cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv', replace=TRUE))
+  replace_it <-  cas.read.csv(caz, file = titanic.csv, casOut = list(name = 'from_csv', replace=TRUE))
 
   ti <- cas.table.tableInfo(caz, table='from_csv')$TableInfo
   create_time_2 <- ti[ ti$Name=='FROM_CSV', ]$CreateTime
@@ -161,9 +170,10 @@ test_that("Replace in-memory table (titanic)", {
 
 # Read txt file
 test_that("Read txt files", {
+  effort.txt <- system.file('tests', 'data', 'effort.txt', package='swat')
   
-  import_effort_txt <- read.table("../data/effort.txt", header=TRUE)
-  import_effort_txt.cas <- cas.read.table(caz, "../data/effort.txt", header = TRUE)
+  import_effort_txt <- read.table(effort.txt, header=TRUE)
+  import_effort_txt.cas <- cas.read.table(caz, effort.txt, header = TRUE)
   expect_that(import_effort_txt.cas, is_a("CASTable"))
   expect_equivalent(dim(import_effort_txt), dim(import_effort_txt.cas))
   skip("no support for BIGINT")
@@ -173,18 +183,22 @@ test_that("Read txt files", {
 
 # Read txt file
 test_that("Read txt files", {
-  import_effort_txt <- read.table("../data/effort.txt", header=TRUE)
-  import_effort_txt.cas <- cas.read.table(caz, "../data/effort.txt", header=TRUE, casOut=list(replace=TRUE))
+  effort.txt <- system.file('tests', 'data', 'effort.txt', package='swat')
+
+  import_effort_txt <- read.table(effort.txt, header=TRUE)
+  import_effort_txt.cas <- cas.read.table(caz, effort.txt, header=TRUE, casOut=list(replace=TRUE))
   expect_that(import_effort_txt.cas, is_a("CASTable"))
   expect_equivalent(dim(import_effort_txt), dim(import_effort_txt.cas))
 })
 
 # read .txt file with na.strings
 test_that("Read web dat file", {
+  missing_vals.txt <- system.file('tests', 'data', 'missing_vals.txt', package='swat')
+
   nastr=c("NA", "NaN")
-  import_DF0_skipnul <- read.table("../data/MissingVals.txt", 
+  import_DF0_skipnul <- read.table(missing_vals.txt, 
                                    row.names = NULL, header=TRUE, na.strings = nastr)
-  import_DF0_skipnul.cas <- cas.read.table(caz, "../data/MissingVals.txt", 
+  import_DF0_skipnul.cas <- cas.read.table(caz, missing_vals.txt, 
                                            row.names = NULL, header=TRUE, na.strings = nastr,
                                            casOut=list(replace=TRUE))
   import_DF0_skipnul.rdf<-as.data.frame(import_DF0_skipnul)
@@ -199,43 +213,50 @@ test_that("Read web dat file", {
 
 # Do not replace in-memory tables, when requested
 test_that("Do not replace an in-memory table (titanic)", {
-  from_csv <-
-    cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv', replace=TRUE))
+  from_csv <- cas.read.csv(caz, file = titanic.csv,
+                           casOut = list(name = 'from_csv', replace=TRUE))
 
   ti <- cas.table.tableInfo(caz, table='from_csv')$TableInfo
   expect_equivalent(nrow(ti[ ti$Name=='FROM_CSV', ]), 1)
 
-  expect_error(cas.read.csv(caz, file = 'titanic.csv', casOut = list(name = 'from_csv',
+  expect_error(cas.read.csv(caz, file = titanic.csv, casOut = list(name = 'from_csv',
                  replace = FALSE)))
 })
 
 
 # Read comma separated csv files
 test_that("Read comma separated csv files", {
-  import_HR_csv <- read.csv("../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".")
-  import_HR_csv.cas <- cas.read.csv(caz, "../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".", casOut=list(replace=TRUE))
-  write.csv2(import_HR_csv, "../data/HR_semicolon_sep.csv")
-  expect_that(import_HR_csv.cas, is_a("CASTable"))
-  expect_equivalent(dim(import_HR_csv), dim(import_HR_csv.cas))
+  hr_comma_sep.csv <- system.file('tests', 'data', 'hr_comma_sep.csv', package='swat')
+  hr_semicolon_sep.csv <- system.file('tests', 'data', 'hr_semicolon_sep.csv', package='swat')
+
+  import_hr_csv <- read.csv(hr_comma_sep.csv, header = TRUE, sep = ",", quote = "\"", dec = ".")
+  import_hr_csv.cas <- cas.read.csv(caz, hr_comma_sep.csv, header = TRUE, sep = ",", quote = "\"", dec = ".", casOut=list(replace=TRUE))
+  write.csv2(import_hr_csv, hr_semicolon_sep.csv)
+  expect_that(import_hr_csv.cas, is_a("CASTable"))
+  expect_equivalent(dim(import_hr_csv), dim(import_hr_csv.cas))
 })
 
 
 # Read comma separated csv files
 test_that("Read comma separated csv files", {
-  import_HR_csv <- read.csv("../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".")
-  import_HR_csv.cas <- cas.read.csv(caz, "../data/HR_comma_sep.csv", header = TRUE, sep = ",", quote = "\"", dec = ".", casOut=list(replace=TRUE))
-  write.csv2(import_HR_csv, "../data/HR_semicolon_sep.csv")
-  expect_that(import_HR_csv.cas, is_a("CASTable"))
-  expect_equivalent(dim(import_HR_csv), dim(import_HR_csv.cas))
+  hr_comma_sep.csv <- system.file('tests', 'data', 'hr_comma_sep.csv', package='swat')
+  hr_semicolon_sep.csv <- system.file('tests', 'data', 'hr_semicolon_sep.csv', package='swat')
+
+  import_hr_csv <- read.csv(hr_comma_sep.csv, header = TRUE, sep = ",", quote = "\"", dec = ".")
+  import_hr_csv.cas <- cas.read.csv(caz, hr_comma_sep.csv, header = TRUE, sep = ",", quote = "\"", dec = ".", casOut=list(replace=TRUE))
+  write.csv2(import_hr_csv, hr_semicolon_sep.csv)
+  expect_that(import_hr_csv.cas, is_a("CASTable"))
+  expect_equivalent(dim(import_hr_csv), dim(import_hr_csv.cas))
 })
 
 
 # read dml file with skip and col.names
 colnames2=c("var1 ", "var 2", "var 3", "var 4")
+  effort.txt <- system.file('tests', 'data', 'effort.txt', package='swat')
 
 test_that("read dml file with skip and col.names", {
-  import_effort_chknames <- read.table("../data/effort.txt", skip= 1, col.names=colnames2, check.names = FALSE)
-  import_effort_chknames.cas <- cas.read.table(caz, "../data/effort.txt", skip= 1, col.names=colnames2, check.names = FALSE, casOut=list(replace=TRUE))
+  import_effort_chknames <- read.table(effort.txt, skip= 1, col.names=colnames2, check.names = FALSE)
+  import_effort_chknames.cas <- cas.read.table(caz, effort.txt, skip= 1, col.names=colnames2, check.names = FALSE, casOut=list(replace=TRUE))
   expect_that(import_effort_chknames.cas, is_a("CASTable"))
   expect_equivalent(dim(import_effort_chknames), dim(import_effort_chknames.cas))
 })
@@ -245,8 +266,10 @@ test_that("read dml file with skip and col.names", {
 colnames=c("var1 ", "var 2", "var 3", "var 4", "var 5")
 
 test_that("read dml file with skip, col.names and check.names", {
-  import_class_colnames <- read.table("../data/class.dlm", skip= 1, col.names=colnames)
-  import_class_colnames.cas <- cas.read.table(caz, "../data/class.dlm", skip= 1, col.names=colnames, casOut=list(replace=TRUE))
+  class.dlm <- system.file('tests', 'data', 'class.dlm', package='swat')
+
+  import_class_colnames <- read.table(class.dlm, skip= 1, col.names=colnames)
+  import_class_colnames.cas <- cas.read.table(caz, class.dlm, skip= 1, col.names=colnames, casOut=list(replace=TRUE))
   expect_that(import_class_colnames.cas, is_a("CASTable"))
   expect_equivalent(dim(import_class_colnames), dim(import_class_colnames.cas))
 })
@@ -254,8 +277,10 @@ test_that("read dml file with skip, col.names and check.names", {
 
 # read .dlm file with nrows
 test_that("read .dlm file with nrows", {
-  import_class_nrows <- read.table("../data/class.dlm", nrows=10, header=TRUE)
-  import_class_nrows.cas <- cas.read.table(caz, "../data/class.dlm",  nrows=10, header=TRUE, casOut = list(replace=TRUE))
+  class.dlm <- system.file('tests', 'data', 'class.dlm', package='swat')
+
+  import_class_nrows <- read.table(class.dlm, nrows=10, header=TRUE)
+  import_class_nrows.cas <- cas.read.table(caz, class.dlm,  nrows=10, header=TRUE, casOut = list(replace=TRUE))
   expect_that(import_class_nrows.cas, is_a("CASTable"))
   expect_equivalent(dim(import_class_nrows), dim(import_class_nrows.cas))
 })
@@ -263,8 +288,10 @@ test_that("read .dlm file with nrows", {
 
 # read xlsx file with keepFormulas
 test_that("read xlsx file with keepFormulas", {
-  import_excel_formulas <- read.xlsx(file="../data/excelTest.xlsx", sheetName="Sheet1", keepFormulas=TRUE)
-  import_excel_formulas.cas <- cas.read.xlsx(caz, file="../data/excelTest.xlsx", sheetName="Sheet1", keepFormulas=TRUE, casOut=list(replace=TRUE))
+  excel_test.xlsx <- system.file('tests', 'data', 'excel_test.xlsx', package='swat')
+
+  import_excel_formulas <- read.xlsx(file=excel_test.xlsx, sheetName="Sheet1", keepFormulas=TRUE)
+  import_excel_formulas.cas <- cas.read.xlsx(caz, file=excel_test.xlsx, sheetName="Sheet1", keepFormulas=TRUE, casOut=list(replace=TRUE))
   expect_that(import_excel_formulas.cas, is_a("CASTable"))
   expect_equivalent(dim(import_excel_formulas), dim(import_excel_formulas.cas))
 })
@@ -272,8 +299,10 @@ test_that("read xlsx file with keepFormulas", {
 
 #read xlsx file with as.data.frame
 test_that("read xlsx file with as.data.frame", {
-  import_excel_list <- read.xlsx(file="../data/excelTest.xlsx", sheetName="Sheet1", as.data.frame= FALSE)
-  import_excel_list.cas <- cas.read.xlsx(caz, file="../data/excelTest.xlsx", sheetName="Sheet1", as.data.frame= FALSE, casOut=list(replace=TRUE))
+  excel_test.xlsx <- system.file('tests', 'data', 'excel_test.xlsx', package='swat')
+
+  import_excel_list <- read.xlsx(file=excel_test.xlsx, sheetName="Sheet1", as.data.frame= FALSE)
+  import_excel_list.cas <- cas.read.xlsx(caz, file=excel_test.xlsx, sheetName="Sheet1", as.data.frame= FALSE, casOut=list(replace=TRUE))
   expect_that(import_excel_list.cas, is_a("CASTable"))
   expect_equivalent(length(import_excel_list), length(import_excel_list.cas))
 })
@@ -281,24 +310,28 @@ test_that("read xlsx file with as.data.frame", {
 
 # write xlsx files with sheet name
 test_that("write xlsx files with sheet name", {
-  import_effort_txt.cas <- cas.read.table(caz, "../data/effort.txt", header=TRUE, casOut=list(replace=TRUE))
-  cas.write.xlsx(import_effort_txt.cas, "../data/effort_CAS.xlsx", sheetName = "Effort data", col.names = FALSE)
-  expect_true(file.exists("../data/effort_CAS.xlsx"))
+  effort.txt <- system.file('tests', 'data', 'effort.txt', package='swat')
+  effort_cas.xlsx <- file.path(tempdir(), 'effort_cas.xlsx')
+
+  import_effort_txt.cas <- cas.read.table(caz, effort.txt, header=TRUE, casOut=list(replace=TRUE))
+  cas.write.xlsx(import_effort_txt.cas, effort_cas.xlsx, sheetName = "Effort data", col.names = FALSE)
+  expect_true(file.exists(effort_cas.xlsx))
 })
 
 
 # read xlsx file with start/endRow
 test_that("read xlsx file with start/endRow", {
-  testFile <- "../data/effort.xlsx"
+  effort.xlsx <- system.file('tests', 'data', 'effort.xlsx', package='swat')
+  effort.txt <- system.file('tests', 'data', 'effort.txt', package='swat')
   
   # IF the testFile does not exist, create it.
-  if(!file.exists(testFile)){
+  if(!file.exists(effort.xlsx)){
     # Create xlsx file from txt file.
-    write.xlsx(read.table("../data/effort.txt", header = TRUE), testFile, "Effort data")
+    write.xlsx(read.table(effort.txt, header = TRUE), testFile, "Effort data")
   }
   
-  import_excel_row <- read.xlsx(file=testFile, sheetName="Effort data", header=FALSE, startRow=3, endRow= 14)
-  import_excel_row.cas <- cas.read.xlsx(caz, file=testFile, sheetName="Effort data", header=FALSE, startRow=3, endRow= 14, casOut = list(replace=TRUE))
+  import_excel_row <- read.xlsx(file=effort.xlsx, sheetName="Effort data", header=FALSE, startRow=3, endRow= 14)
+  import_excel_row.cas <- cas.read.xlsx(caz, file=effort.xlsx, sheetName="Effort data", header=FALSE, startRow=3, endRow= 14, casOut = list(replace=TRUE))
   expect_that(import_excel_row.cas, is_a("CASTable"))
   expect_equivalent(dim(import_excel_row), dim(import_excel_row.cas))
 })
@@ -306,21 +339,25 @@ test_that("read xlsx file with start/endRow", {
 
 # read xlsx file with colIndex
 test_that("read xlsx file with colIndex", {
-  import_excelTest_colsubset <- read.xlsx("../data/excelTest.xlsx", 1, colIndex = 2)
-  import_excelTest_colsubset.cas <- cas.read.xlsx(caz, "../data/excelTest.xlsx", 1, colIndex = 2, casOut=list(replace=TRUE))
-  expect_that(import_excelTest_colsubset.cas, is_a("CASTable"))
-  expect_equivalent(dim(import_excelTest_colsubset), dim(import_excelTest_colsubset.cas))
+  excel_test.xlsx <- system.file('tests', 'data', 'excel_test.xlsx', package='swat')
+
+  import_excel_test_colsubset <- read.xlsx(excel_test.xlsx, 1, colIndex = 2)
+  import_excel_test_colsubset.cas <- cas.read.xlsx(caz, excel_test.xlsx, 1, colIndex = 2, casOut=list(replace=TRUE))
+  expect_that(import_excel_test_colsubset.cas, is_a("CASTable"))
+  expect_equivalent(dim(import_excel_test_colsubset), dim(import_excel_test_colsubset.cas))
 })
 
 
 # Read semicolon separated csv files with comma as decimal
 test_that("Read semicolon separated csv files with comma as decimal", {
-  import_HRsemi_csv <- read.csv("../data/HR_semicolon_sep.csv", header = TRUE, sep = ";", dec = ",")
+  hr_semicolon_sep.csv <- system.file('tests', 'data', 'hr_semicolon_sep.csv', package='swat')
+
+  import_HRsemi_csv <- read.csv(hr_semicolon_sep.csv, header = TRUE, sep = ";", dec = ",")
   
-  import_HRsemi_csv.cas <- cas.read.csv(caz, "../data/HR_semicolon_sep.csv", header = TRUE, sep = ";", dec = ",")
+  import_HRsemi_csv.cas <- cas.read.csv(caz, hr_semicolon_sep.csv, header = TRUE, sep = ";", dec = ",")
   expect_that(import_HRsemi_csv.cas, is_a("CASTable"))
   
-  import_HRsemi_csv2.cas <- cas.read.table(caz, "../data/HR_semicolon_sep.csv", header = TRUE, sep = ";", dec = ",", casOut=list(replace=TRUE))
+  import_HRsemi_csv2.cas <- cas.read.table(caz, hr_semicolon_sep.csv, header = TRUE, sep = ";", dec = ",", casOut=list(replace=TRUE))
   expect_that(import_HRsemi_csv2.cas, is_a("CASTable"))
   
   expect_equivalent(dim(import_HRsemi_csv), dim(import_HRsemi_csv.cas))
@@ -338,8 +375,9 @@ test_that("Read web dat file", {
 
 
 test_that("Tear Down", {
-    files <- list("cas.write.csv", "titanic.csv", "from_rds.rds", "FROM_RDS.rds", "casSaveRDS.rds")
+    files <- list("cas.write.csv", "cas.write.txt")
     for (f in files) {
+        f <- file.path(tempdir(), f)
         if (file.exists(f)) {
             file.remove(f)
         }

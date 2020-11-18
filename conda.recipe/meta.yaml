@@ -24,8 +24,8 @@ source:
 build:
     number: {{ build }}
     build: False
-    script: R CMD INSTALL --build .         # [not win]
-    script: "\"%R%\" CMD INSTALL --build ." # [win]
+    script: R CMD INSTALL --build --install-tests .         # [not win]
+    script: "\"%R%\" CMD INSTALL --build --install-tests ." # [win]
     binary_relocation: False
     missing_dso_whitelist:
         - /lib/libpthread.so.0

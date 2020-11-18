@@ -140,5 +140,5 @@ titanic <- read.csv('http://s3.amazonaws.com/assets.datacamp.com/course/Kaggle/t
 t <- as.casTable(caz, titanic, casOut=list(replace=TRUE))
 
 titanic.csv <- tempfile(pattern='titanic_', fileext='.csv')
-write.csv(titanic, file = 'titanic.csv')
+write.csv(titanic, file = titanic.csv)
 mtcars.ct = as.casTable(caz, mtcars, casOut=list(replace=TRUE))
