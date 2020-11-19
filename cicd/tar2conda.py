@@ -147,8 +147,8 @@ def expand_wildcards(vals):
     ''' Expand * in version numbers '''
     out = []
     for val in vals:
-        if val.endswith('*'):
-            val = val.replace('*', '')
+        if re.search(r'\.?\*$', val):
+            val = re.sub(r'\.?\*$', '', val)
             next_val = [int(x) for x in val.split('.')]
             next_val[-1] += 1
             out.append('>={},<={}a0'.format(
@@ -218,7 +218,7 @@ def get_supported_versions(platform, r_base):
 
         for ver in list(r_base_vers):
             if not check_version(ver, pkg_vers):
-                print('Removing {}-base {} due to package {}.'.format(r_base, ver, pkg))
+#               print('Removing {}-base {} due to package {}.'.format(r_base, ver, pkg))
                 r_base_vers.remove(ver)
 
     return list(sorted(r_base_vers))
@@ -275,9 +275,18 @@ def main(url, args):
         print('')
 
         # Create conda package for each R version
+        r_base_finished = set()
         for base, versions in vers.items():
 
             for ver in versions:
+
+                # Only build for major.minor of r-base
+                if base == 'r':
+                    minor_ver = re.match(r'^(\d+\.\d+)', ver).group(1)
+                    if minor_ver in r_base_finished:
+                        continue
+                    r_base_finished.add(minor_ver)
+
                 update_recipe(args.recipe_dir, url=url, version=get_version(url),
                               r_base='{}-base'.format(base), r_version=ver)
 

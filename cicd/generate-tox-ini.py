@@ -48,8 +48,8 @@ def expand_wildcards(vals):
     ''' Expand * in version numbers '''
     out = []
     for val in vals:
-        if val.endswith('*'):
-            val = val.replace('*', '')
+        if re.search(r'\.?\*$', val):
+            val = re.sub(r'\.?\*$', '', val)
             next_val = [int(x) for x in val.split('.')]
             next_val[-1] += 1
             out.append('>={},<={}a0'.format(
@@ -119,7 +119,7 @@ def get_supported_versions(platform, r_base):
 
         for ver in list(r_base_vers):
             if not check_version(ver, pkg_vers):
-                print('Removing {}-base {} due to package {}.'.format(r_base, ver, pkg))
+#               print('Removing {}-base {} due to package {}.'.format(r_base, ver, pkg))
                 r_base_vers.remove(ver)
 
     return list(sorted(r_base_vers))

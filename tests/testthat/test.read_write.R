@@ -20,6 +20,14 @@ options(cas.print.messages=FALSE)
 
 context("test.read_write.R")
 
+verify_xlsx_pkg <- function() {
+  tryCatch({ 
+    library(xlsx) 
+  }, error=function (e) { 
+    skip('The xlsx package can not be loaded.') 
+  })
+}
+
 # Read CSV files
 test_that("Read CSV files", {
   class.csv <- system.file('tests', 'data', 'class.csv', package='swat')
@@ -57,13 +65,10 @@ test_that("Read Table files", {
 
 # Read Excel Files
 test_that("Read xlsx files", {
+  verify_xlsx_pkg()
+
   excel_test.xlsx <- system.file('tests', 'data', 'excel_test.xlsx', package='swat')
 
-  tryCatch({
-    library(xlsx)
-  }, error=function (e) {
-    skip('The xlsx package can not be loaded.')
-  })
   from_xlsx <- cas.read.xlsx(caz, file = excel_test.xlsx, sheetName = 'Sheet1')
   expect_that(from_xlsx, is_a("CASTable"))
 })
@@ -288,6 +293,8 @@ test_that("read .dlm file with nrows", {
 
 # read xlsx file with keepFormulas
 test_that("read xlsx file with keepFormulas", {
+  verify_xlsx_pkg()
+
   excel_test.xlsx <- system.file('tests', 'data', 'excel_test.xlsx', package='swat')
 
   import_excel_formulas <- read.xlsx(file=excel_test.xlsx, sheetName="Sheet1", keepFormulas=TRUE)
@@ -299,6 +306,8 @@ test_that("read xlsx file with keepFormulas", {
 
 #read xlsx file with as.data.frame
 test_that("read xlsx file with as.data.frame", {
+  verify_xlsx_pkg()
+
   excel_test.xlsx <- system.file('tests', 'data', 'excel_test.xlsx', package='swat')
 
   import_excel_list <- read.xlsx(file=excel_test.xlsx, sheetName="Sheet1", as.data.frame= FALSE)
@@ -310,6 +319,8 @@ test_that("read xlsx file with as.data.frame", {
 
 # write xlsx files with sheet name
 test_that("write xlsx files with sheet name", {
+  verify_xlsx_pkg()
+
   effort.txt <- system.file('tests', 'data', 'effort.txt', package='swat')
   effort_cas.xlsx <- file.path(tempdir(), 'effort_cas.xlsx')
 
@@ -321,6 +332,8 @@ test_that("write xlsx files with sheet name", {
 
 # read xlsx file with start/endRow
 test_that("read xlsx file with start/endRow", {
+  verify_xlsx_pkg()
+
   effort.xlsx <- system.file('tests', 'data', 'effort.xlsx', package='swat')
   effort.txt <- system.file('tests', 'data', 'effort.txt', package='swat')
   
@@ -339,6 +352,8 @@ test_that("read xlsx file with start/endRow", {
 
 # read xlsx file with colIndex
 test_that("read xlsx file with colIndex", {
+  verify_xlsx_pkg()
+
   excel_test.xlsx <- system.file('tests', 'data', 'excel_test.xlsx', package='swat')
 
   import_excel_test_colsubset <- read.xlsx(excel_test.xlsx, 1, colIndex = 2)
