@@ -81,8 +81,8 @@ test:
         - r-xlsx
         - r-jpeg
     commands:
-        - R -e "library('swat'); conn <- swat::CAS(); cas.builtins.serverStatus(conn); cas.terminate(conn)"   # [not win]
-        - "\"%R%\" -e \"library('swat');conn=swat::CAS(); cas.builtins.serverStatus(conn);cas.terminate(conn)\""  # [win]
+        - R -e "testthat::test_package('swat', stop_on_failure=TRUE)"   # [not win]
+        - "\"%R%\" -e \"testthat::test_package('swat', stop_on_failure=TRUE)\""  # [win]
 
 about:
     home: https://github.com/sassoftware/R-swat

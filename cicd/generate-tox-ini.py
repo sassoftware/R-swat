@@ -119,7 +119,7 @@ def get_supported_versions(platform, r_base):
 
         for ver in list(r_base_vers):
             if not check_version(ver, pkg_vers):
-#               print('Removing {}-base {} due to package {}.'.format(r_base, ver, pkg))
+                # print('Removing {}-base {} due to package {}.'.format(r_base, ver, pkg))
                 r_base_vers.remove(ver)
 
     return list(sorted(r_base_vers))
