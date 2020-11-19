@@ -38,80 +38,97 @@ def get_platform():
     return 'unknown'
 
 
-def get_supported_versions(platform):
-    ''' Get the versions of R that can be used for SWAT '''
-    vers = dict(r=dict(), mro=dict())
+def version_key(val):
+    ''' Return normalized version number '''
+    val = val.split('a')[0] + '.0.0'
+    return tuple([int(x) for x in re.findall(r'(\d+)', val)][:3])
 
-#   for base in ['r::r-base', 'r::mro-base']:
-#       base_vers = set()
 
-#       cmd = ['conda', 'search', '--json', '--platform', platform, base]
-#       out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
-
-#       if base.split('::')[-1] not in out:
-#           continue
-
-#       for item in out[base.split('::')[-1]]:
-#           ver = item['version']
-#           if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
-#               continue
-#           base_vers.add(item['version'])
-
-#       vers[base.split('::')[-1].split('-')[0]] = base_vers
-
-    for i, pkg in enumerate(['r::r-httr', 'r::r-jsonlite', 'r::r-testthat', 'r::r-xlsx']):
-        cmd = ['conda', 'search', '--json', '--platform', platform, pkg]
-        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))[pkg.split('::')[-1]]
-
-        pkg_vers = dict(r=set(), mro=set())
-
-        for base in ['r', 'mro']:
-            for item in out:
-                rver = [x for x in item['depends']
-                        if x.startswith('{}-base'.format(base))]
-
-                if not rver:
-                    continue
-
-                rver = rver[0]
-                try:
-                    rver = re.findall(r'(\d+\.\d+(?:\.\d+)?)', rver)[0]
-                except IndexError:
-                    # mro-base didn't include versions in the beginning
-                    if base == 'mro':
-                        rver = '3.4.3'
-                    else:
-                        raise
-
-                int_rver = tuple([int(x) for x in rver.split('.')])
-
-                # Ignore versions older than 3.4.3
-                if len(int_rver) < 3 and int_rver < (3, 4):
-                    continue
-                if int_rver < (3, 4, 3):
-                    continue
-
-                if len(int_rver) < 3:
-                    rver += '.0'
-
-                pkg_vers[base].add(rver)
-
-        if i == 0:
-            vers['r'] = pkg_vers['r']
-            vers['mro'] = pkg_vers['mro']
+def expand_wildcards(vals):
+    ''' Expand * in version numbers '''
+    out = []
+    for val in vals:
+        if val.endswith('*'):
+            val = val.replace('*', '')
+            next_val = [int(x) for x in val.split('.')]
+            next_val[-1] += 1
+            out.append('>={},<={}a0'.format(
+                val,
+                '.'.join('{}'.format(x) for x in next_val)))
         else:
-            vers['r'] = vers['r'].intersection(pkg_vers['r'])
-            vers['mro'] = vers['mro'].intersection(pkg_vers['mro'])
+            out.append(val)
+    return out
 
-    vers['r'] = list(sorted(vers['r']))
-    vers['mro'] = list(sorted(vers['mro']))
 
-    return vers
+def check_version(pkg_ver, specs):
+    ''' Evaluate version expression '''
+    pkg_ver = version_key(pkg_ver)
+    for spec in expand_wildcards(specs):
+        expr = []
+        for ap in spec.split(','):
+            or_expr = []
+            for op in ap.split('|'):
+                oper, ver = re.findall(r'^([<>=!]*)(\S+)$', op)[0]
+                if oper == '=':
+                    oper = '=='
+                elif oper == '':
+                    oper = '>='
+                or_expr.append('{} {} {}'.format(pkg_ver, oper, version_key(ver)))
+            expr.append('({})'.format(' or '.join(or_expr)))
+        if eval(' and '.join(expr)):
+            return True
+    return False
+
+
+def get_supported_versions(platform, r_base):
+    ''' Get the versions of R that can be used for SWAT '''
+    r_base_vers = set()
+
+    cmd = ['conda', 'search', '--json', '--platform', platform,
+           'r::{}-base'.format(r_base)]
+    out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
+
+    if (r_base + '-base') not in out:
+        return []
+
+    for item in out[r_base + '-base']:
+        ver = item['version']
+        if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
+            continue
+        r_base_vers.add(item['version'])
+
+    for pkg in ['r::r-httr', 'r::r-jsonlite', 'r::r-testthat', 'r::r-xlsx', 'r::r-jpeg']:
+        cmd = ['conda', 'search', '--json', '--platform', platform, pkg]
+        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
+        out = out[pkg.split('::')[-1]]
+
+        pkg_vers = []
+
+        for item in out:
+            rver = [x for x in item['depends'] if x.startswith('{}-base'.format(r_base))]
+
+            if not rver:
+                continue
+
+            rver = rver[0]
+            if rver == 'mro-base':
+                rver = 'mro-base ==3.4.3'
+            rver = rver.split(' ')[-1]
+
+            pkg_vers.append(rver)
+
+        for ver in list(r_base_vers):
+            if not check_version(ver, pkg_vers):
+                print('Removing {}-base {} due to package {}.'.format(r_base, ver, pkg))
+                r_base_vers.remove(ver)
+
+    return list(sorted(r_base_vers))
 
 
 def main(args):
     ''' Main routine '''
-    info = get_supported_versions(args.platform)
+    info = dict(r=get_supported_versions(args.platform, 'r'),
+                mro=get_supported_versions(args.platform, 'mro'))
 
     print('> Available versions for {}:'.format(args.platform))
     for key, value in info.items():
