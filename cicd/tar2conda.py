@@ -265,7 +265,8 @@ def main(url, args):
         # Report available R versions
         print('')
         print('> Available verions for {}:'.format(args.platform))
-        vers = get_supported_versions(args.platform)
+        vers = dict(r=get_supported_versions(args.platform, 'r'),
+                    mro=get_supported_versions(args.platform, 'mro'))
         for key, value in vers.items():
             if value:
                 print('  + {}-base'.format(key))
