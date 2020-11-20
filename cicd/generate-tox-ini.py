@@ -174,6 +174,12 @@ def main(args):
     # Generate Tox configurations for testenvs
     for pkg in ['conda']:
         out = ['', '#', '# BEGIN GENERATED ENVIRONMENTS', '#', '']
+        out.append('[testenv:empty]')
+        out.append('commands =')
+        out.append('deps =')
+        out.append('conda_deps =')
+        out.append('')
+
         envlist = []
 
         for base, vers in sorted(subset.items()):
@@ -205,6 +211,8 @@ def main(args):
                     tox_out.write('envlist =\n')
                     for item in envlist:
                         tox_out.write('    {}\n'.format(item))
+                    else:
+                        tox_out.write('    empty\n')
                     for line in lines:
                         if not line.startswith(' '):
                             break
