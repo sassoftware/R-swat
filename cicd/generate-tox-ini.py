@@ -80,30 +80,39 @@ def check_version(pkg_ver, specs):
     return False
 
 
+def conda_search(platform, pkg):
+    ''' Return information about specified package '''
+    cmd = ['conda', 'search', '--json', '--platform', platform, pkg]
+    try:
+        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
+    except subprocess.CalledProcessError as exc:
+        out = json.loads(exc.output.decode('utf-8'))
+        if out and out.get('exception_name', '') == 'PackagesNotFoundError':
+            out = {}
+        else:
+            raise
+    return out.get(pkg.split('::')[-1], {})
+
+
 def get_supported_versions(platform, r_base):
     ''' Get the versions of R that can be used for SWAT '''
     r_base_vers = set()
 
-    cmd = ['conda', 'search', '--json', '--platform', platform,
-           'r::{}-base'.format(r_base)]
-    out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
+    out = conda_search(platform, 'r::{}-base'.format(r_base))
 
-    if (r_base + '-base') not in out:
+    if not out:
         return []
 
-    for item in out[r_base + '-base']:
+    for item in out:
         ver = item['version']
         if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
             continue
         r_base_vers.add(item['version'])
 
-    for pkg in ['r::r-httr', 'r::r-jsonlite', 'r::r-testthat', 'r::r-xlsx', 'r::r-jpeg']:
-        cmd = ['conda', 'search', '--json', '--platform', platform, pkg]
-        out = json.loads(subprocess.check_output(cmd).decode('utf-8'))
-        out = out[pkg.split('::')[-1]]
+    for pkg in ['r::r-httr', 'r::r-jsonlite', 'r::r-testthat']:
+        out = conda_search(platform, pkg)
 
         pkg_vers = []
-
         for item in out:
             rver = [x for x in item['depends'] if x.startswith('{}-base'.format(r_base))]
 
