@@ -299,7 +299,7 @@ def main(url, args):
                 update_recipe(args.recipe_dir, url=url, version=get_version(url),
                               r_base='{}-base'.format(base), r_version=ver)
 
-                cmd = ['conda', 'build', '-q', '--no-test']
+                cmd = ['conda', 'build', '-q']  # '--no-test'
                 cmd.extend(['--R', ver])
                 if args.debug:
                     cmd.append('--debug')
