@@ -80,9 +80,10 @@ test:
         - r-testthat
         - r-xlsx
         - r-jpeg
+        - r-xml2
     commands:
-        - R -e "testthat::test_dir(system.file('tests', 'testthat', package='swat'), stop_on_failure=TRUE, reporter=testthat::JunitReporter\$new(file='{{r_base}}-{{r_version}}-junit.xml'))"   # [not win]
-        - "\"%R%\" -e \"testthat::test_package('swat', reporter='list', stop_on_failure=TRUE, reporter=testthat::JunitReporter$new(file='{{r_base}}-{{r_version}}-junit.xml'))\""  # [win]
+        - R -e "testthat::test_dir(system.file('tests', 'testthat', package='swat'), stop_on_failure=TRUE, reporter=testthat::JunitReporter\$new(file='${TEST_REPORT_DIR}{{r_base}}-{{r_version}}-junit.xml'))"   # [not win]
+        - "\"%R%\" -e \"testthat::test_dir(system.file('tests', 'testthat', package='swat'), stop_on_failure=TRUE, reporter=testthat::JunitReporter$new(file='%TEST_REPORT_DIR%{{r_base}}-{{r_version}}-junit.xml'))\""  # [win]
 
 about:
     home: https://github.com/sassoftware/R-swat
