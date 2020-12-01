@@ -212,8 +212,6 @@ open = io.open
 def main(url, args):
     ''' Convert given tar file to conda packages '''
 
-    cwd = os.getcwd()
-
     args.output_folder = os.path.abspath(args.output_folder)
 
     os.makedirs(args.output_folder, exist_ok=True)
@@ -288,8 +286,6 @@ def main(url, args):
                 print('> ' + ' '.join(cmd))
                 subprocess.check_output(cmd)
 
-    os.chdir(cwd)
-
 
 if __name__ == '__main__':
 
@@ -317,4 +313,8 @@ if __name__ == '__main__':
 
     args = opts.parse_args()
 
-    main(args.url, args)
+    try:
+        cwd = os.getcwd()
+        main(args.url, args)
+    finally:
+        os.chdir(cwd)
