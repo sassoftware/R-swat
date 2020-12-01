@@ -17,18 +17,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-try:
-    from urllib.request import urlretrieve, urlcleanup
-except ImportError:
-    from urllib import urlretrieve, urlcleanup
-
-try:
-    execfile
-except NameError:
-    def execfile(filename, global_vars, local_vars):
-        with open(filename) as f:
-            code = compile(f.read(), filename, 'exec')
-            exec(code, global_vars, local_vars)
+from urllib.request import urlretrieve, urlcleanup
 
 
 def get_platform():
@@ -110,22 +99,6 @@ def get_version(pkg_dir):
             if m:
                 return m.group(1)
     raise RuntimeError('Could not find version in DESCRIPTION file.')
-
-
-class TemporaryDirectory(object):
-    '''
-    Context manager for tempfile.mkdtemp()
-
-    This class is available in Python 3.2+.
-
-    '''
-    def __enter__(self):
-        self.dir_name = tempfile.mkdtemp()
-        return self.dir_name
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        import atexit
-        atexit.register(shutil.rmtree, self.dir_name)
 
 
 @contextlib.contextmanager
@@ -258,7 +231,7 @@ def main(url, args):
     elif os.path.exists(url):
         url = os.path.abspath(url)
 
-    with TemporaryDirectory() as temp:
+    with tempfile.TemporaryDirectory() as temp:
 
         with tarfile.open(url, url.endswith('tar') and 'r:' or 'r:gz') as tar:
             tar.extractall(temp)
