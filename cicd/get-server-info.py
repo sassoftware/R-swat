@@ -116,7 +116,7 @@ def main(args):
 
                 # Write pid file
                 if args.pid_file:
-                    with open(pid_file, 'w') as pid_file_out:
+                    with open(args.pid_file, 'w') as pid_file_out:
                         pid_file_out.write(pid)
 
                 break
