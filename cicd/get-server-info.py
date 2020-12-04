@@ -106,9 +106,13 @@ def main(args):
                                                                         http_port))
 
                 # Get CAS server pid
-                cmd = ('ssh -x -o StrictHostKeyChecking=no {} '
+                logname = args.login_name
+                if logname:
+                    logname = logname + '@'
+                cmd = ('ssh -x -o StrictHostKeyChecking=no {}{} '
                        'ps ax | grep {} | grep -v grep | head -1'
-                       ).format(hostname, '.'.join(args.log_file.split('.')[:-1]))
+                       ).format(logname, hostname,
+                                '.'.join(args.log_file.split('.')[:-1]))
                 pid = subprocess.check_output(cmd, shell=True) \
                                 .decode('utf-8').strip().split(' ', 1)[0]
                 sys.stdout.write('CAS_PID={} '.format(pid))
@@ -123,6 +127,8 @@ if __name__ == '__main__':
     opts.add_argument('log_file', type=str, metavar='log-file',
                       help='path to CAS server log')
 
+    opts.add_argument('--login-name', '-l', type=str, metavar='login-name',
+                      help='login name for ssh when acquiring CAS pid')
     opts.add_argument('--retries', '-r', default=5, type=int, metavar='#',
                       help='number of retries in attempting to locate the log file')
     opts.add_argument('--interval', '-i', default=3, type=int, metavar='#',
