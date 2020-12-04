@@ -106,13 +106,10 @@ def main(args):
                                                                         http_port))
 
                 # Get CAS server pid
-                logname = args.login_name
-                if logname:
-                    logname = logname + '@'
-                cmd = ('ssh -x -o StrictHostKeyChecking=no {}{} '
+                cmd = ('ssh -x -o StrictHostKeyChecking=no '
+                       '-o UserKnownHostsFile=/dev/null {} '
                        'ps ax | grep {} | grep -v grep | head -1'
-                       ).format(logname, hostname,
-                                '.'.join(args.log_file.split('.')[:-1]))
+                       ).format(hostname, '.'.join(args.log_file.split('.')[:-1]))
                 pid = subprocess.check_output(cmd, shell=True) \
                                 .decode('utf-8').strip().split(' ', 1)[0]
                 sys.stdout.write('CAS_PID={} '.format(pid))
