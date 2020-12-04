@@ -114,6 +114,11 @@ def main(args):
                                 .decode('utf-8').strip().split(' ', 1)[0]
                 sys.stdout.write('CAS_PID={} '.format(pid))
 
+                # Write pid file
+                if args.pid_file:
+                    with open(pid_file, 'w') as pid_file_out:
+                        pid_file_out.write(pid)
+
                 break
 
 
@@ -124,8 +129,10 @@ if __name__ == '__main__':
     opts.add_argument('log_file', type=str, metavar='log-file',
                       help='path to CAS server log')
 
-    opts.add_argument('--login-name', '-l', type=str, metavar='login-name',
+    opts.add_argument('--login-name', '-l', type=str, metavar='name',
                       help='login name for ssh when acquiring CAS pid')
+    opts.add_argument('--pid-file', '-p', type=str, metavar='filename',
+                      help='file to write CAS pid to')
     opts.add_argument('--retries', '-r', default=5, type=int, metavar='#',
                       help='number of retries in attempting to locate the log file')
     opts.add_argument('--interval', '-i', default=3, type=int, metavar='#',
