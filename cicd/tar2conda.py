@@ -255,7 +255,8 @@ def main(url, args):
         print('')
 
         # Make sure we aren't picking up any stray installed packages
-        del os.environ['R_LIBS_USER']
+        if 'R_LIBS_USER' in os.environ:
+            del os.environ['R_LIBS_USER']
 
         # Create conda package for each R version
         r_base_finished = set()
