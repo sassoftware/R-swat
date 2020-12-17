@@ -254,9 +254,14 @@ def main(url, args):
                     print('    {}'.format(item))
         print('')
 
+        # Make sure we aren't picking up any stray installed packages
+        del os.environ['R_LIBS_USER']
+
         # Create conda package for each R version
         r_base_finished = set()
         for base, versions in vers.items():
+
+            os.environ['R_BASE'] = base
 
             for ver in versions:
 
@@ -269,6 +274,8 @@ def main(url, args):
 
                 update_recipe(args.recipe_dir, url=url, version=get_version(url),
                               r_base='{}-base'.format(base), r_version=ver)
+
+                os.environ['R_VERSION'] = ver
 
                 cmd = ['conda', 'build', '-q']  # '--no-test'
                 cmd.extend(['--R', ver])

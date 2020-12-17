@@ -82,8 +82,8 @@ test:
         - r-jpeg
         - r-xml2
     commands:
-        - R -e "testthat::test_dir(system.file('tests', 'testthat', package='swat'), stop_on_failure=TRUE, reporter=testthat::JunitReporter\$new(file='${TEST_REPORT_DIR}{{r_base}}-{{r_version}}-junit.xml'))"   # [not win]
-        - "\"%R%\" -e \"testthat::test_dir(system.file('tests', 'testthat', package='swat'), stop_on_failure=TRUE, reporter=testthat::JunitReporter$new(file='%TEST_REPORT_DIR%{{r_base}}-{{r_version}}-junit.xml'))\""  # [win]
+        - R -f "${RECIPE_DIR}/test_package.R"            # [not win]
+        - "\"%R%\" -f \"%RECIPE_DIR%\\test_package.R\""  # [win]
 
 about:
     home: https://github.com/sassoftware/R-swat
