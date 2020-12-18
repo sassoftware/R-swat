@@ -35,14 +35,14 @@ Collate:
     'rswat_rest.R'
     'swat.R'
     'helper.R'
-    'CAStab.R'
+    'cas_tab.R'
     'table_functions.R'
     'descriptive_stats.R'
     'action.R'
-    'CASdf.R'
+    'cas_df.R'
     'read_write.R'
     'analytical_functions.R'
     'graphics.R'
-    'Ops.R'
-RoxygenNote: 6.0.1
+    'ops.R'
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr

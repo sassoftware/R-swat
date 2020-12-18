@@ -4,19 +4,17 @@
 \alias{cas.sum}
 \title{Column Sums}
 \usage{
-cas.sum(CASTable)
+cas.sum(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-casDataFrame
-
-The result includes one row for each numeric variable
-and a column that is named Sum for the summed value.
+A casDataFrame which includes one row for each
+  numeric variable and a column that is named Sum for the summed value.
 }
 \description{
-Returns the sum of the values for each column in 
+Returns the sum of the values for each column in
 the input table.
 }
 \details{

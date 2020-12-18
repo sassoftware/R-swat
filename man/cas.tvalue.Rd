@@ -4,16 +4,14 @@
 \alias{cas.tvalue}
 \title{T-Statistics for Hypothesis Testing}
 \usage{
-cas.tvalue(CASTable)
+cas.tvalue(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-vector
-
-The result is a named numeric vector. You can access
-the t-statistic by column name or index.
+A named numeric vector. You can access the t-statistic
+  by column name or index.
 }
 \description{
 Returns the t-statistic for the
@@ -25,7 +23,7 @@ This function operates on numeric columns only.
 \examples{
 \dontrun{
 x <- cas.tvalue(irisct)
-x['Sepal.Length']
+x["Sepal.Length"]
 x[1:2]
 }
 }

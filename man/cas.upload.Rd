@@ -4,18 +4,23 @@
 \alias{cas.upload}
 \title{Upload a data.frame or file to a CAS table}
 \usage{
-cas.upload(conn, ...)
+cas.upload(conn, frame, ...)
 }
 \arguments{
+\item{conn}{The \code{\link{CAS}} connection object}
+
+\item{frame}{The data.frame, filename, or URL to upload.}
+
 \item{\dots}{Optional parameters that are passed to the table.loadtable action.}
-
-\item{CAS}{The CAS connection object}
-
-\item{data.frame/character}{The data.frame, filename, or URL to upload.}
 }
 \value{
-\code{list}
+List containing fields \code{results}, \code{messages}, \code{disposition},
+  and \code{performance} which contain the results of the CAS action call
+  to upload the data to a table.
 }
 \description{
 Upload a data.frame or file to a CAS table
+}
+\seealso{
+\code{\link{cas.upload.frame}}, \code{\link{cas.upload.file}}
 }

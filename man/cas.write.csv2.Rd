@@ -4,13 +4,47 @@
 \alias{cas.write.csv2}
 \title{Write a CAS Table to a CSV File}
 \usage{
-cas.write.csv2(CASTable, file = "", quote = TRUE, eol = "\\n",
-  na = "NA", row.names = TRUE, fileEncoding = "")
+cas.write.csv2(
+  castable,
+  file = "",
+  quote = TRUE,
+  eol = "\\n",
+  na = "NA",
+  row.names = TRUE,
+  fileEncoding = ""
+)
+}
+\arguments{
+\item{castable}{The instance of the CASTable to save as
+as a CSV file.}
+
+\item{file}{An \code{character} string that
+specifies the filename for the CSV file. If you do not
+specify the file, then the in-memory table name is used
+with a .csv suffix. This value is passed to \code{write.csv}.}
+
+\item{quote}{An optional \code{logical} value or numeric
+vector. This value is passed to \code{write.csv}.}
+
+\item{eol}{An optional \code{character} string that is used as the
+end-of-line character or characters. This value is passed to
+\code{write.csv}.}
+
+\item{na}{An optional \code{character} string to represent
+missing values. This value is passed to \code{write.csv}.}
+
+\item{row.names}{An optional \code{logical} value or a
+\code{character} vector of row names. This value is passed to
+\code{write.csv}.}
+
+\item{fileEncoding}{An optional \code{character} string that
+specifies the encoding to use for writing the CSV file. This
+value is passed to \code{write.csv}.}
 }
 \description{
 This function is identical to \code{\link{cas.write.csv}}
-except that it wraps the \R \code{write.csv2}  function. 
-The \code{write.csv2} function uses a comma 
+except that it wraps the \R \code{write.csv2}  function.
+The \code{write.csv2} function uses a comma
 for the decimal separator and a semicolon for the field
 delimiter.
 }

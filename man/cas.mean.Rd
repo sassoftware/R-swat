@@ -4,19 +4,17 @@
 \alias{cas.mean}
 \title{Average Values}
 \usage{
-cas.mean(CASTable)
+cas.mean(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-casDataFrame
-
-The result includes one row for each numeric variable
-and a column that is named Mean for the mean value.
+casDataFrame which includes one row for each
+  numeric variable and a column that is named Mean for the mean value.
 }
 \description{
-Returns the mean value for each column in 
+Returns the mean value for each column in
 the input table.
 }
 \details{

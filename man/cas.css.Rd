@@ -4,19 +4,17 @@
 \alias{cas.css}
 \title{Corrected Sum of Squares}
 \usage{
-cas.css(CASTable)
+cas.css(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-vector
-
-The result is a named numeric vector. You can access
-the corrected sum of squares by column name or index.
+A named numeric vector. You can access the corrected
+  sum of squares by column name or index.
 }
 \description{
-Returns the corrected sum of squares of the 
+Returns the corrected sum of squares of the
 values for each column in the input table.
 }
 \details{
@@ -25,7 +23,7 @@ This function operates on numeric columns only.
 \examples{
 \dontrun{
 x <- cas.css(irisct)
-x['Sepal.Length']
+x["Sepal.Length"]
 x[1:2]
 }
 }

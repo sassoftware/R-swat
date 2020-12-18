@@ -1,2 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.git.*$
+^\.vscode$
+^.*\.swo$
+^.*\.swp$
+^\.lintr$
+^\.Rd2pdf.*$

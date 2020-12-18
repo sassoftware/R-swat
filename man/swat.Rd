@@ -4,12 +4,11 @@
 \name{swat}
 \alias{swat}
 \alias{swat-package}
-\alias{swat-package}
 \title{SWAT: SAS Wrapper for Analytics Transfer (SWAT)}
 \description{
 This package enables you to connect from \R to a SAS Cloud Analytic Services
-host, run actions on in-memory tables, and work with the results of the 
-actions. 
+host, run actions on in-memory tables, and work with the results of the
+actions.
 \itemize{
   \item The \code{\link{CAS}} class provides an interface to your
         connection to the CAS server and CAS session.

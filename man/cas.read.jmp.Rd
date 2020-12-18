@@ -10,7 +10,7 @@ cas.read.jmp(conn, file, casOut = NULL)
 \item{conn}{An instance of a CAS object that represents
 a connection and CAS session.}
 
-\item{file}{An \code{character} string that specifies 
+\item{file}{An \code{character} string that specifies
 the JMP file.}
 
 \item{casOut}{An optional \code{character} or list. If
@@ -18,8 +18,8 @@ you specify a string, then the string is used as the
 in-memory table name. A list can be used to specify
 properties for the in-memory table as follows:
 \describe{
-  \item{\code{name}}{An optional \code{character} that 
-    specifies the name for the in-memory table. By 
+  \item{\code{name}}{An optional \code{character} that
+    specifies the name for the in-memory table. By
     default, the name of the data frame is used.}
   \item{\code{caslib}}{An optional \code{character} that
     specifies the caslib. Specify this parameter to
@@ -28,7 +28,7 @@ properties for the in-memory table as follows:
     specifies a descriptive label for the data.}
   \item{\code{replace}}{An optional \code{logical}. When
     set to TRUE, you can replace an existing in-memory
-    table with the same name in the same caslib. The 
+    table with the same name in the same caslib. The
     default value is FALSE.}
   \item{\code{promote}}{An optional \code{logical}. When
     set to TRUE, the in-memory table has global scope and
@@ -49,20 +49,24 @@ properties for the in-memory table as follows:
 }
 \description{
 This function transfers a JMP file (.jmp) from \R
-(the client) to the CAS server. The 
+(the client) to the CAS server. The
 server imports the data and \R returns a CASTable
 object to reference the in-memory table in CAS.
 }
 \examples{
 \dontrun{
-spring_example <- cas.read.jmp(s, "/path/to/Spring\\ Example.jmp", 
-                               casOut=list(name="spring_example"))
+spring_example <- cas.read.jmp(s, "/path/to/Spring\\\\ Example.jmp",
+  casOut = list(name = "spring_example")
+)
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.csv}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.table}},
-  \code{\link{cas.read.xlsx}}, \code{\link{cas.readRDS}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.csv}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.table}()},
+\code{\link{cas.read.xlsx}()},
+\code{\link{cas.readRDS}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

@@ -4,17 +4,28 @@
 \alias{cas.write.table}
 \title{Write a CAS Table to a Table}
 \usage{
-cas.write.table(CASTable, file = "", append = FALSE, quote = TRUE,
-  sep = " ", eol = "\\n", na = "NA", dec = ".", row.names = TRUE,
-  col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+cas.write.table(
+  castable,
+  file = "",
+  append = FALSE,
+  quote = TRUE,
+  sep = " ",
+  eol = "\\n",
+  na = "NA",
+  dec = ".",
+  row.names = TRUE,
+  col.names = TRUE,
+  qmethod = c("escape", "double"),
+  fileEncoding = ""
+)
 }
 \arguments{
-\item{CASTable}{The instance of the CASTable to save as
+\item{castable}{The instance of the CASTable to save as
 as a file.}
 
-\item{file}{An \code{character} string that 
+\item{file}{An \code{character} string that
 specifies the filename for the file. If you do not
-specify the file, then the table is printed to the 
+specify the file, then the table is printed to the
 terminal.}
 
 \item{append}{An optional \code{logical} value. This value
@@ -27,7 +38,7 @@ vector. This value is passed to \code{write.table}.}
 values in the file. This value is passed to \code{write.table}.}
 
 \item{eol}{An optional \code{character} string that is used as the
-end-of-line character or characters. This value is passed to 
+end-of-line character or characters. This value is passed to
 \code{write.table}.}
 
 \item{na}{An optional \code{character} string to represent
@@ -36,7 +47,7 @@ missing values. This value is passed to \code{write.table}.}
 \item{dec}{An optional \code{character} to represent the decimal
 separator. This value is passed to \code{write.table}.}
 
-\item{row.names}{An optional \code{logical} value or a 
+\item{row.names}{An optional \code{logical} value or a
 \code{character} vector of row names. This value is passed to
 \code{write.table}.}
 
@@ -60,12 +71,14 @@ wrapper for the \R \code{write.table} function.
 }
 \examples{
 \dontrun{
-# 
-cas.write.table(myCasTable, file="/path/to/data_out.txt", na="")
+cas.write.table(myCasTable, file = "/path/to/data_out.txt", na = "")
 }
 }
 \seealso{
-Other functions for saving in-memory data: \code{\link{cas.saveRDS}},
-  \code{\link{cas.write.csv}}, \code{\link{cas.write.xlsx}}
+Other functions for saving in-memory data: 
+\code{\link{cas.saveRDS}()},
+\code{\link{cas.write.csv}()},
+\code{\link{cas.write.xlsx}()}
 }
+\concept{functions for saving in-memory data}
 % Copyright SAS Institute

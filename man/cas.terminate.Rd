@@ -7,7 +7,7 @@
 cas.terminate(conn)
 }
 \arguments{
-\item{CAS}{The CAS connection object}
+\item{conn}{The CAS connection object}
 }
 \description{
 End a CAS session and close the connection

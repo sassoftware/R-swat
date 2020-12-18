@@ -15,37 +15,33 @@
 
 library(swat)
 
-options(cas.print.messages=FALSE)
+options(cas.print.messages = FALSE)
 
 
 context("test.rbind.R")
 
 test_that("test that rbind basic functionality works", {
-  
   expect_is(ct1, "CASTable")
   expect_is(ct2, "CASTable")
-  
+
   expect_that(rbind(ct1, ct2), is_a("CASTable"))
 })
 
 test_that("test that rbind  work for R data frames.", {
-  
   expect_is(df1, "data.frame")
   expect_is(df2, "data.frame")
-  
+
   expect_that(rbind(df1, df2), is_a("data.frame"))
-  
+
   expect_is(ct1, "CASTable")
   expect_is(ct2, "CASTable")
-  
-  expect_equivalent(colSums(rbind(ct1,ct2)), colSums(rbind(df1,df2)))
-  expect_error(rbind(df1,ct2))
 
+  expect_equivalent(colSums(rbind(ct1, ct2)), colSums(rbind(df1, df2)))
+  expect_error(rbind(df1, ct2))
 })
 
 test_that("test that rbind works with assignment", {
-  
-  nct <-rbind(ct1, ct2)
+  nct <- rbind(ct1, ct2)
   expect_that(nct, is_a("CASTable"))
   expect_equivalent(rbind(ct1, ct2), nct)
 })

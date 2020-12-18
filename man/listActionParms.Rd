@@ -2,9 +2,9 @@
 % Please edit documentation in R/action.R
 \name{listActionParms}
 \alias{listActionParms}
-\title{List CAS Action Parameters by Name}
+\title{List CAS action parameters by name}
 \usage{
-listActionParms(conn, actn)
+listActionParms(conn, actn, display = TRUE)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
@@ -19,6 +19,12 @@ the action name. You can specify the following forms:
 }
 The third form matches the generated functions for
 the CAS actions.}
+
+\item{display}{Should the parameters be printed to the
+screen?}
+}
+\value{
+List of action parameters
 }
 \description{
 This function displays the parameters for the specified
@@ -27,13 +33,13 @@ CAS action.
 \examples{
 \dontrun{
 # specify the action set and action name
-listActionParms(conn, actn="simple.summary")
+listActionParms(conn, actn = "simple.summary")
 
 # fetch is in the table action set
-listActionParms(s, actn="fetch")
+listActionParms(s, actn = "fetch")
 
 # specify the generated function name
 listActionParms(s, cas.regression.logistic)
 }
+
 }
-% Copyright SAS Institute

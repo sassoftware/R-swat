@@ -14,131 +14,261 @@
 #  limitations under the License.
 
 
-
-
-.casdt.total.seconds <- function ( cts )
-{
-   if ( class(cts) == 'character' && grepl('^-?\\d{9}\\d*$', cts, perl=TRUE) )
-      cts <- as.numeric(gsub('^(-?\\d+)(\\d{6})$', '\\1.\\2', cts, perl=TRUE))
-   else
-      cts <- as.numeric(cts) / 1000000
-   return( cts )
+.casdt_total_seconds <- function(cts) {
+  if (class(cts) == "character" && grepl("^-?\\d{9}\\d*$", cts, perl = TRUE)) {
+    cts <- as.numeric(gsub("^(-?\\d+)(\\d{6})$", "\\1.\\2", cts, perl = TRUE))
+  } else {
+    cts <- as.numeric(cts) / 1000000
+  }
+  return(cts)
 }
 
 #
 # Convert CAS datetimes to R / SAS datetimes
 #
 
-cas2rPOSIXlt <- function ( cts )
-{
-   return( as.POSIXlt(cas2rPOSIXct(cts)) )
+#' Convert CAS timestamp to POSIXlt
+#'
+#' @param cts Numeric representing a CAS timestamp
+#'
+#' @return POSIXlt object
+#'
+#' @export
+CASdt.as.POSIXlt <- function(cts) {
+  return(as.POSIXlt(cas.as.POSIXct(cts)))
 }
 
-cas2rPOSIXct <- function ( cts )
-{
-   return( as.POSIXct(.casdt.total.seconds(cts), origin='1960-01-01', tz='UTC') )
+#' Convert CAS timestamp to POSIXct
+#'
+#' @param cts Numeric representing a CAS timestamp
+#'
+#' @return POSIXct object
+#'
+#' @export
+CASdt.as.POSIXct <- function(cts) {
+  return(as.POSIXct(.casdt_total_seconds(cts), origin = "1960-01-01", tz = "UTC"))
 }
 
-cas2rDate <- function ( cdt )
-{
-   return( as.Date(as.POSIXct(as.numeric(cdt) * 60 * 60 * 24, origin='1960-01-01', tz='UTC')) )
+#' Convert a CAS date to Date
+#'
+#' @param cdt Numeric representing a CAS date
+#'
+#' @return Date
+#'
+#' @export
+CASd.as.Date <- function(cdt) {
+  return(as.Date(as.POSIXct(as.numeric(cdt) * 60 * 60 * 24, origin = "1960-01-01", tz = "UTC")))
 }
 
-casTime2rPOSIXct <- function ( ctm )
-{
-   return( as.POSIXct(.casdt.total.seconds(ctm), origin='1970-01-01', tz='UTC') )
+#' Convert a CAS time to POSIXct
+#'
+#' @param ctm Numeric representing a CAS time
+#'
+#' @return POSIXct object
+#'
+#' @export
+CASt.as.POSIXct <- function(ctm) {
+  return(as.POSIXct(.casdt_total_seconds(ctm), origin = "1970-01-01", tz = "UTC"))
 }
 
-casTime2rPOSIXlt <- function ( ctm )
-{
-   return( as.POSIXlt(casTime2rPOSIXct(ctm)) )
+#' Convert a CAS time to POSIXlt
+#'
+#' @param ctm Numeric representing a CAS time
+#'
+#' @return POSIXlt object
+#'
+#' @export
+CASt.as.POSIXlt <- function(ctm) {
+  return(as.POSIXlt(CASt.as.POSIXct(ctm)))
 }
 
-rPOSIXlt2cas <- function ( rplt )
-{
-   return( (as.numeric(rplt) + 3653 * 24 * 60 * 60 ) * 1000000 )
+#' Convert a POSIXlt to a CAS timestamp
+#'
+#' @param rplt POSIXlt object
+#'
+#' @return Numeric representing a CAS timestamp
+#'
+#' @export
+POSIXlt.as.CASdt <- function(rplt) {
+  return((as.numeric(rplt) + 3653 * 24 * 60 * 60) * 1000000)
 }
 
-rPOSIXct2cas <- function ( rpct )
-{
-   return( (as.numeric(rpct) + 3653 * 24 * 60 * 60 ) * 1000000 )
+#' Convert a POSIXct to a CAS timestamp
+#'
+#' @param rpct POSIXct object
+#'
+#' @return Numeric representing a CAS timestamp
+#'
+#' @export
+POSIXct.as.CASdt <- function(rpct) {
+  return((as.numeric(rpct) + 3653 * 24 * 60 * 60) * 1000000)
 }
 
-rDate2cas <- function ( rdt )
-{
-    return( as.numeric(rdt) + 3653 )
+#' Convert a Date to a CAS date
+#'
+#' @param rdt Date object
+#'
+#' @return Numeric representing a CAS date
+#'
+#' @export
+Date.as.CASd <- function(rdt) {
+  return(as.numeric(rdt) + 3653)
 }
 
-cas2sasDateTime <- function ( cts )
-{
-   return( .casdt.total.seconds(cts) )
+#' Convert a CAS timestamp to a SAS timestamp
+#'
+#' @param cts Numeric representing a CAS timestamp
+#'
+#' @return Numeric representing a SAS timestamp
+#'
+#' @export
+CASdt.as.SASdt <- function(cts) {
+  return(.casdt_total_seconds(cts))
 }
 
-cas2sasDate <- function ( cdt )
-{
-   return( cdt )
+#' Convert a CAS date to a SAS date
+#'
+#' @param cdt Numeric representing a CAS date
+#'
+#' @return Numeric representing a SAS date
+#'
+#' @export
+CASd.as.SASd <- function(cdt) {
+  return(cdt)
 }
 
-cas2sasTime <- function ( ctm )
-{
-   return( .casdt.total.seconds(ctm) )
+#' Convert a CAS time to a SAS time
+#'
+#' @param ctm Numeric representing a CAS time
+#'
+#' @return Numeric representing a SAS time
+#'
+#' @export
+CASt.as.SASt <- function(ctm) {
+  return(.casdt_total_seconds(ctm))
 }
 
 #
 # Convert SAS datetimes to R / SAS datetimes
 #
 
-sas2rPOSIXlt <- function ( sts )
-{
-   return( as.POSIXlt(sas2rPOSIXct(sts)) )
+#' Convert a SAS timestamp to a POSIXlt
+#'
+#' @param sts Numeric representing a SAS timestamp
+#'
+#' @return POSIXlt object
+#'
+#' @export
+SASdt.as.POSIXlt <- function(sts) {
+  return(as.POSIXlt(sas.as.POSIXct(sts)))
 }
 
-sas2rPOSIXct <- function ( sts )
-{
-   return( as.POSIXct(as.numeric(sts), origin='1960-01-01', tz='UTC') )
+#' Convert a SAS timestamp to a POSIXct
+#'
+#' @param sts Numeric representing a SAS timestamp
+#'
+#' @return POSIXct object
+#'
+#' @export
+SASdt.as.POSIXct <- function(sts) {
+  return(as.POSIXct(as.numeric(sts), origin = "1960-01-01", tz = "UTC"))
 }
 
-sas2rDate <- function ( sdt )
-{
-   return( as.Date(as.POSIXct(as.numeric(sdt) * 60 * 60 * 24, origin='1960-01-01', tz='UTC')) )
+#' Convert a SAS date to a Date
+#' 
+#' @param sdt Numeric representing a SAS date
+#'
+#' @return Date object
+#'
+#' @export
+SASd.as.Date <- function(sdt) {
+  return(as.Date(as.POSIXct(as.numeric(sdt) * 60 * 60 * 24, origin = "1960-01-01", tz = "UTC")))
 }
 
-sasTime2rPOSIXct <- function ( stm )
-{
-   return( as.POSIXct(as.numeric(stm), origin='1970-01-01', tz='UTC') )
+#' Convert a SAS time to a POSIXct
+#'
+#' @param stm Numeric representing a SAS time
+#'
+#' @return POSIXct object
+#'
+#' @export
+SASt.as.POSIXct <- function(stm) {
+  return(as.POSIXct(as.numeric(stm), origin = "1970-01-01", tz = "UTC"))
 }
 
-sasTime2rPOSIXlt <- function ( stm )
-{
-   return( as.POSIXlt(sasTime2rPOSIXct(stm)) )
+#' Convert a SAS timem to a POSIXlt
+#'
+#' @param stm Numeric representing a SAS time
+#'
+#' @return POSIXlt object
+#'
+#' @export
+SASt.as.POSIXlt <- function(stm) {
+  return(as.POSIXlt(SASt.as.POSIXct(stm)))
 }
 
-rPOSIXlt2sas <- function ( rplt )
-{
-   return( as.numeric(rplt) + 3653 * 24 * 60 * 60 )
+#' Convert a POSIXlt to a SAS timestamp
+#'
+#' @param rplt POSIXlt object
+#'
+#' @return Numeric representing a SAS timestamp
+#'
+#' @export
+POSIXlt.as.SASdt <- function(rplt) {
+  return(as.numeric(rplt) + 3653 * 24 * 60 * 60)
 }
 
-rPOSIXct2sas <- function ( rpct )
-{
-   return( as.numeric(rpct) + 3653 * 24 * 60 * 60 )
+#' Convert a POSIXct to a SAS timestamp
+#'
+#' @param rpct POSIXct object
+#'
+#' @return Numeric representing a SAS timestamp
+#'
+#' @export
+POSIXct.as.SASdt <- function(rpct) {
+  return(as.numeric(rpct) + 3653 * 24 * 60 * 60)
 }
 
-rDate2sas <- function ( rdt )
-{
-    return( as.numeric(rdt) + 3653 )
+#' Convert a Date to a SAS date
+#'
+#' @param rdt Date object
+#'
+#' @return Numeric representing a SAS date
+#'
+#' @export
+Date.as.SASd <- function(rdt) {
+  return(as.numeric(rdt) + 3653)
 }
 
-sas2casDateTime <- function ( sts )
-{
-   return( as.numeric(sts) * 1000000 )
+#' Convert a SAS timestamp to a CAS timestamp
+#'
+#' @param sts Numeric representing a SAS timestamp
+#'
+#' @return Numeric representing a CAS timestamp
+#'
+#' @export
+SASdt.as.CASdt <- function(sts) {
+  return(as.numeric(sts) * 1000000)
 }
 
-sas2casDate <- function ( sdt )
-{
-   return( sdt )
+#' Convert a SAS date to a CAS date
+#'
+#' @param sdt Numeric representing a SAS date
+#'
+#' @return Numeric representing a CAS date
+#'
+#' @export
+SASd.as.CASd <- function(sdt) {
+  return(sdt)
 }
 
-sas2casTime <- function ( stm )
-{
-   return( as.numeric(stm) * 1000000 )
+#' Convert a SAS time to a CAS time
+#'
+#' @param stm Numeric representing a SAS time
+#'
+#' @return Numeric representing a CAS time
+#'
+#' @export
+SASt.as.CASt <- function(stm) {
+  return(as.numeric(stm) * 1000000)
 }

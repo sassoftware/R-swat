@@ -19,8 +19,8 @@ for each action.
 }
 \examples{
 \dontrun{
-loadActionSet(conn, actionSet="decisionTree")
-loadActionSet(conn, actionSet="regression")
+loadActionSet(conn, actionSet = "decisionTree")
+loadActionSet(conn, actionSet = "regression")
 }
+
 }
-% Copyright SAS Institute

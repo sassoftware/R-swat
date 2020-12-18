@@ -4,16 +4,14 @@
 \alias{cas.probt}
 \title{P-Value of the T-Statistics}
 \usage{
-cas.probt(CASTable)
+cas.probt(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-vector
-
-The result is a named numeric vector. You can access
-the p-value by column name or index.
+A named numeric vector. You can access the p-value by
+  column name or index.
 }
 \description{
 Returns the p-values for the
@@ -25,7 +23,7 @@ This function operates on numeric columns only.
 \examples{
 \dontrun{
 x <- cas.probt(irisct)
-x['Sepal.Length']
+x["Sepal.Length"]
 x[1:2]
 }
 }

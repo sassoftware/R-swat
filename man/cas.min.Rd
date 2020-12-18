@@ -4,19 +4,17 @@
 \alias{cas.min}
 \title{Minimum Values}
 \usage{
-cas.min(CASTable)
+cas.min(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-casDataFrame
-
-The result includes one row for each numeric variable
-and a column that is named Minimum for the minimum value.
+A casDataFrame which includes one row for each numeric variable
+  and a column that is named Minimum for the minimum value.
 }
 \description{
-Returns the minimum value for each column in 
+Returns the minimum value for each column in
 the input table.
 }
 \details{

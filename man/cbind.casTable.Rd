@@ -4,9 +4,13 @@
 \alias{cbind.casTable}
 \title{Combine CAS Tables by Columns}
 \usage{
-\method{cbind}{casTable}(..., deparse.level = 1)
+cbind.casTable(..., deparse.level = 1)
+}
+\arguments{
+\item{\dots}{Arguments that are passed to method arguments.}
+
+\item{deparse.level}{See the help for base::rbind.}
 }
 \description{
 Combine CAS Tables by Columns
 }
-% Copyright SAS Institute

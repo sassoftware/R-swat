@@ -15,7 +15,7 @@
 
 library(swat)
 
-options(cas.print.messages=FALSE)
+options(cas.print.messages = FALSE)
 
 
 context("test.rswat.R")
@@ -23,11 +23,13 @@ context("test.rswat.R")
 test_that("test.basic_connection", {
   expect_true(caz$hostname == HOSTNAME)
   expect_true(caz$port == PORT)
-# expect_true(caz$username == USERNAME)
   expect_true(grepl("^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$",
-                    caz$session, perl = TRUE))
+    caz$session,
+    perl = TRUE
+  ))
   expect_true(grepl("\\bprotocol=(https?|cas|auto)\\b", caz$soptions,
-                    perl = TRUE))
+    perl = TRUE
+  ))
 })
 
 test_that("test.connection_failure", {
@@ -35,13 +37,13 @@ test_that("test.connection_failure", {
 })
 
 test_that("connection patterns", {
-  s1 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, ':', PORT, sep=''), username=USERNAME, password=PASSWORD)
+  s1 <- CAS$new(paste(PROTOCOL, "://", HOSTNAME, ":", PORT, sep = ""), username = USERNAME, password = PASSWORD)
   expect_true(exists("s1"))
-  s2 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, ':', PORT, sep=''), NULL, USERNAME, PASSWORD)
+  s2 <- CAS$new(paste(PROTOCOL, "://", HOSTNAME, ":", PORT, sep = ""), NULL, USERNAME, PASSWORD)
   expect_true(exists("s2"))
-  s3 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, sep=''), PORT, USERNAME, PASSWORD)
+  s3 <- CAS$new(paste(PROTOCOL, "://", HOSTNAME, sep = ""), PORT, USERNAME, PASSWORD)
   expect_true(exists("s3"))
-  s4 <- CAS$new(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL)
+  s4 <- CAS$new(HOSTNAME, PORT, USERNAME, PASSWORD, protocol = PROTOCOL)
   expect_true(exists("s4"))
   s1$close()
   s2$close()
@@ -49,19 +51,19 @@ test_that("connection patterns", {
   s4$close()
 })
 
-test_that('test.results', {
-  out <- caz$retrieve('tableinfo')
+test_that("test.results", {
+  out <- caz$retrieve("tableinfo")
   expect_true(!is.null(out$performance))
   expect_true(!is.null(out$disposition))
   expect_true(!is.null(out$messages))
   expect_true(!is.null(out$results))
 
-  out <- caz$retrieve('tableinfo', table='#$&^*#*^$#@aontehu')
+  out <- caz$retrieve("tableinfo", table = "#$&^*#*^$#@aontehu")
   expect_true(!is.null(out$performance))
   expect_true(!is.null(out$disposition))
   expect_true(out$disposition$severity == 2)
   expect_true(!is.null(out$messages))
-  expect_true(length(grepl('^ERROR', out$messages, perl=TRUE)) > 0)
+  expect_true(length(grepl("^ERROR", out$messages, perl = TRUE)) > 0)
   expect_true(!is.null(out$results))
 })
 
@@ -72,12 +74,14 @@ test_that("test.copy_connection", {
   expect_true(s2$username == caz$username)
   expect_true(s2$session != caz$session)
   expect_true(grepl("^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$",
-                    s2$session, perl = TRUE))
+    s2$session,
+    perl = TRUE
+  ))
   expect_true(caz$soptions == s2$soptions)
 })
 
 test_that("test.fork_connection", {
-  slist = caz$fork(3)
+  slist <- caz$fork(3)
   expect_true(length(slist) == 3)
   expect_true(slist[[1]]$hostname == caz$hostname)
   expect_true(slist[[1]]$port == caz$port)
@@ -89,37 +93,48 @@ test_that("test.fork_connection", {
   expect_true(slist[[2]]$username == caz$username)
   expect_true(slist[[2]]$session != caz$session)
   expect_true(grepl("^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$",
-                    slist[[2]]$session, perl = TRUE))
+    slist[[2]]$session,
+    perl = TRUE
+  ))
   expect_true(slist[[2]]$soptions == caz$soptions)
   expect_true(slist[[3]]$hostname == caz$hostname)
   expect_true(slist[[3]]$port == caz$port)
   expect_true(slist[[3]]$username == caz$username)
   expect_true(slist[[3]]$session != caz$session)
   expect_true(grepl("^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$",
-                    slist[[3]]$session, perl = TRUE))
+    slist[[3]]$session,
+    perl = TRUE
+  ))
   expect_true(slist[[3]]$soptions == caz$soptions)
 })
 
 test_that("test.connect_with_bad_session", {
-  expect_error(CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol = PROTOCOL,
-                   session = "bad-session"))
+  expect_error(CAS(HOSTNAME, PORT, USERNAME, PASSWORD,
+    protocol = PROTOCOL,
+    session = "bad-session"
+  ))
 })
 
 test_that("test.set_session_locale", {
-  u = CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol = PROTOCOL,
-          locale = "es_US")
+  u <- CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol = PROTOCOL, locale = "es_US")
   expect_true(grepl("\\blocale=es_US\\b", u$soptions, perl = TRUE))
 })
 
 test_that("test.set_bad_session_locale", {
-  expect_error(CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol = PROTOCOL,
-                   locale = "bad-locale"))
+  expect_error(CAS(HOSTNAME, PORT, USERNAME, PASSWORD,
+    protocol = PROTOCOL,
+    locale = "bad-locale"
+  ))
 })
 
 test_that("test.test_echo", {
-  out <- caz$retrieve("echo", a1 = 10, b1 = 12.5, c1 = "string value",
-                      d1 = list(1, 2, 3), e1 = list(x1 = 100, y1 = "y-value",
-                                                    z1 = list(20.5, 1.75)))
+  out <- caz$retrieve("echo",
+    a1 = 10, b1 = 12.5, c1 = "string value",
+    d1 = list(1, 2, 3), e1 = list(
+      x1 = 100, y1 = "y-value",
+      z1 = list(20.5, 1.75)
+    )
+  )
   d <- out$results
   expect_true(d$a1 == 10)
   expect_true(d$b1 == 12.5)
@@ -135,9 +150,13 @@ test_that("test.test_echo", {
   expect_true(d$e1$z1[[1]] == 20.5)
   expect_true(d$e1$z1[[2]] == 1.75)
 
-  out <- caz$retrieve("echo", a1 = 10, b1 = 12.5, c1 = "string value",
-                      d1 = c(1, 2, 3), e1 = list(x1 = 100, y1 = "y-value",
-                                                    z1 = c(20.5, 1.75)))
+  out <- caz$retrieve("echo",
+    a1 = 10, b1 = 12.5, c1 = "string value",
+    d1 = c(1, 2, 3), e1 = list(
+      x1 = 100, y1 = "y-value",
+      z1 = c(20.5, 1.75)
+    )
+  )
   d <- out$results
   expect_true(d$a1 == 10)
   expect_true(d$b1 == 12.5)
@@ -153,19 +172,23 @@ test_that("test.test_echo", {
   expect_true(d$e1$z1[[1]] == 20.5)
   expect_true(d$e1$z1[[2]] == 1.75)
 
-  out <- caz$retrieve("echo", a1 = 10, b1 = 12.5, c1 = "string value",
-                      d1 = c('one', 'two', 'three'),
-                      e1 = list(x1 = 100, y1 = "y-value",
-                                z1 = list(num=c(20.5, 1.75))),
-                      f1 = list('one', 'two', 'three'))
+  out <- caz$retrieve("echo",
+    a1 = 10, b1 = 12.5, c1 = "string value",
+    d1 = c("one", "two", "three"),
+    e1 = list(
+      x1 = 100, y1 = "y-value",
+      z1 = list(num = c(20.5, 1.75))
+    ),
+    f1 = list("one", "two", "three")
+  )
   d <- out$results
   expect_true(d$a1 == 10)
   expect_true(d$b1 == 12.5)
   expect_true(d$c1 == "string value")
   expect_true(length(d$d1) == 3)
-  expect_true(d$d1[[1]] == 'one')
-  expect_true(d$d1[[2]] == 'two')
-  expect_true(d$d1[[3]] == 'three')
+  expect_true(d$d1[[1]] == "one")
+  expect_true(d$d1[[2]] == "two")
+  expect_true(d$d1[[3]] == "three")
   expect_true(length(d$e1) == 3)
   expect_true(d$e1$x1 == 100)
   expect_true(d$e1$y1 == "y-value")
@@ -173,17 +196,19 @@ test_that("test.test_echo", {
   expect_true(length(d$e1$z1$num) == 2)
   expect_true(d$e1$z1$num[[1]] == 20.5)
   expect_true(d$e1$z1$num[[2]] == 1.75)
-  expect_true(d$f1[[1]] == 'one')
-  expect_true(d$f1[[2]] == 'two')
-  expect_true(d$f1[[3]] == 'three')
+  expect_true(d$f1[[1]] == "one")
+  expect_true(d$f1[[2]] == "two")
+  expect_true(d$f1[[3]] == "three")
 })
 
 test_that("test.test_summary", {
-  out = caz$retrieve("loadactionset", actionset = "simple")
-  out = caz$retrieve("loadtable", path = "datasources/cars_single.sashdat",
-                   caslib = "castesttmp")
-  out = caz$retrieve("summary", table = list(name = "datasources.cars_single"))
-  summ = out$results$Summary
+  out <- caz$retrieve("loadactionset", actionset = "simple")
+  out <- caz$retrieve("loadtable",
+    path = "datasources/cars_single.sashdat",
+    caslib = "castesttmp"
+  )
+  out <- caz$retrieve("summary", table = list(name = "datasources.cars_single"))
+  summ <- out$results$Summary
   expect_true(dim(summ)[[2]] >= 15)
   n <- names(summ)
   expect_true(n[[1]] == "Column")
@@ -242,16 +267,17 @@ test_that("test.test_summary", {
 })
 
 test_that("test.test_alltypes", {
-  out = caz$retrieve("loadactionset", actionset = "actiontest")
-  out = caz$retrieve("alltypes", casout = "typestable")
-  out = caz$retrieve("fetch", table = list(name = "typestable"),
-                   sastypes = FALSE)
-  df = out$results$Fetch
+  out <- caz$retrieve("loadactionset", actionset = "actiontest")
+  out <- caz$retrieve("alltypes", casout = "typestable")
+  out <- caz$retrieve("fetch", table = list(name = "typestable"), sastypes = FALSE)
+  df <- out$results$Fetch
   expect_true(df$Double[[1]] == 42.42)
   expect_true(class(df$Double[[1]]) == "numeric")
   expect_true(df$Char[[1]] == "AbC➂➁➀")
   expect_true(class(df$Char[[1]]) == "character")
-  expect_true(df$Varchar[[1]] == "This is a test of the Emergency Broadcast System. This is only a test. BEEEEEEEEEEEEEEEEEEP WHAAAA SCREEEEEEEEEEEECH. ➉➈➇➆➅➄➃➂➁➀ Blastoff!")
+  expect_true(df$Varchar[[1]] == paste("This is a test of the Emergency Broadcast System. ",
+    "This is only a test. BEEEEEEEEEEEEEEEEEEP WHAAAA ",
+    "SCREEEEEEEEEEEECH. ➉➈➇➆➅➄➃➂➁➀ Blastoff!", sep=""))
   expect_true(class(df$Varchar[[1]]) == "character")
   expect_true(df$Int32[[1]] == 42)
   expect_true(class(df$Int32[[1]]) == "integer")
@@ -260,12 +286,17 @@ test_that("test.test_alltypes", {
   expect_true(df$Date[[1]] == as.Date("1963-05-19", "%Y-%m-%d"))
   expect_true(class(df$Date[[1]]) == "Date")
   op <- options(digits.secs = 7)
-  expect_true(as.character(df$Time[[1]]) == as.character(as.POSIXct(strptime("1960-01-01 11:12:13.141516",
-                                                                             "%Y-%m-%d %H:%M:%OS"))))
+  expect_true(as.character(df$Time[[1]]) ==
+    as.character(as.POSIXct(strptime(
+      "1960-01-01 11:12:13.141516",
+      "%Y-%m-%d %H:%M:%OS"
+    ))))
   options(op)
   expect_true(class(df$Time[[1]])[[1]] == "POSIXct")
   expect_true(df$Datetime[[1]] == as.POSIXct(strptime("1963-05-19 11:12:13.141516",
-                                                      "%Y-%m-%d %H:%M:%OS", tz = "UTC")))
+    "%Y-%m-%d %H:%M:%OS",
+    tz = "UTC"
+  )))
   expect_true(class(df$Datetime[[1]])[[1]] == "POSIXct")
   expect_true(df$DecSext[[1]] == "12345678901234567890.123456789")
   expect_true(class(df$DecSext[[1]]) == "character")
@@ -275,10 +306,14 @@ test_that("test.test_alltypes", {
 })
 
 test_that("test.test_array_types", {
-  out <- caz$retrieve("loadtable", path = "datasources/summary_array.sashdat",
-                    caslib = "castesttmp")
-  out <- caz$retrieve("fetch", table = list(name = "datasources.summary_array"),
-                    sastypes = FALSE)
+  out <- caz$retrieve("loadtable",
+    path = "datasources/summary_array.sashdat",
+    caslib = "castesttmp"
+  )
+  out <- caz$retrieve("fetch",
+    table = list(name = "datasources.summary_array"),
+    sastypes = FALSE
+  )
   df <- out$results$Fetch
   for (i in 1:14) {
     expect_true(df$"_Min_"[[i]] == df$myArray1[[i]])
@@ -299,96 +334,90 @@ test_that("test.test_array_types", {
 })
 
 test_that("test.test_multiple_connection_retrieval", {
-   f = caz$fork(3)
+  f <- caz$fork(3)
 
-   expect_true(length(f) == 3)
-   expect_true(length(f[[1]]$session) > 0)
-   expect_true(length(f[[2]]$session) > 0)
-   expect_true(length(f[[3]]$session) > 0)
-   expect_true(f[[1]]$session != f[[2]]$session)
-   expect_true(f[[2]]$session != f[[3]]$session)
+  expect_true(length(f) == 3)
+  expect_true(length(f[[1]]$session) > 0)
+  expect_true(length(f[[2]]$session) > 0)
+  expect_true(length(f[[3]]$session) > 0)
+  expect_true(f[[1]]$session != f[[2]]$session)
+  expect_true(f[[2]]$session != f[[3]]$session)
 
-   f[[1]]$retrieve("loadactionset", actionset = "actiontest")
-   f[[2]]$retrieve("loadactionset", actionset = "actiontest")
-   f[[3]]$retrieve("loadactionset", actionset = "actiontest")
-   f[[1]]$invoke("testsleep", duration = 6000)
-   f[[2]]$invoke("testsleep", duration = 11000)
-   f[[3]]$invoke("testsleep", duration = 500)
+  f[[1]]$retrieve("loadactionset", actionset = "actiontest")
+  f[[2]]$retrieve("loadactionset", actionset = "actiontest")
+  f[[3]]$retrieve("loadactionset", actionset = "actiontest")
+  f[[1]]$invoke("testsleep", duration = 6000)
+  f[[2]]$invoke("testsleep", duration = 11000)
+  f[[3]]$invoke("testsleep", duration = 500)
 
-   w <- CASEventWatcher(f)
+  w <- CASEventWatcher(f)
 
-   order <- list()
-   while ( TRUE )
-   {
-      output <- getnext(w)
-      if ( is.null(output$response) ) break
+  order <- list()
+  while (TRUE) {
+    output <- getnext(w)
+    if (is.null(output$response)) break
 
-      if ( length(output$response$messages) > 0 )
-      {
-          if ( grepl('500 milliseconds', output$response$messages[[1]]) )
-          {
-             order <- c(order, f[[3]]$session)
-          }
-          else if ( grepl('6000 milliseconds', output$response$messages[[1]]) )
-          {
-             order <- c(order, f[[1]]$session)
-          }
-          else if ( grepl('11000 milliseconds', output$response$messages[[1]]) )
-          {
-             order <- c(order, f[[2]]$session)
-          }
+    if (length(output$response$messages) > 0) {
+      if (grepl("500 milliseconds", output$response$messages[[1]])) {
+        order <- c(order, f[[3]]$session)
       }
-   }
+      else if (grepl("6000 milliseconds", output$response$messages[[1]])) {
+        order <- c(order, f[[1]]$session)
+      }
+      else if (grepl("11000 milliseconds", output$response$messages[[1]])) {
+        order <- c(order, f[[2]]$session)
+      }
+    }
+  }
 
-   f1Found = FALSE
-   f2Found = FALSE
-   f3Found = FALSE
+  f1found <- FALSE
+  f2found <- FALSE
+  f3found <- FALSE
 
-   # TODO: This is the wrong order.  It should be 3, 1, 2!
-   expect_true(length(order) == 3)
+  # TODO: This is the wrong order.  It should be 3, 1, 2!
+  expect_true(length(order) == 3)
 
-   for ( i in 1:length(order) )
-   {
-       if (order[[i]] == f[[3]]$session)
-       {
-           f1Found = TRUE
-       }
-       else if (order[[i]] == f[[1]]$session)
-       {
-           f2Found = TRUE
-       }
-       else if (order[[i]] == f[[2]]$session)
-       {
-           f3Found = TRUE
-       }
-   }
+  for (i in 1:3) {
+    if (order[[i]] == f[[3]]$session) {
+      f1found <- TRUE
+    }
+    else if (order[[i]] == f[[1]]$session) {
+      f2found <- TRUE
+    }
+    else if (order[[i]] == f[[2]]$session) {
+      f3found <- TRUE
+    }
+  }
 
-   expect_true(f1Found)
-   expect_true(f2Found)
-   expect_true(f3Found)
+  expect_true(f1found)
+  expect_true(f2found)
+  expect_true(f3found)
 })
 
 test_that("test.test_addtable", {
-  if ( PROTOCOL == 'http' || PROTOCOL == 'https' )
-      skip('Not implemented in REST interface yet.')
+  if (PROTOCOL == "http" || PROTOCOL == "https") {
+    skip("Not implemented in REST interface yet.")
+  }
 
-  skip('Fails in unit tests, but not outside them (SIGPIPE occurs)')
+  skip("Fails in unit tests, but not outside them (SIGPIPE occurs)")
 
   iiris <- cbind(iris, Index = 1:dim(iris)[[1]])
 
-  dmh = CASDataMsgHandler(iiris, nrecs = 20)
-  caz$retrieve("addtable", table = "iris", datamsghandler = dmh,
-             vars = dmh$vars, reclen = dmh$reclen)
+  dmh <- CASDataMsgHandler(iiris, nrecs = 20)
+  caz$retrieve("addtable",
+    table = "iris", datamsghandler = dmh,
+    vars = dmh$vars, reclen = dmh$reclen
+  )
 
-  out = caz$retrieve("tableinfo", table = "iris")
-  data = out$results$TableInfo
+  out <- caz$retrieve("tableinfo", table = "iris")
+  data <- out$results$TableInfo
 
   expect_true(data$Name[[1]] == "IRIS")
   expect_true(data$Rows[[1]] == 150)
   expect_true(data$Columns[[1]] == 6)
 
-  out = caz$retrieve("columninfo", table = list(name = "iris"))
-  data = out$results$ColumnInfo
+  out <- caz$retrieve("columninfo", table = list(name = "iris"))
+  data <- out$results$ColumnInfo
 
   expect_true(dim(data)[[1]] == 6)
   expect_true(data$Column[[1]] == "Sepal.Length")
@@ -404,11 +433,10 @@ test_that("test.test_addtable", {
   expect_true(data$Type[[5]] == "varchar")
   expect_true(data$Type[[6]] == "int64")
 
-  out = caz$retrieve("fetch", table = list(name = "iris"),
-                   to = 1000)
-  data = out$results$Fetch[with(out$results$Fetch, order(Index)), ]
+  out <- caz$retrieve("fetch", table = list(name = "iris"), to = 1000)
+  data <- out$results$Fetch[with(out$results$Fetch, order(Index)), ]
 
-  for (i in 1:length(data)) {
+  for (i in seq_len(data)) {
     expect_true(data$Sepal.Length[[i]] == iiris$Sepal.Length[[i]])
     expect_true(data$Sepal.Width[[i]] == iiris$Sepal.Width[[i]])
     expect_true(data$Petal.Length[[i]] == iiris$Petal.Length[[i]])
@@ -420,13 +448,13 @@ test_that("test.test_addtable", {
 
 test_that("test.test_upload", {
   caz$upload(iris, casout = "iris2")
-  out = caz$retrieve("tableinfo", table = "iris2")
-  data = out$results$TableInfo
+  out <- caz$retrieve("tableinfo", table = "iris2")
+  data <- out$results$TableInfo
   expect_true(data$Name[[1]] == "IRIS2")
   expect_true(data$Rows[[1]] == 150)
   expect_true(data$Columns[[1]] == 5)
-  out = caz$retrieve("columninfo", table = list(name = "iris2"))
-  data = out$results$ColumnInfo
+  out <- caz$retrieve("columninfo", table = list(name = "iris2"))
+  data <- out$results$ColumnInfo
   expect_true(dim(data)[[1]] == 5)
   expect_true(data$Column[[1]] == "Sepal.Length")
   expect_true(data$Column[[2]] == "Sepal.Width")

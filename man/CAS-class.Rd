@@ -6,7 +6,7 @@
 \alias{CAS}
 \title{CAS Object Class}
 \arguments{
-\item{hostname}{A \code{character} string that specifies the 
+\item{hostname}{A \code{character} string that specifies the
 host name of the CAS controller.}
 
 \item{port}{A \code{numeric} value that specifies the network
@@ -20,7 +20,7 @@ port number that the CAS controller listens on.}
   \item{https}{use HTTPS communication with the REST interface
     on the CAS controller. This protocol must be specified
     explicity.}
-  \item{auto}{automatically detect between the binary and HTTP.} 
+  \item{auto}{automatically detect between the binary and HTTP.}
 }}
 
 \item{username}{A \code{character} string that identifies the
@@ -53,18 +53,24 @@ between the client (R) and the server (SAS Cloud Analytic Services).
 
 \examples{
 \dontrun{
+# URL form for binary communication and credentials from default authinfo location.
+s <- CAS("cas://cloud.example.com:5570")
+
+# URL form for HTTP communication and credentials from default authinfo location.
+s <- CAS("http://cloud.example.com:8777")
+
 # Use binary communication and credentals from the default authinfo location.
-s <- CAS('cloud.example.com', 5570) 
+s <- CAS("cloud.example.com", 5570)
 
 # Use HTTPS and credentials from the default authinfo location.
-s <- CAS('cloud.example.com', 8777, protocol='https')
+s <- CAS("cloud.example.com", 8777, protocol = "https")
 
 # Use binary or HTTP communication and credentials from an alternative authinfo.
-s <- CAS('cloud.example.com', 5570, protocol='auto', authinfo=~/alt.txt)
+s <- CAS("cloud.example.com", 5570, protocol = "auto", authinfo = "~/alt.txt")
 
 # Use binary or HTTP communcation and specify credentials.
-s <- CAS('cloud.example.com', 8777, protocol='auto', username="sasdemo"
-  password="!s3cret")
+s <- CAS("cloud.example.com", 8777, protocol = "auto", username = "sasdemo", password = "!s3cret")
 }
+
 }
 % Copyright SAS Institute

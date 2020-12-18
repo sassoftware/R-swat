@@ -6,7 +6,7 @@
 #  You may obtain a copy of the License at
 #
 #      http://www.apache.org/licenses/LICENSE-2.0
-        
+
 #
 #  Unless required by applicable law or agreed to in writing, software
 #  distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,697 +15,751 @@
 #  limitations under the License.
 
 
+#' CASTable arithmetic operators
+#'
+#' @name CASTable-arithmetic
+NULL
 
+#' @rdname CASTable-arithmetic
+#' @keywords internal
+.cas_arith <- function(e1, op, e2) {
+  if (class(e1) == "CASTable") {
+    rct <- new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names,
+      where = e1@where, orderby = e1@orderby, groupby = e1@groupby
+    )
+    rct@compcomp <- e1@compcomp
+    if (nchar(e1@XcomputedVarsProgram)) {
+      e1p <- e1@XcomputedVarsProgram
+      rct@XcomputedVars <- e1@XcomputedVars
+      rct@computedVars <- e1@computedVars
+      rct@computedVarsProgram <- e1@computedVarsProgram
+    }
+    else {
+      e1p <- c(e1@names, e1@computedVars)
+      e1p <- e1p[e1p != ""]
+      e1p <- paste('"', e1p, '"n', sep = "")
+      if (sum(nchar(e1@computedVars))) {
+        rct@compcomp <- TRUE
+        rct@XcomputedVars <- c(e1@XcomputedVars, e1@computedVars)
+        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@computedVars <- e1@computedVars
+        rct@computedVarsProgram <- e1@computedVarsProgram
+      }
+    }
+  }
+  else {
+    rct <- new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names,
+      where = e2@where, orderby = e2@orderby, groupby = e2@groupby
+    )
+    rct@compcomp <- e2@compcomp
+    e1p <- e1
+  }
 
+  if (class(e2) == "CASTable") {
+    if (nchar(e2@XcomputedVarsProgram)) {
+      e2p <- e2@XcomputedVarsProgram
+      rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars)
+      rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+      rct@computedVars <- c(rct@computedVars, e2@computedVars)
+      rct@computedVars <- rct@computedVars[rct@computedVars != ""]
+      rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
+      rct@computedVarsProgram <- rct@computedVarsProgram[rct@computedVarsProgram != ""]
+    }
+    else {
+      e2p <- c(e2@names, e2@computedVars)
+      e2p <- e2p[e2p != ""]
+      e2p <- paste('"', e2p, '"n', sep = "")
+      if (sum(nchar(e2@computedVars))) {
+        rct@compcomp <- TRUE
+        rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars)
+        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@computedVars <- c(rct@computedVars, e2@computedVars)
+        rct@computedVars <- rct@computedVars[rct@computedVars != ""]
+        rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
+        rct@computedVarsProgram <- rct@computedVarsProgram[rct@computedVarsProgram != ""]
+      }
+    }
+  }
+  else {
+    e2p <- e2
+  }
 
+  if (op == " %% ") {
+    rct@XcomputedVarsProgram <- paste("mod(", e1p, ", ", e2p, ")", sep = "")
+  } else
+  if (op == " %/% ") {
+    rct@XcomputedVarsProgram <- paste("floor(", e1p, " / ", e2p, ")", sep = "")
+  } else {
+    rct@XcomputedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
+  }
+  return(rct)
+}
 
-#' @rdname CASTable-Extract
+# Subtraction ---------------------------
+
+#' @rdname CASTable-arithmetic
 #' @export
-#' @rawRd % Copyright SAS Institute
-.cas.arith <- function(e1, op, e2) {
-         if (class(e1) == "CASTable")
-            {
-            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names, 
-                      where=e1@where, orderby=e1@orderby, groupby=e1@groupby)
-            rct@compcomp = e1@compcomp
-            if (nchar(e1@XcomputedVarsProgram))
-               {
-               e1p                     = e1@XcomputedVarsProgram
-               rct@XcomputedVars       = e1@XcomputedVars
-               rct@computedVars        = e1@computedVars
-               rct@computedVarsProgram = e1@computedVarsProgram
-               }
-            else
-               {
-               e1p = c(e1@names, e1@computedVars)
-               e1p = e1p[e1p != ""]
-               e1p = paste('"', e1p, '"n', sep='')
-               if (sum(nchar(e1@computedVars)))
-                  {
-                  rct@compcomp            = TRUE
-                  rct@XcomputedVars       = c(e1@XcomputedVars, e1@computedVars) 
-                  rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVars        = e1@computedVars
-                  rct@computedVarsProgram = e1@computedVarsProgram
-                  }
-               }
-            }
-         else
-            {
-            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names, 
-                      where=e2@where, orderby=e2@orderby, groupby=e2@groupby)
-            rct@compcomp = e2@compcomp
-            e1p = e1
-            }
+setMethod(
+  "-",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " - ", e2))
+  }
+)
 
-         if (class(e2) == "CASTable")
-            {
-            if (nchar(e2@XcomputedVarsProgram))
-               {
-               e2p                     = e2@XcomputedVarsProgram
-               rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars)
-               rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-               rct@computedVars        = c(rct@computedVars, e2@computedVars)
-               rct@computedVars        = rct@computedVars[rct@computedVars != ""]
-               rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
-               rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
-               }
-            else
-               {
-               e2p = c(e2@names, e2@computedVars)
-               e2p = e2p[e2p != ""]
-               e2p = paste('"', e2p, '"n', sep='')
-               if (sum(nchar(e2@computedVars)))
-                  {
-                  rct@compcomp            = TRUE
-                  rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
-                  rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVars        = c(rct@computedVars, e2@computedVars)
-                  rct@computedVars        = rct@computedVars[rct@computedVars != ""]
-                  rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
-                  rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
-                  }
-               }
-            }
-         else
-            {
-            e2p = e2
-            }
-
-         if (op == " %% ")
-            rct@XcomputedVarsProgram = paste('mod(', e1p, ', ', e2p, ')', sep='')
-         else
-            if (op == " %/% ")
-               rct@XcomputedVarsProgram = paste('floor(', e1p, ' / ', e2p, ')', sep='')
-            else
-               rct@XcomputedVarsProgram = paste('(', e1p, op, e2p, ')', sep='')
-         return(rct)
-         }
-
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("-",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' - ', e2))
-          })
+setMethod(
+  "-",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " - ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("-",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' - ', e2))
-          })
+setMethod(
+  "-",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " - ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Addition ---------------------------
+
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("-",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' - ', e2))
-          })
+setMethod(
+  "+",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " + ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("+",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' + ', e2))
-          })
+setMethod(
+  "+",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " + ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("+",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' + ', e2))
-          })
+setMethod(
+  "+",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " + ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Division ---------------------------
+
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("+",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' + ', e2))
-          })
+setMethod(
+  "/",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " / ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("/",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' / ', e2))
-          })
+setMethod(
+  "/",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " / ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("/",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' / ', e2))
-          })
+setMethod(
+  "/",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " / ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Multiplication ---------------------------
+
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("/",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' / ', e2))
-          })
+setMethod(
+  "*",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " * ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("*",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' * ', e2))
-          })
+setMethod(
+  "*",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " * ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("*",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' * ', e2))
-          })
+setMethod(
+  "*",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " * ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Exponentiation ---------------------------
+
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("*",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' * ', e2))
-          })
+setMethod(
+  "^",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " ** ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("^",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' ** ', e2))
-          })
+setMethod(
+  "^",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " ** ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("^",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' ** ', e2))
-          })
+setMethod(
+  "^",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " ** ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Modulus ---------------------------
+
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("^",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' ** ', e2))
-          })
+setMethod(
+  "%%",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " %% ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("%%",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' %% ', e2))
-          })
+setMethod(
+  "%%",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " %% ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("%%",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' %% ', e2))
-          })
+setMethod(
+  "%%",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " %% ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Integer Division ---------------------------
+
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("%%",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' %% ', e2))
-          })
+setMethod(
+  "%/%",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " %/% ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("%/%",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' %/% ', e2))
-          })
+setMethod(
+  "%/%",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " %/% ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-arithmetic
 #' @export
-setMethod("%/%",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' %/% ', e2))
-          })
+setMethod(
+  "%/%",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_arith(e1, " %/% ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' CASTable comparison operators
+#'
+#' @name CASTable-comparison
+NULL
+
+#' @rdname CASTable-comparison
+#' @keywords internal
+.cas_compare <- function(e1, op, e2) {
+  if (class(e1) == "CASTable") {
+    rct <- new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names,
+      where = e1@where, orderby = e1@orderby, groupby = e1@groupby
+    )
+    rct@compcomp <- e1@compcomp
+    if (nchar(e1@XcomputedVarsProgram)) {
+      e1p <- e1@XcomputedVarsProgram
+      rct@XcomputedVars <- e1@XcomputedVars
+      rct@computedVars <- e1@computedVars
+      rct@computedVarsProgram <- e1@computedVarsProgram
+    }
+    else {
+      e1p <- c(e1@names, e1@computedVars)
+      e1p <- e1p[e1p != ""]
+      e1p <- paste('"', e1p, '"n', sep = "")
+      if (sum(nchar(e1@computedVars))) {
+        rct@compcomp <- TRUE
+        rct@XcomputedVars <- c(e1@XcomputedVars, e1@computedVars)
+        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@computedVars <- e1@computedVars
+        rct@computedVarsProgram <- e1@computedVarsProgram
+      }
+    }
+  }
+  else {
+    rct <- new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names,
+      where = e2@where, orderby = e2@orderby, groupby = e2@groupby
+    )
+    rct@compcomp <- e2@compcomp
+    if (class(e1) == "character") {
+      e1p <- paste("'", e1, "'", sep = "")
+    } else {
+      e1p <- e1
+    }
+  }
+
+  if (class(e2) == "CASTable") {
+    if (nchar(e2@XcomputedVarsProgram)) {
+      e2p <- e2@XcomputedVarsProgram
+      rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars)
+      rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+      rct@computedVars <- c(rct@computedVars, e2@computedVars)
+      rct@computedVars <- rct@computedVars[rct@computedVars != ""]
+      rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
+      rct@computedVarsProgram <- rct@computedVarsProgram[rct@computedVarsProgram != ""]
+    }
+    else {
+      e2p <- c(e2@names, e2@computedVars)
+      e2p <- e2p[e2p != ""]
+      e2p <- paste('"', e2p, '"n', sep = "")
+      if (sum(nchar(e2@computedVars))) {
+        rct@compcomp <- TRUE
+        rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars)
+        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@computedVars <- c(rct@computedVars, e2@computedVars)
+        rct@computedVars <- rct@computedVars[rct@computedVars != ""]
+        rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
+        rct@computedVarsProgram <- rct@computedVarsProgram[rct@computedVarsProgram != ""]
+      }
+    }
+  }
+  else {
+    if (class(e2) == "character") {
+      e2p <- paste("'", e2, "'", sep = "")
+    } else {
+      e2p <- e2
+    }
+  }
+
+  rct@XcomputedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
+  return(rct)
+}
+
+# Greater Than ---------------------------
+
+#' @rdname CASTable-comparison
 #' @export
-setMethod("%/%",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.arith(e1, ' %/% ', e2))
-          })
+setMethod(
+  ">",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " > ", e2))
+  }
+)
 
-
-
-
-
-
-
-
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-.cas.compare <- function(e1, op, e2) {
-         if (class(e1) == "CASTable")
-            {
-            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names, 
-                      where=e1@where, orderby=e1@orderby, groupby=e1@groupby)
-            rct@compcomp = e1@compcomp
-            if (nchar(e1@XcomputedVarsProgram))
-               {
-               e1p                     = e1@XcomputedVarsProgram
-               rct@XcomputedVars       = e1@XcomputedVars
-               rct@computedVars        = e1@computedVars
-               rct@computedVarsProgram = e1@computedVarsProgram
-               }
-            else
-               {
-               e1p = c(e1@names, e1@computedVars)
-               e1p = e1p[e1p != ""]
-               e1p = paste('"', e1p, '"n', sep='')
-               if (sum(nchar(e1@computedVars)))
-                  {
-                  rct@compcomp            = TRUE
-                  rct@XcomputedVars       = c(e1@XcomputedVars, e1@computedVars) 
-                  rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVars        = e1@computedVars
-                  rct@computedVarsProgram = e1@computedVarsProgram
-                  }
-               }
-            }
-         else
-            {
-            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names, 
-                      where=e2@where, orderby=e2@orderby, groupby=e2@groupby)
-            rct@compcomp = e2@compcomp
-            if (class(e1) == "character")
-               e1p = paste("'", e1, "'", sep='')
-            else
-               e1p = e1
-            }
+setMethod(
+  ">",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " > ", e2))
+  }
+)
 
-         if (class(e2) == "CASTable")
-            {
-            if (nchar(e2@XcomputedVarsProgram))
-               {
-               e2p                     = e2@XcomputedVarsProgram
-               rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars)
-               rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-               rct@computedVars        = c(rct@computedVars, e2@computedVars)
-               rct@computedVars        = rct@computedVars[rct@computedVars != ""]
-               rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
-               rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
-               }
-            else
-               {
-               e2p = c(e2@names, e2@computedVars)
-               e2p = e2p[e2p != ""]
-               e2p = paste('"', e2p, '"n', sep='')
-               if (sum(nchar(e2@computedVars)))
-                  {                  
-                  rct@compcomp            = TRUE
-                  rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
-                  rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVars        = c(rct@computedVars, e2@computedVars)
-                  rct@computedVars        = rct@computedVars[rct@computedVars != ""]
-                  rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
-                  rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
-                  }
-               }
-            }
-         else
-            {
-            if (class(e2) == "character")
-               e2p = paste("'", e2, "'", sep='')
-            else
-               e2p = e2
-            }
-
-         rct@XcomputedVarsProgram = paste('(', e1p, op, e2p, ')', sep='')
-         return(rct)
-         }
-
-
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod(">",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' > ', e2))
-          })
+setMethod(
+  ">",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " > ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Less Than ---------------------------
+
+#' @rdname CASTable-comparison
 #' @export
-setMethod(">",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' > ', e2))
-          })
+setMethod(
+  "<",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " < ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod(">",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' > ', e2))
-          })
+setMethod(
+  "<",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " < ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod("<",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' < ', e2))
-          })
+setMethod(
+  "<",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " < ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Greater Than or Equal ---------------------------
+
+#' @rdname CASTable-comparison
 #' @export
-setMethod("<",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' < ', e2))
-          })
+setMethod(
+  ">=",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " >= ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod("<",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' < ', e2))
-          })
+setMethod(
+  ">=",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " >= ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod(">=",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' >= ', e2))
-          })
+setMethod(
+  ">=",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " >= ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Less Than or Equal ---------------------------
+
+#' @rdname CASTable-comparison
 #' @export
-setMethod(">=",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' >= ', e2))
-          })
+setMethod(
+  "<=",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " <= ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod(">=",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' >= ', e2))
-          })
+setMethod(
+  "<=",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " <= ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod("<=",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' <= ', e2))
-          })
+setMethod(
+  "<=",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " <= ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Equal ---------------------------
+
+#' @rdname CASTable-comparison
 #' @export
-setMethod("<=",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' <= ', e2))
-          })
+setMethod(
+  "==",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " = ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod("<=",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' <= ', e2))
-          })
+setMethod(
+  "==",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " = ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod("==",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' = ', e2))
-          })
+setMethod(
+  "==",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " = ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+# Not Equal ---------------------------
+
+#' @rdname CASTable-comparison
 #' @export
-setMethod("==",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' = ', e2))
-          })
+setMethod(
+  "!=",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " ^= ", e2))
+    return(rct)
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod("==",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' = ', e2))
-          })
+setMethod(
+  "!=",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " ^= ", e2))
+  }
+)
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-comparison
 #' @export
-setMethod("!=",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' ^= ', e2))
-            return(rct)
-          })
+setMethod(
+  "!=",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " ^= ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' CASTable logical operators
+#'
+#' @name CASTable-logical
+NULL
+
+#' @rdname CASTable-logical
+#' @keywords internal
+.cas_logic <- function(e1, op, e2) {
+  if (class(e1) == "CASTable") {
+    rct <- new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names,
+      where = e1@where, orderby = e1@orderby, groupby = e1@groupby
+    )
+    rct@compcomp <- e1@compcomp
+    if (nchar(e1@XcomputedVarsProgram)) {
+      e1p <- e1@XcomputedVarsProgram
+      rct@XcomputedVars <- e1@XcomputedVars
+      rct@computedVars <- e1@computedVars
+      rct@computedVarsProgram <- e1@computedVarsProgram
+    }
+    else {
+      e1p <- c(e1@names, e1@computedVars)
+      e1p <- e1p[e1p != ""]
+      e1p <- paste('"', e1p, '"n', sep = "")
+      if (sum(nchar(e1@computedVars))) {
+        rct@compcomp <- TRUE
+        rct@XcomputedVars <- c(e1@XcomputedVars, e1@computedVars)
+        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@computedVars <- e1@computedVars
+        rct@computedVarsProgram <- e1@computedVarsProgram
+      }
+    }
+  }
+  else {
+    rct <- new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names,
+      where = e2@where, orderby = e2@orderby, groupby = e2@groupby
+    )
+    rct@compcomp <- e2@compcomp
+    e1p <- e1
+  }
+
+  if (class(e2) == "CASTable") {
+    if (nchar(e2@XcomputedVarsProgram)) {
+      e2p <- e2@XcomputedVarsProgram
+      rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars)
+      rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+      rct@computedVars <- c(rct@computedVars, e2@computedVars)
+      rct@computedVars <- rct@computedVars[rct@computedVars != ""]
+      rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
+      rct@computedVarsProgram <- rct@computedVarsProgram[rct@computedVarsProgram != ""]
+    }
+    else {
+      e2p <- c(e2@names, e2@computedVars)
+      e2p <- e2p[e2p != ""]
+      e2p <- paste('"', e2p, '"n', sep = "")
+      if (sum(nchar(e2@computedVars))) {
+        rct@compcomp <- TRUE
+        rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars)
+        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@computedVars <- c(rct@computedVars, e2@computedVars)
+        rct@computedVars <- rct@computedVars[rct@computedVars != ""]
+        rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
+        rct@computedVarsProgram <- rct@computedVarsProgram[rct@computedVarsProgram != ""]
+      }
+    }
+  }
+  else {
+    e2p <- e2
+  }
+
+  rct@XcomputedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
+  return(rct)
+}
+
+# And ---------------------------
+
+#' @rdname CASTable-logical
 #' @export
-setMethod("!=",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' ^= ', e2))
-          })
+setMethod(
+  "&",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " AND ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-logical
 #' @export
-setMethod("!=",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' ^= ', e2))
-          })
+setMethod(
+  "&",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " AND ", e2))
+  }
+)
 
-
-
-
-
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-logical
 #' @export
-.cas.logic <- function(e1, op, e2) {
-         if (class(e1) == "CASTable")
-            {
-            rct = new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names, 
-                      where=e1@where, orderby=e1@orderby, groupby=e1@groupby)
-            rct@compcomp = e1@compcomp
-            if (nchar(e1@XcomputedVarsProgram))
-               {
-               e1p                     = e1@XcomputedVarsProgram
-               rct@XcomputedVars       = e1@XcomputedVars
-               rct@computedVars        = e1@computedVars
-               rct@computedVarsProgram = e1@computedVarsProgram
-               }
-            else
-               {
-               e1p = c(e1@names, e1@computedVars)
-               e1p = e1p[e1p != ""]
-               e1p = paste('"', e1p, '"n', sep='')
-               if (sum(nchar(e1@computedVars)))
-                  {
-                  rct@compcomp            = TRUE
-                  rct@XcomputedVars       = c(e1@XcomputedVars, e1@computedVars) 
-                  rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVars        = e1@computedVars
-                  rct@computedVarsProgram = e1@computedVarsProgram
-                  }
-               }
-            }
-         else
-            {
-            rct = new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names, 
-                      where=e2@where, orderby=e2@orderby, groupby=e2@groupby)
-            rct@compcomp = e2@compcomp
-            e1p = e1
-            }
+setMethod(
+  "&",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " AND ", e2))
+  }
+)
 
-         if (class(e2) == "CASTable")
-            {
-            if (nchar(e2@XcomputedVarsProgram))
-               {
-               e2p                     = e2@XcomputedVarsProgram
-               rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars)
-               rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-               rct@computedVars        = c(rct@computedVars, e2@computedVars)
-               rct@computedVars        = rct@computedVars[rct@computedVars != ""]
-               rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
-               rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
-               }
-            else
-               {
-               e2p = c(e2@names, e2@computedVars)
-               e2p = e2p[e2p != ""]
-               e2p = paste('"', e2p, '"n', sep='')
-               if (sum(nchar(e2@computedVars)))
-                  {
-                  rct@compcomp            = TRUE
-                  rct@XcomputedVars       = c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars) 
-                  rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVars        = c(rct@computedVars, e2@computedVars)
-                  rct@computedVars        = rct@computedVars[rct@computedVars != ""]
-                  rct@computedVarsProgram = c(rct@computedVarsProgram, e2@computedVarsProgram)
-                  rct@computedVarsProgram = rct@computedVarsProgram[rct@computedVarsProgram != ""]
-                  }
-               }
-            }
-         else
-            {
-            e2p = e2
-            }
+# Or ---------------------------
 
-         rct@XcomputedVarsProgram = paste('(', e1p, op, e2p, ')', sep='')
-         return(rct)
-         }
-
-
-
-
-
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-logical
 #' @export
-setMethod("&",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' AND ', e2))
-          })
+setMethod(
+  "|",
+  signature(e1 = "CASTable", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " OR ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-logical
 #' @export
-setMethod("&",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' AND ', e2))
-          })
+setMethod(
+  "|",
+  signature(e1 = "CASTable", e2 = "ANY"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " OR ", e2))
+  }
+)
 
-#' @rdname CASTable-Extract
+#' @rdname CASTable-logical
 #' @export
-setMethod("&",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' AND ', e2))
-          })
+setMethod(
+  "|",
+  signature(e1 = "ANY", e2 = "CASTable"),
+  function(e1, e2) {
+    return(.cas_compare(e1, " OR ", e2))
+  }
+)
 
+# Not ---------------------------
 
-
-
-#' @rdname CASTable-Extract
+#' @rdname CASTable-logical
 #' @export
-setMethod("|",
-          signature(e1 = "CASTable", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' OR ', e2))
-          })
-
-#' @rdname CASTable-Extract
-#' @export
-setMethod("|",
-          signature(e1 = "CASTable", e2 = "ANY"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' OR ', e2))
-          })
-
-#' @rdname CASTable-Extract
-#' @export
-setMethod("|",
-          signature(e1 = "ANY", e2 = "CASTable"),
-          function(e1, e2) {
-            return(.cas.compare(e1, ' OR ', e2))
-          })
-
-
-
-
-
-#' @rdname CASTable-Extract
-#' @export
-setMethod("!",
-          signature(x = "CASTable"),
-          function(x) {
-            rct = new("CASTable", x@conn, x@tname, x@caslib, x@names, 
-                      where=x@where, orderby=x@orderby, groupby=x@groupby)
-            rct@compcomp = x@compcomp
-            if (sum(nchar(x@XcomputedVarsProgram)))
-               {
-               e1p                     = x@XcomputedVarsProgram
-               rct@XcomputedVars       = x@XcomputedVars
-               rct@computedVars        = x@computedVars
-               rct@computedVarsProgram = x@computedVarsProgram
-               }
-            else
-               {
-               e1p = c(x@names, x@computedVars)
-               e1p = e1p[e1p != ""]
-               if (sum(nchar(x@computedVars)))
-                  {
-                  rct@compcomp            = TRUE
-                  rct@XcomputedVars       = c(x@XcomputedVars, x@computedVars) 
-                  rct@XcomputedVars       = rct@XcomputedVars[rct@XcomputedVars != ""]
-                  rct@computedVars        = x@computedVars
-                  rct@computedVarsProgram = x@computedVarsProgram
-                  }
-               }
-            rct@XcomputedVarsProgram = paste('NOT ', e1p, sep='')
-            return(rct)
-          })
-
-
+setMethod(
+  "!",
+  signature(x = "CASTable"),
+  function(x) {
+    rct <- new("CASTable", x@conn, x@tname, x@caslib, x@names,
+      where = x@where, orderby = x@orderby, groupby = x@groupby
+    )
+    rct@compcomp <- x@compcomp
+    if (sum(nchar(x@XcomputedVarsProgram))) {
+      e1p <- x@XcomputedVarsProgram
+      rct@XcomputedVars <- x@XcomputedVars
+      rct@computedVars <- x@computedVars
+      rct@computedVarsProgram <- x@computedVarsProgram
+    }
+    else {
+      e1p <- c(x@names, x@computedVars)
+      e1p <- e1p[e1p != ""]
+      if (sum(nchar(x@computedVars))) {
+        rct@compcomp <- TRUE
+        rct@XcomputedVars <- c(x@XcomputedVars, x@computedVars)
+        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@computedVars <- x@computedVars
+        rct@computedVarsProgram <- x@computedVarsProgram
+      }
+    }
+    rct@XcomputedVarsProgram <- paste("NOT ", e1p, sep = "")
+    return(rct)
+  }
+)

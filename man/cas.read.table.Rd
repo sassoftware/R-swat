@@ -4,21 +4,41 @@
 \alias{cas.read.table}
 \title{Read a File and Upload to a CAS Table}
 \usage{
-cas.read.table(conn, file, header = FALSE, sep = "", quote = "\\"'",
-  dec = ".", numerals = c("allow.loss", "warn.loss", "no.loss"), row.names,
-  col.names, as.is = !stringsAsFactors, na.strings = "NA",
-  colClasses = NA, nrows = -1, skip = 0, check.names = TRUE,
-  fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = TRUE,
-  comment.char = "#", allowEscapes = FALSE, flush = FALSE,
-  stringsAsFactors = default.stringsAsFactors(), fileEncoding = "",
-  encoding = "unknown", text, skipNul = FALSE, casOut = list(name = "",
-  replace = FALSE))
+cas.read.table(
+  conn,
+  file,
+  header = FALSE,
+  sep = "",
+  quote = "\\"'",
+  dec = ".",
+  numerals = c("allow.loss", "warn.loss", "no.loss"),
+  row.names,
+  col.names,
+  as.is = !stringsAsFactors,
+  na.strings = "NA",
+  colClasses = NA,
+  nrows = -1,
+  skip = 0,
+  check.names = TRUE,
+  fill = !blank.lines.skip,
+  strip.white = FALSE,
+  blank.lines.skip = TRUE,
+  comment.char = "#",
+  allowEscapes = FALSE,
+  flush = FALSE,
+  stringsAsFactors = default.stringsAsFactors(),
+  fileEncoding = "",
+  encoding = "unknown",
+  text,
+  skipNul = FALSE,
+  casOut = list(name = "", replace = FALSE)
+)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
 a connection and CAS session.}
 
-\item{file}{An \code{character} string that 
+\item{file}{An \code{character} string that
 specifies the filename. This value is passed to \code{read.table}.}
 
 \item{header}{An optional \code{logical} that specifies
@@ -26,11 +46,11 @@ whether the first line of the file contains variable
 names.}
 
 \item{sep}{An optional \code{character} that is used to specify
-the field delimiter for the file. This value is passed to 
+the field delimiter for the file. This value is passed to
 \code{write.table}.}
 
 \item{quote}{An optional \code{character} string that specifies
-the characters that enclose character data. The value is 
+the characters that enclose character data. The value is
 passed to \code{read.table}.}
 
 \item{dec}{An optional \code{character} that specifies the decimal
@@ -44,8 +64,8 @@ to \code{read.table}.}
 \item{row.names}{An optional \code{character} vector of row
 names. This value is passed to \code{read.table}.}
 
-\item{col.names}{An optional \code{character} vector of names 
-for the variables. The default is to use "V" followed by the 
+\item{col.names}{An optional \code{character} vector of names
+for the variables. The default is to use "V" followed by the
 column number. This value is passed to \code{read.table}.}
 
 \item{as.is}{An optional vector of \code{logical}, \code{numeric},
@@ -77,15 +97,15 @@ unequal length. This value is passed to \code{read.table}.}
 
 \item{strip.white}{An optional \code{logical} that specifies
 whether white space characters are stripped from character data
-that are not enclosed with quotation marks. This value is 
-ignored unless sep is specified. This value is passed to 
+that are not enclosed with quotation marks. This value is
+ignored unless sep is specified. This value is passed to
 \code{read.table}.}
 
 \item{blank.lines.skip}{An optional \code{logical} that specifies
 whether blank lines in the file are ignored. This value is
 passed to \code{read.table}.}
 
-\item{comment.char}{An optional \code{character} that 
+\item{comment.char}{An optional \code{character} that
 specifies the character to interpret as the beginning of a
 comment. This value is passed to \code{read.table}.}
 
@@ -109,7 +129,7 @@ specifies the encoding to use for reading the file. This
 value is passed to \code{read.table}.}
 
 \item{encoding}{An optional \code{character} string that specifies
-the encoding for character data. This value is passed to 
+the encoding for character data. This value is passed to
 \code{read.table}.}
 
 \item{text}{An optional \code{character} string. This value is
@@ -123,8 +143,8 @@ you specify a string, then the string is used as the
 in-memory table name. A list can be used to specify
 properties for the in-memory table as follows:
 \describe{
-  \item{\code{name}}{An optional \code{character} that 
-    specifies the name for the in-memory table. By 
+  \item{\code{name}}{An optional \code{character} that
+    specifies the name for the in-memory table. By
     default, the name of the data frame is used.}
   \item{\code{caslib}}{An optional \code{character} that
     specifies the caslib. Specify this parameter to
@@ -133,7 +153,7 @@ properties for the in-memory table as follows:
     specifies a descriptive label for the data.}
   \item{\code{replace}}{An optional \code{logical}. When
     set to TRUE, you can replace an existing in-memory
-    table with the same name in the same caslib. The 
+    table with the same name in the same caslib. The
     default value is FALSE.}
   \item{\code{promote}}{An optional \code{logical}. When
     set to TRUE, the in-memory table has global scope and
@@ -156,19 +176,24 @@ properties for the in-memory table as follows:
 This function is a convenience wrapper for
 the \R \code{read.table} and \code{as.casTable} functions.
 After reading the file that is accessible to the \R
-client, it is uploaded to an in-memory table in 
+client, it is uploaded to an in-memory table in
 CAS (the server).
 }
 \examples{
 \dontrun{
-myCasTable <- cas.read.table(s, "/path/to/data.tsv", header=TRUE,
-                             sep="\\t", casOut=list(name="mycastable"))
+myCasTable <- cas.read.table(s, "/path/to/data.tsv",
+  header = TRUE,
+  sep = "\\\\t", casOut = list(name = "mycastable")
+)
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.csv}},
-  \code{\link{cas.read.jmp}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.xlsx}}, \code{\link{cas.readRDS}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.csv}()},
+\code{\link{cas.read.jmp}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.xlsx}()},
+\code{\link{cas.readRDS}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

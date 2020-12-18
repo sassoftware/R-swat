@@ -4,19 +4,17 @@
 \alias{cas.stderr}
 \title{Standard Error}
 \usage{
-cas.stderr(CASTable)
+cas.stderr(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-vector
-
-The result is a named numeric vector. You can access
-the standard error by column name or index.
+A named numeric vector. You can access the standard error
+  by column name or index.
 }
 \description{
-Returns the standard error of the values for each 
+Returns the standard error of the values for each
 column in the input table.
 }
 \details{
@@ -25,7 +23,7 @@ This function operates on numeric columns only.
 \examples{
 \dontrun{
 x <- cas.stderr(irisct)
-x['Sepal.Length']
+x["Sepal.Length"]
 x[1:2]
 }
 }

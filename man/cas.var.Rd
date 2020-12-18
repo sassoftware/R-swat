@@ -4,19 +4,17 @@
 \alias{cas.var}
 \title{Variance}
 \usage{
-cas.var(CASTable)
+cas.var(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-casDataFrame
-
-The result includes one row for each numeric variable
-and a column that is named Var for the variance.
+A casDataFrame which includes one row for each
+   numeric variable and a column that is named Var for the variance.
 }
 \description{
-Returns the variance of the values for each 
+Returns the variance of the values for each
 column in the input table.
 }
 \details{

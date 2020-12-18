@@ -4,19 +4,16 @@
 \alias{cas.max}
 \title{Maximum Values}
 \usage{
-cas.max(CASTable)
+cas.max(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
 casDataFrame
-
-The result includes one row for each numeric variable
-and a column that is named Max for the maximum value.
 }
 \description{
-Returns the maximum value for each column in 
+Returns the maximum value for each column in
 the input table.
 }
 \details{
@@ -30,5 +27,8 @@ cas.max(ct$n2)
 }
 \seealso{
 \code{max,CASTable-method}
+
+The result includes one row for each numeric variable
+and a column that is named Max for the maximum value.
 }
 % Copyright SAS Institute

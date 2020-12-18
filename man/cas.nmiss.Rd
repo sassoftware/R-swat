@@ -4,16 +4,14 @@
 \alias{cas.nmiss}
 \title{Number of Missing Values}
 \usage{
-cas.nmiss(CASTable)
+cas.nmiss(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-vector
-
-The result is a named numeric vector. You can access
-the count of missing values by column name or index.
+A named numeric vector. You can access the count of
+  missing values by column name or index.
 }
 \description{
 Returns the number of missing values in the input
@@ -25,7 +23,7 @@ This function operates on numeric columns only.
 \examples{
 \dontrun{
 x <- cas.nmiss(irisct)
-x['Sepal.Length']
+x["Sepal.Length"]
 x[1:2]
 }
 }

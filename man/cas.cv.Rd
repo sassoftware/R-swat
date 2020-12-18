@@ -4,19 +4,17 @@
 \alias{cas.cv}
 \title{Coefficient of Variation}
 \usage{
-cas.cv(CASTable)
+cas.cv(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-vector
-
-The result is a named numeric vector. You can access
-the coefficient of variation by column name or index.
+A named numeric vector. You can access the coefficient
+  of variation by column name or index.
 }
 \description{
-Returns the coefficient of variation of the 
+Returns the coefficient of variation of the
 values for each column in the input table.
 }
 \details{
@@ -25,7 +23,7 @@ This function operates on numeric columns only.
 \examples{
 \dontrun{
 x <- cas.cv(irisct)
-x['Sepal.Length']
+x["Sepal.Length"]
 x[1:2]
 }
 }

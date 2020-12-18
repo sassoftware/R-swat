@@ -6,7 +6,11 @@
 \usage{
 rbind.casTable(..., deparse.level = 1)
 }
+\arguments{
+\item{\dots}{Arguments that are passed to method arguments.}
+
+\item{deparse.level}{See the help for base::rbind.}
+}
 \description{
 Combine CAS Tables by Columns
 }
-% Copyright SAS Institute

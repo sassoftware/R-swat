@@ -4,9 +4,18 @@
 \alias{cas.read.csv}
 \title{Read a CSV File and Upload to a CAS Table}
 \usage{
-cas.read.csv(conn, file, header = TRUE, sep = ",", quote = "\\"",
-  dec = ".", fill = TRUE, comment.char = "", casOut = list(name = "",
-  replace = FALSE), ...)
+cas.read.csv(
+  conn,
+  file,
+  header = TRUE,
+  sep = ",",
+  quote = "\\"",
+  dec = ".",
+  fill = TRUE,
+  comment.char = "",
+  casOut = list(name = "", replace = FALSE),
+  ...
+)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
@@ -33,7 +42,7 @@ separator. This value is passed to \code{read.csv}.}
 TRUE, blank fields are implicitly added for rows that have
 unequal length. This value is passed to \code{read.csv}.}
 
-\item{comment.char}{An optional \code{character} that 
+\item{comment.char}{An optional \code{character} that
 specifies the character to interpret as the beginning of a
 comment. This value is passed to \code{read.csv}.}
 
@@ -42,8 +51,8 @@ you specify a string, then the string is used as the
 in-memory table name. A list can be used to specify
 properties for the in-memory table as follows:
 \describe{
-  \item{\code{name}}{An optional \code{character} that 
-    specifies the name for the in-memory table. By 
+  \item{\code{name}}{An optional \code{character} that
+    specifies the name for the in-memory table. By
     default, the name of the data frame is used.}
   \item{\code{caslib}}{An optional \code{character} that
     specifies the caslib. Specify this parameter to
@@ -52,7 +61,7 @@ properties for the in-memory table as follows:
     specifies a descriptive label for the data.}
   \item{\code{replace}}{An optional \code{logical}. When
     set to TRUE, you can replace an existing in-memory
-    table with the same name in the same caslib. The 
+    table with the same name in the same caslib. The
     default value is FALSE.}
   \item{\code{promote}}{An optional \code{logical}. When
     set to TRUE, the in-memory table has global scope and
@@ -75,10 +84,10 @@ properties for the in-memory table as follows:
 \code{\link{CASTable}}
 }
 \description{
-This function is a convenience wrapper for 
+This function is a convenience wrapper for
 the \R \code{read.csv} and \code{as.casTable} functions.
 After reading the file that is accessible to the \R
-client, it is uploaded to an in-memory table in 
+client, it is uploaded to an in-memory table in
 CAS (the server).
 }
 \examples{
@@ -90,13 +99,17 @@ heartct <- cas.read.csv(s, "http://support.sas.com/documentation/
 # Upload the same CSV, name the in-memory table HEARTCT
 heartct <- cas.read.csv(s, "http://support.sas.com/documentation/
   onlinedoc/viya/exampledatasets/heart.csv",
-  casOut=list(name="heartct", replace=TRUE))
+  casOut = list(name = "heartct", replace = TRUE)
+)
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.jmp}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.table}},
-  \code{\link{cas.read.xlsx}}, \code{\link{cas.readRDS}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.jmp}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.table}()},
+\code{\link{cas.read.xlsx}()},
+\code{\link{cas.readRDS}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

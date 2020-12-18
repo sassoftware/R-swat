@@ -4,17 +4,28 @@
 \alias{cas.read.xlsx}
 \title{Read an XLSX File and Upload to a CAS Table}
 \usage{
-cas.read.xlsx(conn, file, sheetIndex = 1, sheetName = NULL,
-  rowIndex = NULL, startRow = NULL, endRow = NULL, colIndex = NULL,
-  as.data.frame = TRUE, header = TRUE, colClasses = NA,
-  keepFormulas = FALSE, encoding = "unknown", casOut = list(name = "",
-  replace = FALSE))
+cas.read.xlsx(
+  conn,
+  file,
+  sheetIndex = 1,
+  sheetName = NULL,
+  rowIndex = NULL,
+  startRow = NULL,
+  endRow = NULL,
+  colIndex = NULL,
+  as.data.frame = TRUE,
+  header = TRUE,
+  colClasses = NA,
+  keepFormulas = FALSE,
+  encoding = "unknown",
+  casOut = list(name = "", replace = FALSE)
+)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
 a connection and CAS session.}
 
-\item{file}{An \code{character} string that 
+\item{file}{An \code{character} string that
 specifies the filename for the XLSX file.
 This value is passed to \code{read.xslx}.}
 
@@ -22,7 +33,7 @@ This value is passed to \code{read.xslx}.}
 the sheet in the workbook. This value is passed to
 \code{read.xlsx}.}
 
-\item{sheetName}{An optional \code{character} string that 
+\item{sheetName}{An optional \code{character} string that
 specifies the sheet name in the workbook. This value is
 passed to \code{read.xlsx}.}
 
@@ -43,7 +54,7 @@ rowIndex is specified. This value is passed to \code{read.xlsx}.}
 the variables to read from the workbook. By default,
 all variables are read. This value is passed to \code{read.xlsx}.}
 
-\item{as.data.frame}{An optional \code{logical} value that 
+\item{as.data.frame}{An optional \code{logical} value that
 specifies whether the data should be coerced into a data frame.
 This value is passed to \code{read.xlsx}.}
 
@@ -56,12 +67,12 @@ specifies the classes for the columns. This value is passed
 to \code{read.xlsx}.}
 
 \item{keepFormulas}{An optional \code{logical} value that specifies
-whether Excel formulas are included as text or if they are 
+whether Excel formulas are included as text or if they are
 evaluated and the result is read as data. This value is passed
 to \code{read.xlsx}.}
 
 \item{encoding}{An optional \code{character} string that specifies
-the encoding for character data. This value is passed to 
+the encoding for character data. This value is passed to
 \code{read.xlsx}.}
 
 \item{casOut}{An optional \code{character} or list. If
@@ -69,8 +80,8 @@ you specify a string, then the string is used as the
 in-memory table name. A list can be used to specify
 properties for the in-memory table as follows:
 \describe{
-  \item{\code{name}}{An optional \code{character} that 
-    specifies the name for the in-memory table. By 
+  \item{\code{name}}{An optional \code{character} that
+    specifies the name for the in-memory table. By
     default, the name of the data frame is used.}
   \item{\code{caslib}}{An optional \code{character} that
     specifies the caslib. Specify this parameter to
@@ -79,7 +90,7 @@ properties for the in-memory table as follows:
     specifies a descriptive label for the data.}
   \item{\code{replace}}{An optional \code{logical}. When
     set to TRUE, you can replace an existing in-memory
-    table with the same name in the same caslib. The 
+    table with the same name in the same caslib. The
     default value is FALSE.}
   \item{\code{promote}}{An optional \code{logical}. When
     set to TRUE, the in-memory table has global scope and
@@ -102,20 +113,25 @@ properties for the in-memory table as follows:
 This function is a convenience wrapper for
 the \R \code{read.xlsx} and \code{as.casTable} functions.
 After reading the file that is accessible to the \R
-client, it is uploaded to an in-memory table in 
+client, it is uploaded to an in-memory table in
 CAS (the server).
 }
 \examples{
 \dontrun{
-myCasTable <- cas.read.xlsx(s, file="/path/to/data_out.xlsx", 
-  sheetIndex = 1, 
-  casOut=list(name="mycastable", replace=TRUE))
+myCasTable <- cas.read.xlsx(s,
+  file = "/path/to/data_out.xlsx",
+  sheetIndex = 1,
+  casOut = list(name = "mycastable", replace = TRUE)
+)
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.csv}},
-  \code{\link{cas.read.jmp}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.table}}, \code{\link{cas.readRDS}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.csv}()},
+\code{\link{cas.read.jmp}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.table}()},
+\code{\link{cas.readRDS}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

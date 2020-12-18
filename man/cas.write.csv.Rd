@@ -4,14 +4,21 @@
 \alias{cas.write.csv}
 \title{Write a CAS Table to a CSV File}
 \usage{
-cas.write.csv(CASTable, file = "", quote = TRUE, eol = "\\n", na = "NA",
-  row.names = TRUE, fileEncoding = "")
+cas.write.csv(
+  castable,
+  file = "",
+  quote = TRUE,
+  eol = "\\n",
+  na = "NA",
+  row.names = TRUE,
+  fileEncoding = ""
+)
 }
 \arguments{
-\item{CASTable}{The instance of the CASTable to save as
+\item{castable}{The instance of the CASTable to save as
 as a CSV file.}
 
-\item{file}{An \code{character} string that 
+\item{file}{An \code{character} string that
 specifies the filename for the CSV file. If you do not
 specify the file, then the in-memory table name is used
 with a .csv suffix. This value is passed to \code{write.csv}.}
@@ -20,36 +27,19 @@ with a .csv suffix. This value is passed to \code{write.csv}.}
 vector. This value is passed to \code{write.csv}.}
 
 \item{eol}{An optional \code{character} string that is used as the
-end-of-line character or characters. This value is passed to 
+end-of-line character or characters. This value is passed to
 \code{write.csv}.}
 
 \item{na}{An optional \code{character} string to represent
 missing values. This value is passed to \code{write.csv}.}
 
-\item{row.names}{An optional \code{logical} value or a 
+\item{row.names}{An optional \code{logical} value or a
 \code{character} vector of row names. This value is passed to
 \code{write.csv}.}
 
 \item{fileEncoding}{An optional \code{character} string that
 specifies the encoding to use for writing the CSV file. This
 value is passed to \code{write.csv}.}
-
-\item{append}{An optional \code{logical} value This value
-is passed to \code{write.csv}.}
-
-\item{sep}{An optional \code{character} that is used to separate
-values in the CSV file. This value is passed to \code{write.csv}.}
-
-\item{dec}{An optional \code{character} to represent the decimal
-separator. This value is passed to \code{write.csv}.}
-
-\item{col.names}{An optional \code{logical} value or a
-\code{character} vector of column names. This value is passed
-to \code{write.csv}.}
-
-\item{qmethod}{An optional \code{chracter} string that describes
-how to write embedded quotation marks. This value is passed
-to \code{write.csv}.}
 }
 \description{
 This function downloads an in-memory table from the
@@ -69,12 +59,13 @@ gold_medals <- cas.read.sas7bdat(s, "/path/to/gold_medals.sas7bdat")
 
 # download the in-memory table as a CSV file
 cas.write.csv(gold_medals, "~/gold_medals.csv")
-
 }
 }
 \seealso{
-Other functions for saving in-memory data: \code{\link{cas.saveRDS}},
-  \code{\link{cas.write.table}},
-  \code{\link{cas.write.xlsx}}
+Other functions for saving in-memory data: 
+\code{\link{cas.saveRDS}()},
+\code{\link{cas.write.table}()},
+\code{\link{cas.write.xlsx}()}
 }
+\concept{functions for saving in-memory data}
 % Copyright SAS Institute

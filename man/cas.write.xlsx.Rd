@@ -4,19 +4,26 @@
 \alias{cas.write.xlsx}
 \title{Write a CAS Table to a Microsoft Excel Workbook}
 \usage{
-cas.write.xlsx(CASTable, file = "", sheetName = "Sheet1",
-  col.names = TRUE, row.names = TRUE, append = FALSE, showNA = TRUE)
+cas.write.xlsx(
+  castable,
+  file = "",
+  sheetName = "Sheet1",
+  col.names = TRUE,
+  row.names = TRUE,
+  append = FALSE,
+  showNA = TRUE
+)
 }
 \arguments{
-\item{CASTable}{The instance of the CASTable to save as
+\item{castable}{The instance of the CASTable to save as
 as a CSV file.}
 
-\item{file}{An \code{character} string that 
+\item{file}{An \code{character} string that
 specifies the filename for the XLSX file. If you do not
 specify the file, then the in-memory table name is used
 with an .xslx suffix. This value is passed to \code{write.xlsx}.}
 
-\item{sheetName}{An optional \code{character} string that 
+\item{sheetName}{An optional \code{character} string that
 specifies the sheet name in the workbook. This value is
 passed to \code{write.xlsx}.}
 
@@ -42,12 +49,14 @@ wrapper for the \R \code{write.xslx} function.
 }
 \examples{
 \dontrun{
-cas.write.xlsx(myCasTable, file="/path/to/data_out.xlsx")
+cas.write.xlsx(myCasTable, file = "/path/to/data_out.xlsx")
 }
 }
 \seealso{
-Other functions for saving in-memory data: \code{\link{cas.saveRDS}},
-  \code{\link{cas.write.csv}},
-  \code{\link{cas.write.table}}
+Other functions for saving in-memory data: 
+\code{\link{cas.saveRDS}()},
+\code{\link{cas.write.csv}()},
+\code{\link{cas.write.table}()}
 }
+\concept{functions for saving in-memory data}
 % Copyright SAS Institute

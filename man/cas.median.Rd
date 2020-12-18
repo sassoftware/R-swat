@@ -4,19 +4,16 @@
 \alias{cas.median}
 \title{Median Values}
 \usage{
-cas.median(CASTable, q)
+cas.median(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
 data.frame
-
-The result includes one row for each numeric variable
-and a column that is named Median for the median value.
 }
 \description{
-Returns the median value for each column in 
+Returns the median value for each column in
 the input table.
 }
 \details{
@@ -30,5 +27,8 @@ cas.median(ct$n2)
 }
 \seealso{
 \code{median,CASTable-method}
+
+The result includes one row for each numeric variable
+and a column that is named Median for the median value.
 }
 % Copyright SAS Institute

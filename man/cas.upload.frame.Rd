@@ -4,18 +4,22 @@
 \alias{cas.upload.frame}
 \title{Upload a data.frame to a CAS table}
 \usage{
-cas.upload.frame(conn, ...)
+cas.upload.frame(conn, frame, ...)
 }
 \arguments{
+\item{conn}{The \code{\link{CAS}} connection object}
+
+\item{frame}{The \code{data.frame} to upload}
+
 \item{\dots}{Optional parameters that are passed to the table.loadtable action.}
-
-\item{CAS}{The CAS connection object}
-
-\item{data.frame}{The data.frame to upload}
 }
 \value{
-\code{\link{CASTable}}
+\code{\link{CASTable}} object which references a new CAS table
+  on the server that contains the data from the given \code{data.frame}.
 }
 \description{
 Upload a data.frame to a CAS table
+}
+\seealso{
+\code{\link{cas.upload.file}}
 }

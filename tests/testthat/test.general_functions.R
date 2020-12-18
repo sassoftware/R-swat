@@ -15,7 +15,7 @@
 
 library(swat)
 
-options(cas.print.messages=FALSE)
+options(cas.print.messages = FALSE)
 
 
 context("general_functions")
@@ -23,14 +23,14 @@ context("general_functions")
 test_that("Load ActionSet and List ActionSet Functions", {
   expect_error(swat::loadActionSet(caz, "foobar"))
   expect_null(swat::loadActionSet(caz, "builtins"))
-  
-  loadActionSet(caz, actionSet="simple")
+
+  loadActionSet(caz, actionSet = "simple")
   expect_true("simple" %in% listActionSets(caz)$actionset)
 
-  p <- listActionParms(caz, actn="summary", display=FALSE)
+  p <- listActionParms(caz, actn = "summary", display = FALSE)
   expect_true(length(p) > 15)
-  expect_equivalent(p[[1]]$name, 'table')
-  expect_equivalent(p[[1]]$parmType, 'value_list')
+  expect_equivalent(p[[1]]$name, "table")
+  expect_equivalent(p[[1]]$parmType, "value_list")
 })
 
 

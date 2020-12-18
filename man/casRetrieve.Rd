@@ -2,14 +2,11 @@
 % Please edit documentation in R/action.R
 \name{casRetrieve}
 \alias{casRetrieve}
-\title{Utility function that is run from several exported functions.}
+\title{Utility function that is run from several exported functions}
 \usage{
-casRetrieve(caz, ...)
+casRetrieve(conn, ...)
 }
 \description{
-The generated functions, such as cas.table.tableInfo and
-cas.decisionTree.dtreeTrain, or runAction are better candidates
-for use by programmers.
+Utility function that is run from several exported functions
 }
 \keyword{internal}
-% Copyright SAS Institute

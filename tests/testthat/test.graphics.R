@@ -16,63 +16,65 @@
 
 library(swat)
 
-options(cas.print.messages=FALSE)
+options(cas.print.messages = FALSE, bitmapType = "cairo")
 
 
 context("test.graphics.R")
 
-verify_jpeg_pkg <- function () {
-   tryCatch({
-      library(jpeg)
-      dfplot <- tempfile(fileext='.jpg')
-      tryCatch({
-          jpeg(dfplot)
-          plot(iris$Sepal.Length, iris$Sepal.Width)
-          dev.off()
-          unlink(dfplot)
-      }, error = function (e) {
-         testthat::skip('"jpeg" library is not functional.')
-         unlink(dfplot)
-      })
-   }, error = function (e) {
-      testthat::skip('"jpeg" library is not installed to compare JPEG files.')
+verify_jpeg_pkg <- function() {
+  tryCatch({
+    library(jpeg)
+    dfplot <- tempfile(fileext='.jpg')
+    tryCatch({
+      jpeg(dfplot)
+      plot(iris$Sepal.Length, iris$Sepal.Width)
+      dev.off()
       unlink(dfplot)
-   })
+    }, error = function (e) {
+      testthat::skip('"jpeg" library is not functional.')
+      unlink(dfplot)
+    })
+  }, error = function (e) {
+    testthat::skip('"jpeg" library is not installed to compare JPEG files.')
+    unlink(dfplot)
+  })
 }
 
 test_that("plot.scatter", {
   verify_jpeg_pkg()
 
-  dfplot <- tempfile(fileext='.jpg')
+  dfplot <- tempfile(fileext = ".jpg")
   jpeg(dfplot)
-  plot(iris$Sepal.Length, iris$Sepal.Width, xlab='Sepal Length', ylab='Sepal Width')
+  plot(iris$Sepal.Length, iris$Sepal.Width, xlab = "Sepal Length", ylab = "Sepal Width")
   dev.off()
 
-  casplot <- tempfile(fileext='.jpg')
+  casplot <- tempfile(fileext = ".jpg")
   jpeg(casplot)
-  plot(i2$Sepal.Length, i2$Sepal.Width, xlab='Sepal Length', ylab='Sepal Width')
+  plot(i2$Sepal.Length, i2$Sepal.Width, xlab = "Sepal Length", ylab = "Sepal Width")
   dev.off()
 
-  expect_equal(readJPEG(dfplot), readJPEG(casplot), tolerance=0.018)
+  expect_equal(readJPEG(dfplot), readJPEG(casplot), tolerance = 0.018)
 
   unlink(dfplot)
   unlink(casplot)
 })
 
-test_that('plot.bar', {
+test_that("plot.bar", {
   verify_jpeg_pkg()
 
-  dfplot <- tempfile(fileext='.jpg')
+  dfplot <- tempfile(fileext = ".jpg")
   jpeg(dfplot)
-  plot(iris$Sepal.Length, iris$Sepal.Width, xlab='Sepal Length', ylab='Sepal Width', type='h', col='red', lwd=10)
+  plot(iris$Sepal.Length, iris$Sepal.Width, xlab = "Sepal Length",
+       ylab = "Sepal Width", type = "h", col = "red", lwd = 10)
   dev.off()
 
-  casplot <- tempfile(fileext='.jpg')
+  casplot <- tempfile(fileext = ".jpg")
   jpeg(casplot)
-  plot(i2$Sepal.Length, i2$Sepal.Width, xlab='Sepal Length', ylab='Sepal Width', type='h', col='red', lwd=10)
+  plot(i2$Sepal.Length, i2$Sepal.Width, xlab = "Sepal Length",
+       ylab = "Sepal Width", type = "h", col = "red", lwd = 10)
   dev.off()
 
-  expect_equal(readJPEG(dfplot), readJPEG(casplot), tolerance=0.018)
+  expect_equal(readJPEG(dfplot), readJPEG(casplot), tolerance = 0.018)
 
   unlink(dfplot)
   unlink(casplot)

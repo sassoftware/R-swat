@@ -4,21 +4,19 @@
 \alias{cas.mode}
 \title{Mode Value}
 \usage{
-cas.mode(CASTable)
+cas.mode(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
-data.frame
-
-The result includes one row for each variable.
-One column is named Mode for the most common value. 
-Another column is named Count to show the number of rows
-with the most common value.
+A data.frame which includes one row for each variable.
+  One column is named Mode for the most common value.
+  Another column is named Count to show the number of rows
+  with the most common value.
 }
 \description{
-Returns the value that occurs most often for each column in 
+Returns the value that occurs most often for each column in
 the input table and the count for the value.
 }
 \details{

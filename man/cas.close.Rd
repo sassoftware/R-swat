@@ -4,11 +4,17 @@
 \alias{cas.close}
 \title{Close a CAS connection while leaving the session alive}
 \usage{
-cas.close(conn)
+cas.close(conn, close_session = FALSE)
 }
 \arguments{
-\item{CAS}{The CAS connection object}
+\item{conn}{The \code{\link{CAS}} connection object}
+
+\item{close_session}{Should the session be terminated in addition to 
+closing the connection?}
 }
 \description{
 Close a CAS connection while leaving the session alive
+}
+\seealso{
+\code{\link{cas.terminate}}
 }

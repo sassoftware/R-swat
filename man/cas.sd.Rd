@@ -4,23 +4,21 @@
 \alias{cas.sd}
 \title{Standard Deviation}
 \usage{
-cas.sd(CASTable, na.rm = TRUE)
+cas.sd(x, na.rm = TRUE)
 }
 \arguments{
+\item{x}{\code{\link{CASTable}} object.}
+
 \item{na.rm}{An optional \code{logical}. When set to FALSE,
 missing values (NA) are not removed from the analysis.
 By default, missing values are ignored.}
-
-\item{x}{CASTable.}
 }
 \value{
-casDataFrame
-
-The result includes one row for each numeric variable
-and a column that is named Std for the standard deviation.
+A casDataFrame which includes one row for each numeric
+  variable and a column that is named Std for the standard deviation.
 }
 \description{
-Returns the standard deviation of the values for each 
+Returns the standard deviation of the values for each
 column in  the input table.
 }
 \details{

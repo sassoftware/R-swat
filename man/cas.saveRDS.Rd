@@ -4,14 +4,20 @@
 \alias{cas.saveRDS}
 \title{Write a CAS Table to RDS}
 \usage{
-cas.saveRDS(CASTable, file = "", ascii = FALSE, version = NULL,
-  compress = TRUE, refhook = NULL)
+cas.saveRDS(
+  castable,
+  file = "",
+  ascii = FALSE,
+  version = NULL,
+  compress = TRUE,
+  refhook = NULL
+)
 }
 \arguments{
-\item{CASTable}{The instance of the CASTable to save as
+\item{castable}{The instance of the CASTable to save as
 as an RDS file.}
 
-\item{file}{An \code{character} string that 
+\item{file}{An \code{character} string that
 specifies the filename for the RDS file. If you do not
 specify the file, then the in-memory table name is used
 with an .rds suffix. This value is passed to \code{saveRDS}.}
@@ -39,12 +45,15 @@ wrapper for the \R \code{saveRDS} function.
 }
 \examples{
 \dontrun{
-cas.saveRDS(myCasTable, file="/path/to/data_out.rds")
+cas.saveRDS(myCasTable, file = "/path/to/data_out.rds")
 }
+
 }
 \seealso{
-Other functions for saving in-memory data: \code{\link{cas.write.csv}},
-  \code{\link{cas.write.table}},
-  \code{\link{cas.write.xlsx}}
+Other functions for saving in-memory data: 
+\code{\link{cas.write.csv}()},
+\code{\link{cas.write.table}()},
+\code{\link{cas.write.xlsx}()}
 }
+\concept{functions for saving in-memory data}
 % Copyright SAS Institute

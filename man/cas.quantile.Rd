@@ -4,21 +4,19 @@
 \alias{cas.quantile}
 \title{Quantile and Percentile Values}
 \usage{
-cas.quantile(CASTable, q)
+cas.quantile(x, q)
 }
 \arguments{
-\item{q}{A list of numeric values.}
+\item{x}{\code{\link{CASTable}} object.}
 
-\item{x}{CASTable.}
+\item{q}{A list of numeric values.}
 }
 \value{
-data.frame
-
-The result includes one row for the variable, the requested
-percentile, and the value.
+A data.frame which includes one row for the variable,
+  the requested percentile, and the value.
 }
 \description{
-Returns the requested percentiles for each column in 
+Returns the requested percentiles for each column in
 the input table.
 }
 \details{
@@ -26,8 +24,8 @@ This function operates on numeric columns only.
 }
 \examples{
 \dontrun{
-cas.quantile(ct[1:4], q=50)
-cas.quantile(ct$n2, q=c(10, 25, 50, 75, 90))
+cas.quantile(ct[1:4], q = 50)
+cas.quantile(ct$n2, q = c(10, 25, 50, 75, 90))
 }
 }
 % Copyright SAS Institute

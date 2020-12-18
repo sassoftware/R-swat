@@ -4,7 +4,7 @@
 \alias{runAction}
 \title{Run a CAS Action by Name}
 \usage{
-runAction(CASorCASTab = "", actn, ...)
+runAction(CASorCASTab = "", actn, check_errors = FALSE, ...)
 }
 \arguments{
 \item{CASorCASTab}{An instance of a CAS object that represents
@@ -13,7 +13,13 @@ a connection and CAS session, or an instance of a CASTable.}
 \item{actn}{A \code{character} string that specifies
 the action set and action name to run.}
 
+\item{check_errors}{Logical indicating that if errors occurred
+when running the action, an error is raised.}
+
 \item{\dots}{Parameters that are passed to the CAS action.}
+}
+\value{
+List of action results
 }
 \description{
 This function enables you to specify a CAS action
@@ -24,7 +30,7 @@ example of a generated function name is cas.table.tableInfo.
 \examples{
 \dontrun{
 # display the active caslib for the session
-runAction(conn, "sessionProp.getSessOpt", name="caslib")
+runAction(conn, "sessionProp.getSessOpt", name = "caslib")
 
 # display simple summary statistics for an uploaded data frame
 mtcarsct <- as.casTable(conn, mtcars)
@@ -36,4 +42,3 @@ cas.simple.summary(mtcarsct)
 }
 
 }
-% Copyright SAS Institute

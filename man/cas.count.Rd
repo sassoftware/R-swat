@@ -4,16 +4,13 @@
 \alias{cas.count}
 \title{Count of Nonmissing Values}
 \usage{
-cas.count(CASTable)
+cas.count(x)
 }
 \arguments{
-\item{x}{CASTable.}
+\item{x}{\code{\link{CASTable}} object.}
 }
 \value{
 casDataFrame
-
-The result includes one row for each numeric variable
-and a column that is named N for the nonmissing count.
 }
 \description{
 Returns the number of nonmissing values in the input
@@ -30,5 +27,8 @@ cas.count(ct$n2)
 }
 \seealso{
 \code{cas.nmiss} to count missing values.
+
+The result includes one row for each numeric variable
+and a column that is named N for the nonmissing count.
 }
 % Copyright SAS Institute

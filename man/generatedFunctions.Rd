@@ -389,13 +389,13 @@
 \alias{cas.varReduce.unsuper}
 \title{Common Page for CAS Actions}
 \usage{
-cas.actionSet.action(CASorCASTab, parameters...)
+cas.actionSet.action(CASorCASTab, ...)
 }
 \arguments{
 \item{CASorCASTab}{An instance of a \code{\link{CAS}} object that 
 represents a connection and CAS session, or an instance of a 
 \code{\link{CASTable}}.}
-\item{parameters}{Actions accept a series of parameters in 
+\item{\ldots}{Actions accept a series of parameters in 
 key=value pair format. The parameters are action-specific. See
 the product documentation.}
 }
