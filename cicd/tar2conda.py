@@ -238,8 +238,6 @@ def main(url, args):
         if download:
             urlcleanup()
 
-        os.chdir(temp)
-
         url = os.path.join(temp, glob.glob('R-swat*')[0])
 
         # Report available R versions
@@ -321,8 +319,4 @@ if __name__ == '__main__':
 
     args = opts.parse_args()
 
-    try:
-        cwd = os.getcwd()
-        main(args.url, args)
-    finally:
-        os.chdir(cwd)
+    main(args.url, args)
