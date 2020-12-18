@@ -181,7 +181,7 @@ def get_supported_versions(platform, r_base):
             continue
         r_base_vers.add(item['version'])
 
-    for pkg in ['r::r-httr', 'r::r-jsonlite', 'r::r-testthat']:
+    for pkg in ['r::r-httr', 'r::r-jsonlite', 'r::r-testthat', 'r::r-xlsx']:
         out = conda_search(platform, pkg)
 
         pkg_vers = []
