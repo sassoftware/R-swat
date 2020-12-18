@@ -238,7 +238,7 @@ def main(url, args):
         if download:
             urlcleanup()
 
-        url = os.path.join(temp, glob.glob('R-swat*')[0])
+        url = glob.glob(os.path.join(temp, 'R-swat*'))[0]
 
         # Report available R versions
         print('')
