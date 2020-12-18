@@ -78,7 +78,7 @@ test:
         - {{ r_base }} ={{ r_version }}
         - r-devtools
         - r-testthat
-        - r-xlsx
+#       - r-xlsx
         - r-jpeg
         - r-xml2
     commands:
