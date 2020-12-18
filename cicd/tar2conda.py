@@ -292,7 +292,7 @@ def main(url, args):
                 cmd.append(args.recipe_dir)
 
                 print('> ' + ' '.join(cmd))
-                subprocess.check_output(cmd, stderr=subprocess=STDOUT)
+                subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
 
 if __name__ == '__main__':
