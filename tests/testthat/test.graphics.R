@@ -24,6 +24,14 @@ context("test.graphics.R")
 verify_jpeg_pkg <- function () {
    tryCatch({
       library(jpeg)
+      dfplot <- tempfile(fileext='.jpg')
+      tryCatch({
+          jpeg(dfplot)
+          unlink(dfplot)
+      }, error = function (e) {
+         testthat::skip('"jpeg" library is not functional.')
+         unlink(dfplot)
+      })
    }, error = function (e) {
       testthat::skip('"jpeg" library is not installed to compare JPEG files.')
    })
