@@ -27,6 +27,8 @@ verify_jpeg_pkg <- function () {
       dfplot <- tempfile(fileext='.jpg')
       tryCatch({
           jpeg(dfplot)
+          plot(iris$Sepal.Length, iris$Sepal.Width)
+          dev.off()
           unlink(dfplot)
       }, error = function (e) {
          testthat::skip('"jpeg" library is not functional.')
@@ -34,6 +36,7 @@ verify_jpeg_pkg <- function () {
       })
    }, error = function (e) {
       testthat::skip('"jpeg" library is not installed to compare JPEG files.')
+      unlink(dfplot)
    })
 }
 
