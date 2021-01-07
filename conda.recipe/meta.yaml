@@ -78,9 +78,8 @@ test:
         - r-devtools
         - r-testthat
 #       - r-xlsx
-        - r-jpeg
+#       - r-jpeg
         - r-xml2
-        - zlib >=1.2.9 # [linux64]
     commands:
         - R -f "${RECIPE_DIR}/test_package.R"            # [not win]
         - "\"%R%\" -f \"%RECIPE_DIR%\\test_package.R\""  # [win]
