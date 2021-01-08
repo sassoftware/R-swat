@@ -20,15 +20,20 @@ Highlights include:
 
 {highlights}
 
-To install the {name} package, use the `pip` command as follows::
+To install the {name} package, you use a command as follows::
+
 ```
-pip install {pkg_name}
+R CMD INSTALL R-swat-{version}-linux-ppc64le.tar.gz
+R CMD INSTALL R-swat-{version}-linux64.tar.gz
+R CMD INSTALL R-swat-{version}-win64.tar.gz
 ```
 
-Or, if you are using Anaconda::
+Some platforms do not support all CAS protocols, you can still use the REST interface by installing the REST-only package with R CMD INSTALL.
 ```
-conda install -c sas-institute {pkg_name}
+R CMD INSTALL R-swat-{version}-REST-only-osx.tar.gz
 ```
+
+<b>NOTE:</b> The platform-specific installers bundle libraries from the SAS TK subsystem.  These bundled libraries are required for using the binary interface to CAS.
 '''
 
 
@@ -66,11 +71,11 @@ def create_release(version, tag_name, target_commitish, name=None,
     POST /repos/:owner/:repo/releases
 
     '''
-    with open('setup.py', 'r') as in_file:
-        pkg_name = re.search(r'^\s*name\s*=\s*[\'"](.+?)[\'"]',
+    with open('DESCRIPTION', 'r') as in_file:
+        pkg_name = re.search(r'^\s*Package\s*:\s*(\S+)',
                              in_file.read(), flags=re.M).group(1)
 
-    if '-dev' in version:
+    if '.9000' in version:
         body = '(Development snapshot)'
     else:
         body = RELEASE_TEMPLATE.format(
@@ -114,9 +119,7 @@ def upload_assets(url, assets):
 
 def next_version(version):
     ''' Return the next dev version number '''
-    def increment_patch(m):
-        return '{}{}-dev'.format(m.group(1), int(m.group(2)) + 1)
-    return re.sub(r'^(\d+\.\d+\.)(\d+)$', increment_patch, version)
+    return version + '.9000'
 
 
 def edit_changelog(version):
@@ -126,7 +129,7 @@ def edit_changelog(version):
     with open(filename, 'r') as in_file:
         txt = in_file.read()
 
-    if '-dev' not in version and version not in txt:
+    if '.9000' not in version and version not in txt:
         date = datetime.date.today().strftime('%Y-%m-%d')
         txt = re.sub(r'(#\s+Change\s+Log\s+)',
                      r'\1## {} - {}\n\n- \n\n'.format(version, date),
@@ -148,53 +151,16 @@ def edit_changelog(version):
 
 def set_version(version):
     ''' Set the version number in source files '''
-    files = ['setup.py', 'conda.recipe/meta.yaml'] + glob.glob('*/__init__.py')
+    files = ['DESCRIPTION', 'conda.recipe/meta.yaml']
 
     for f in files:
         with open(f, 'r') as in_file:
             txt = in_file.read()
         with open(f, 'w') as out_file:
             out_file.write(
-                re.sub(r'^(\s*(?:__version__|version)\s*=\s*[\'"])[^\'"]+([\'"])',
+                re.sub(r'^(\s*Version\s*:\s*)\S+(\s*)$',
                        r'\g<1>{}\g<2>'.format(version), txt, flags=re.M))
         git_add(f)
-
-
-def generate_whatsnew(md, rst):
-    ''' Convert markdown changelog to rst '''
-
-    def change_section_headings(m):
-        version = m.group(1)
-        date = datetime.datetime.strptime(m.group(2), '%Y-%m-%d')
-        date = date.strftime('%B %d, %Y').replace(' 0', ' ')
-        return '{} ({})'.format(version, date)
-
-    with open(md, 'r') as md_file:
-        md_txt = md_file.read()
-        md_txt = re.sub(
-            r'^#\s+Change\s+Log',
-            r"# What's New\n\nThis document outlines features and "
-            + r"improvements from each release.", md_txt, flags=re.M)
-        md_txt = re.sub(r'^(##\s+\d+\.\d+\.\d+)\s+\-\s+(\d+\-\d+\-\d+)',
-                        change_section_headings, md_txt, flags=re.M | re.I)
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        changelog = os.path.join(tmp_dir, 'CHANGELOG.md')
-        header = os.path.join(tmp_dir, 'header.rst')
-
-        with open(changelog, 'w') as ch_file:
-            ch_file.write(md_txt)
-
-        with open(header, 'w') as h_file:
-            h_file.write('\n')
-            h_file.write('.. Copyright SAS Institute\n\n')
-            h_file.write('.. _whatsnew:\n\n')
-
-        cmd = ['pandoc', changelog, '--from', 'markdown',
-               '--to', 'rst', '-s', '-H', header, '-o', rst]
-        subprocess.check_call(cmd)
-
-    git_add(rst)
 
 
 def git_add(filename):
@@ -249,9 +215,9 @@ def git_diff():
 
 def get_version():
     ''' Get package version number '''
-    with open('setup.py', 'r') as in_file:
+    with open('DESCRIPTION', 'r') as in_file:
         txt = in_file.read()
-        return re.search(r'^\s*version\s*=\s*[\'"](.+?)[\'"]', txt, re.M).group(1)
+        return re.search(r'^\s*Version\s*:\s*(\S+)', txt, re.M).group(1)
 
 
 def delete_release(tag_name):
@@ -303,7 +269,9 @@ def main(args):
 
     if args.snapshot:
         version = get_version()
-        tag = 'v{}-snapshot'.format(version.replace('-dev', ''))
+        version = [int(x) for x in re.sub(r'\.9000$', r'', version).split('.')]
+        version = '{}.{}.{}'.format(version[0], version[1], version[2] + 1)
+        tag = 'v{}-snapshot'.format(version)
         sha = get_head_sha()
 
     else:
@@ -318,7 +286,6 @@ def main(args):
             print('\nNOTE: Using {} as the release version number.\n'.format(version))
 
         edit_changelog(version)
-        generate_whatsnew('CHANGELOG.md', 'doc/source/whatsnew.rst')
 
         # Verify changes and push
         git_diff()
@@ -351,7 +318,7 @@ if __name__ == '__main__':
     parser.add_argument('--version', '-v', type=version_type, metavar='version',
                         help='version of the package')
     parser.add_argument('--title', '-t', type=str, metavar='release-title',
-                        default='{tag}', help='title of the release')
+                        default='SWAT {tag}', help='title of the release')
     parser.add_argument('--snapshot', '-s', action='store_true',
                         help='create a snapshot release (--version is ignored)')
     parser.add_argument('assets', type=str, metavar='filename', nargs='*',
