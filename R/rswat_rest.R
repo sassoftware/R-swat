@@ -45,6 +45,9 @@
       if ( class(value) == 'list' ) {
          .trace_list( value, prefix=.paste_prefix(prefix, name) )
       }
+      else if ( class(value) == 'raw' ) {
+         message(paste('   ', .paste_prefix(prefix, name), ' = binary-object (blob)', sep=''))
+      }
       else if ( length(value) > 1 ) {
          for ( i in 1:length(value) ) {
             if ( class(value[i]) == 'list' || length(value[i]) > 1 ) {
@@ -467,7 +470,7 @@ REST_CASValue <- setRefClass(
         },
 
         getBlob = function() {
-            return( jsonlite::base64_dec(as.character(value_)) )
+            return( jsonlite::base64_dec(as.character(value_$data)) )
         },
 
         getBlobBase64 = function() {
@@ -783,7 +786,7 @@ REST_CASMessage <- setRefClass(
 
 )
 
-expand_tables <- function (params)
+expand_params <- function (params)
 {
    out <- list()
    for (name in names(params))
@@ -795,8 +798,14 @@ expand_tables <- function (params)
       }
       else if (cls == 'list' && length(names(params[[name]])))
       {
-         out[[name]] <- expand_tables(params[[name]])
+         out[[name]] <- expand_params(params[[name]])
       } 
+      else if (cls == 'raw')
+      {
+         out[[name]] <- list(`_blob`=TRUE,
+                             data=gsub("\\s+", "", perl=TRUE, jsonlite::base64_enc(params[[name]])),
+                             length=length(params[[name]]))
+      }
       else
       {
          out[[name]] <- params[[name]]
@@ -1032,7 +1041,7 @@ REST_CASConnection <- setRefClass(
         },
 
         invoke = function( action_name, params ) {
-            body <- jsonlite::toJSON(expand_tables(params), auto_unbox=TRUE)
+            body <- jsonlite::toJSON(expand_params(params), auto_unbox=TRUE)
             while ( TRUE ) 
             {
                 out <- tryCatch({
@@ -1097,9 +1106,16 @@ REST_CASConnection <- setRefClass(
             }
 
             if ( class(results_) == 'character' ) {
-                results_ <<- jsonlite::fromJSON(gsub('\f', '\\\\f', 
-                                                gsub('\r', '\\\\r', results_)),
-                                                simplifyVector=FALSE)
+                if ( results_ == "\r\n" ) {
+                    results_ <<- list()
+                }
+                else if ( length(results_) > 0 ) {
+                    results_ <<- jsonlite::fromJSON(gsub('\f', '\\\\f',
+                                                    gsub('\r', '\\\\r', results_)),
+                                                    simplifyVector=FALSE)
+                } else {
+                    results_ <<- list()
+                }
             }
 
             if ( !('disposition' %in% names(results_)) ) {

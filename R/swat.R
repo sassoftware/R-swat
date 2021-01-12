@@ -1975,7 +1975,14 @@ setListValue <- function(sw_values, i, key, value) {
       return (i)
    }
    t <- class(value)
-   if (t == "list" || length(value) > 1)
+   if (t == "raw")
+   {
+      rc <- sw_values$setBlobFromBase64(i, key, gsub("\\s+", "", perl=TRUE,
+                                                     jsonlite::base64_enc(value)))
+      swat::errorcheck(sw_values)
+      return (i + 1)
+   }
+   else if (t == "list" || length(value) > 1)
    {
       sw_sublist <- sw_values$createListAt(i, key, length(value))
       swat::errorcheck(sw_values)
