@@ -160,7 +160,7 @@ test_that("Read RDS files", {
 # Write RDS Files
 test_that("Write RDS files", {
   class_rds <- test.data("class.rds")
-  cas_save_rds <- file.path(tempdir(), "effort_cas.xlsx")
+  cas_save_rds <- file.path(tempdir(), "cas-class.rds")
 
   from_rds <- cas.readRDS(caz, class_rds, casOut = list(name = "from_rds", replace = TRUE))
   cas.saveRDS(from_rds, file = cas_save_rds)
