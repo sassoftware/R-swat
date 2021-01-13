@@ -36,7 +36,7 @@ test.data <- function(data) {
 
 # Read CSV files
 test_that("Read CSV files", {
-  class.csv <- test.data("class.csv")
+  class_csv <- test.data("class.csv")
 
   from_df <- as.casTable(caz, titanic, casOut = list(name = "from_df", replace = TRUE))
   from_csv <- cas.read.csv(caz, file = titanic_csv, casOut = list(name = "from_csv"), row.names = 1)
@@ -52,7 +52,7 @@ test_that("Read CSV files", {
 
 # Read table files
 test_that("Read Table files", {
-  missing_vals.txt <- test.data("missing_vals.txt")
+  missing_vals_txt <- test.data("missing_vals.txt")
 
   from_df <- as.casTable(caz, titanic, casOut = list(name = "from_df", replace = TRUE))
   from_csv <- cas.read.csv(caz, file = titanic_csv, casOut = list(name = "from_csv", replace = TRUE), row.names = 1)
@@ -73,7 +73,7 @@ test_that("Read Table files", {
 test_that("Read xlsx files", {
   verify_xlsx_pkg()
 
-  excel_test.xlsx <- test.data("excel_test.xlsx")
+  excel_test_xlsx <- test.data("excel_test.xlsx")
 
   from_xlsx <- cas.read.xlsx(caz, file = excel_test_xlsx, sheetName = "Sheet1")
   expect_that(from_xlsx, is_a("CASTable"))
@@ -166,6 +166,9 @@ test_that("Write RDS files", {
   cas.saveRDS(from_rds, file = cas_save_rds)
   cas.saveRDS(from_rds)
   expect_silent(cas.saveRDS(from_rds))
+  if (file.exists('FROM_RDS.rds')) {
+    file.remove('FROM_RDS.rds')
+  }
 })
 
 

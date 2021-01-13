@@ -54,7 +54,7 @@ setMethod(
 
     # If the number of observations is less than download size
     if (nrow(x) <= download_obs) {
-      t1 <- to.casDataFrame(v2)
+      t1 <- to.CASDataFrame(v2)
       return(plot(t1, ... = ...))
     }
     else {
@@ -78,7 +78,7 @@ setMethod(
                     "because the nrows in", nrow(x),
                     "which is greater than the max download size of", download_obs)
         cat(m1[1])
-        srs2 <- to.casDataFrame(srs, obs = eval(nrow(srs)))
+        srs2 <- to.CASDataFrame(srs, obs = eval(nrow(srs)))
         return(plot(srs2, ... = ...))
       }
       else { # Stratified
@@ -100,7 +100,7 @@ setMethod(
                     "because the nrows in", nrow(x),
                     "which is greater than the max download size of", download_obs)
         cat(m1[1])
-        srs2 <- to.casDataFrame(srs, obs = eval(nrow(srs)))
+        srs2 <- to.CASDataFrame(srs, obs = eval(nrow(srs)))
         return(plot(srs2, ... = ...))
       }
     }

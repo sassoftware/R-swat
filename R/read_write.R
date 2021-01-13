@@ -62,7 +62,7 @@ cas.write.csv <- function(castable, file = "", quote = TRUE, eol = "\n", na = "N
     file <- paste(castable@tname, ".csv", sep = "")
   }
   write.csv(
-    to.casDataFrame(castable)@df,
+    to.CASDataFrame(castable)@df,
     file = file,
     quote = quote,
     eol = eol,
@@ -108,7 +108,7 @@ cas.write.csv2 <- function(castable, file = "", quote = TRUE, eol = "\n", na = "
     file <- paste(castable@tname, ".csv", sep = "")
   }
   write.csv2(
-    to.casDataFrame(castable)@df,
+    to.CASDataFrame(castable)@df,
     file = file,
     quote = quote,
     eol = eol,
@@ -163,7 +163,7 @@ cas.write.xlsx <- function(castable, file = "", sheetName = "Sheet1", col.names 
     file <- paste(castable@tname, ".xlsx", sep = "")
   }
   write.xlsx(
-    to.casDataFrame(castable),
+    to.CASDataFrame(castable),
     file = file,
     sheetName = sheetName,
     col.names = col.names,
@@ -211,7 +211,7 @@ cas.saveRDS <- function(castable, file = "", ascii = FALSE, version = NULL,
   if (nchar(file) == 0) {
     file <- paste(castable@tname, ".rds", sep = "")
   }
-  saveRDS(to.casDataFrame(castable)@df,
+  saveRDS(to.CASDataFrame(castable)@df,
     file = file,
     ascii = ascii,
     version = version,
@@ -270,7 +270,7 @@ cas.write.table <- function(castable, file = "", append = FALSE, quote = TRUE, s
                             eol = "\n", na = "NA", dec = ".", row.names = TRUE,
                             col.names = TRUE, qmethod = c("escape", "double"),
                             fileEncoding = "") {
-  write.table(to.casDataFrame(castable)@df,
+  write.table(to.CASDataFrame(castable)@df,
     file = file,
     append = append,
     quote = quote,

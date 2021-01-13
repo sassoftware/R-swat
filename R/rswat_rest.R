@@ -1143,7 +1143,6 @@ REST_CASConnection <- setRefClass(
           body <- out$body
         }
       }
->>>>>>> API cleanup
 
       if (class(results_) == "character") {
         results_ <<- jsonlite::fromJSON(gsub(

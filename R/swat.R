@@ -117,6 +117,9 @@
   if (is.null(getOption("cas.max.download.rows"))) {
     options(cas.max.download.rows = 10000)
   }
+  if (is.null(getOption("cas.gen.function"))) {
+    options(cas.gen.function = TRUE)
+  }
   if (is.null(getOption("cas.gen.function.sig"))) {
     options(cas.gen.function.sig = FALSE)
   }
@@ -510,9 +513,9 @@ CASDataMsgHandler <- setRefClass(
         else if (tolower(vars[[col]][["type"]]) == "datetime" ||
           tolower(vars[[col]][["type"]]) == "time") {
           if (class(values[[col]])[[1]] == "POSIXlt") {
-            value <- rPOSIXlt2cas(values[[col]])
+            value <- POSIXlt.as.CASdt(values[[col]])
           } else {
-            value <- rPOSIXct2cas(values[[col]])
+            value <- POSIXct.as.CASdt(values[[col]])
           }
           tryCatch({
             sw_databuffer$setInt64FromString(
@@ -1070,10 +1073,14 @@ CAS <- setRefClass(
         }
       }
 
-      if (as.logical(getOption("cas.gen.function.sig"))) {
+      if (as.logical(getOption("cas.gen.function"))) {
         ml <- getOption("cas.message.level")
         options(cas.message.level = "error")
         actsets <- listActionSets(.self)
+        if (!as.logical(getOption("cas.gen.function.sig"))) {
+          message(paste("NOTE: To generate the functions with signatures (for tab completion), set ",
+                        "      options(cas.gen.function.sig=TRUE).", sep="\n"))
+        }
         for (i in seq_len(length(actsets$actionset))) {
           if (actsets$loaded[i] == 1) {
             .gen_functions(.self, actsets$actionset[i])
@@ -1759,15 +1766,15 @@ getnext <- function(...) {
   } else if (t == "date") {
     out <- sw_value$getDate()
     swat::errorcheck(sw_value)
-    return(CASDate.as.Date(out))
+    return(CASd.as.Date(out))
   } else if (t == "time") {
     out <- sw_value$getTimeAsString()
     swat::errorcheck(sw_value)
-    return(CASTime.as.POSIXct(out))
+    return(CASdt.as.POSIXct(out))
   } else if (t == "datetime") {
     out <- sw_value$getDateTimeAsString()
     swat::errorcheck(sw_value)
-    return(CASTimestamp.as.POSIXct(out))
+    return(CASdt.as.POSIXct(out))
   } else if (t == "table") {
     sw_table <- sw_value$getTable()
     swat::errorcheck(sw_value)
@@ -1817,17 +1824,17 @@ getnext <- function(...) {
         else if (typ == "date") {
           attrs[[key]] <- sw_table$getInt32Attribute(key)
           swat::errorcheck(sw_table)
-          attrs[[key]] <- CASDate.as.Date(attrs[[key]])
+          attrs[[key]] <- CASd.as.Date(attrs[[key]])
         }
         else if (typ == "time") {
           attrs[[key]] <- sw_table$getInt64AttributeAsString(key)
           swat::errorcheck(sw_table)
-          attrs[[key]] <- CASTime.as.POSIXct(attrs[[key]])
+          attrs[[key]] <- CASdt.as.POSIXct(attrs[[key]])
         }
         else if (typ == "datetime") {
           attrs[[key]] <- sw_table$getInt64AttributeAsString(key)
           swat::errorcheck(sw_table)
-          attrs[[key]] <- CASTimestamp.as.POSIXct(attrs[[key]])
+          attrs[[key]] <- CASdt.as.POSIXct(attrs[[key]])
         }
         else if (typ == "int32-array") {
           nitems <- sw_table$getAttributeNItems()
@@ -1923,17 +1930,17 @@ getnext <- function(...) {
             else if (typ == "date") {
               info[[key]] <- sw_table$getColumnInt32Attribute(col, key)
               swat::errorcheck(sw_table)
-              info[[key]] <- CASDate.as.Date(info[[key]])
+              info[[key]] <- CASd.as.Date(info[[key]])
             }
             else if (typ == "time") {
               info[[key]] <- sw_table$getColumnInt64AttributeAsString(col, key)
               swat::errorcheck(sw_table)
-              info[[key]] <- CASTime.as.POSIXct(info[[key]])
+              info[[key]] <- CASdt.as.POSIXct(info[[key]])
             }
             else if (typ == "datetime") {
               info[[key]] <- sw_table$getColumnInt64AttributeAsString(col, key)
               swat::errorcheck(sw_table)
-              info[[key]] <- CASTimestamp.as.POSIXct(info[[key]])
+              info[[key]] <- CASdt.as.POSIXct(info[[key]])
             }
             else if (typ == "int32-array") {
               nitems <- sw_table$getColumnAttributeNItems(col, key)
@@ -2162,7 +2169,7 @@ getnext <- function(...) {
             if (is.na(value)) {
               column[[length(column) + 1]] <- value
             } else {
-              column[[length(column) + 1]] <- CASTimestamp.as.POSIXct(value)
+              column[[length(column) + 1]] <- CASdt.as.POSIXct(value)
             }
           }
           table <- add_column(table, name, column)
@@ -2175,7 +2182,7 @@ getnext <- function(...) {
             if (is.na(value)) {
               column[[length(column) + 1]] <- value
             } else {
-              column[[length(column) + 1]] <- CASDate.as.Date(value)
+              column[[length(column) + 1]] <- CASd.as.Date(value)
             }
           }
           table <- add_column(table, name, column)
@@ -2188,7 +2195,7 @@ getnext <- function(...) {
             if (is.na(value)) {
               column[[length(column) + 1]] <- value
             } else {
-              column[[length(column) + 1]] <- CASTime.as.POSIXct(value)
+              column[[length(column) + 1]] <- CASt.as.POSIXct(value)
             }
           }
           table <- add_column(table, name, column)
@@ -2226,7 +2233,7 @@ getnext <- function(...) {
 
     # TODO: name, label, attrs and colinfo needs to be added to the
     #       output data.frame
-    return(as.casDataFrame(table,
+    return(as.CASDataFrame(table,
       name = name, label = label, title = title, attrs = attrs,
       col.labels = col_labels, col.formats = col_formats,
       col.attrs = col.attrs, col.sizes = col_sizes,
@@ -2305,7 +2312,7 @@ getnext <- function(...) {
     swat::errorcheck(sw_values)
     return (i + 1)
   }
-  else if (t == "list" || length(value) > 1)
+  else if (t == "list" || length(value) > 1) {
     sw_sublist <- sw_values$createListAt(i, key, length(value))
     swat::errorcheck(sw_values)
     for (j in seq_len(length(value))) {
@@ -2454,11 +2461,11 @@ cas.close <- function(conn, close_session = FALSE) {
 #'
 #' @param conn The CAS connection object
 #'
-#` @seealso \code{\link{cas.close}}
+#' @seealso \code{\link{cas.close}}
 #'
 #' @export
 cas.terminate <- function(conn) {
-  return(invisible(conn$close(close_session = TRUE)))
+  return(invisible(cas.close(conn, close_session = TRUE)))
 }
 
 #' Upload a data.frame or file to a CAS table

@@ -130,7 +130,7 @@ loadActionSet <- function(conn, actionSet = "") {
   res <- casRetrieve(conn, "builtins.loadActionSet", actionSet = actionSet)
   .gen_functions(conn, actionSet)
   .check_for_cas_errors(res)
-  return(res)
+# return(res)
 }
 
 #' List CAS Action Sets
@@ -147,12 +147,13 @@ loadActionSet <- function(conn, actionSet = "") {
 #'
 #' @examples
 #' \dontrun{
-#' .list_action_sets(conn)
+#' listActionSets(conn)
 #' }
 #'
 #' @keywords internal
 #'
-.list_action_sets <- function(conn) {
+#' @export
+listActionSets <- function(conn) {
   stopifnot(class(conn) == "CAS")
   res <- casRetrieve(conn, "builtins.actionSetInfo", all = "FALSE")
   .check_for_cas_errors(res)

@@ -288,7 +288,7 @@ test_that("test.test_alltypes", {
   op <- options(digits.secs = 7)
   expect_true(as.character(df$Time[[1]]) ==
     as.character(as.POSIXct(strptime(
-      "1960-01-01 11:12:13.141516",
+      "1970-01-01 11:12:13.141516",
       "%Y-%m-%d %H:%M:%OS"
     ))))
   options(op)

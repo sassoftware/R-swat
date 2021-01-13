@@ -35,7 +35,7 @@
 #'
 #' @export
 CASdt.as.POSIXlt <- function(cts) {
-  return(as.POSIXlt(cas.as.POSIXct(cts)))
+  return(as.POSIXlt(CASdt.as.POSIXct(cts)))
 }
 
 #' Convert CAS timestamp to POSIXct
@@ -160,7 +160,7 @@ CASt.as.SASt <- function(ctm) {
 #'
 #' @export
 SASdt.as.POSIXlt <- function(sts) {
-  return(as.POSIXlt(sas.as.POSIXct(sts)))
+  return(as.POSIXlt(SASdt.as.POSIXct(sts)))
 }
 
 #' Convert a SAS timestamp to a POSIXct

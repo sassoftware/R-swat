@@ -233,7 +233,7 @@ as.casDataFrame <- function(df, name = "", label = "", title = "",
                             attrs = list(), col.labels = "", col.formats = "",
                             col.attrs = list(), col.sizes = list(), col.types = "",
                             col.widths = 0) {
-  message("This function has been deprecated. Use as.CASDataFrame instead.")
+  message("as.casDataFrame has been deprecated. Use as.CASDataFrame instead.")
   return(as.CASDataFrame(df, name = name, label = label, title = title,
                          attrs = attrs, col.labels = col.labels,
                          col.formats = col.formats, col.attrs = col.attrs,
@@ -315,7 +315,7 @@ to.CASDataFrame <- function(x, obs = 32768) {
   out <- do.call("rbind", out)
   rownames(out) <- NULL
 
-  return(as.casDataFrame(out,
+  return(as.CASDataFrame(out,
     name = name, label = label, title = title,
     attrs = attrs, col.labels = col.labels, col.formats = col.formats,
     col.attrs = col.attrs, col.sizes = col.sizes, col.types = col.types,
@@ -344,7 +344,7 @@ to.CASDataFrame <- function(x, obs = 32768) {
 #'
 #' @export
 to.casDataFrame <- function(x, obs = 32768) {
-  message("This function has been deprecated. Use to.CASDataFrame instead.")
+  message("to.casDataFrame has been deprecated. Use to.CASDataFrame instead.")
   return(to.CASDataFrame(x, obs = obs))
 }
 
