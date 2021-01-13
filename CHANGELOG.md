@@ -1,6 +1,13 @@
 
 # Change Log
 
+## 1.6.0 - 2021-01-13
+
+- Fix binary parameters and downloads
+- Remove extra dependencies (dplyr, random)
+- Improve connection parameter parsing and add `CAS_URL` environment variable support
+- Improve performance of initial server connection
+
 ## 1.5.0 - 2020-06-08
 
 - Add support for R v4.0
