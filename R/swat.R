@@ -109,6 +109,35 @@
    if ( is.null(getOption('cas.bygroup.mode')) ) { options(cas.bygroup.mode='raw') }
    if ( is.null(getOption('cas.bygroup.dup.suffix')) ) { options(cas.bygroup.dup.suffix='_f') }
 
+   libssl_locs <- Sys.glob(c(
+      '/usr/lib64/libssl.so.10',
+      '/usr/lib64/libssl.so.1.0*',
+      '/usr/lib/x86_64-linux-gnu/libssl.so.1.0*',
+      file.path(normalizePath(R.home('..')), 'libssl.so.10'),
+      file.path(normalizePath(R.home('..')), 'libssl.so.1.0*'),
+      '/usr/lib64/libssl.so.1.1*',
+      '/usr/lib/x86_64-linux-gnu/libssl.so.1.1*',
+      file.path(normalizePath(R.home('..')), 'libssl.so.1.1*')
+   ))
+
+   libcrypto_locs <- Sys.glob(c(
+      '/usr/lib64/libcrypto.so*',
+      '/usr/lib/x86_64-linux-gnu/libcrypto.so*',
+      file.path(normalizePath(R.home('..')), 'libcrypto.so*')
+   ))
+
+   if ( Sys.getenv('TKESSL_OPENSSL_LIB') == '' && length(libssl_locs) > 0 ) {
+      Sys.setenv(TKESSL_OPENSSL_LIB=libssl_locs[length(libssl_locs)])
+   }
+
+   if ( Sys.getenv('TKERSA2_OPENSSL_LIB') == '' && length(libssl_locs) > 0 ) {
+      Sys.setenv(TKERSA2_OPENSSL_LIB=libssl_locs[length(libssl_locs)])
+   }
+
+   if ( Sys.getenv('TKECERT_CRYPTO_LIB') == '' && length(libcrypto_locs) > 0 ) {
+      Sys.setenv(TKECERT_CRYPTO_LIB=libcrypto_locs[length(libcrypto_locs)])
+   }
+
    if ( file.exists(file.path(lib, pkg, 'libs', 'rswat.so')) ) {
       library.dynam('rswat', pkg, lib)
       if ( file.exists(file.path(lib, pkg, 'libs', 'tkmk.so')) ) {
