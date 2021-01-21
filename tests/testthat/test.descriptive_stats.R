@@ -59,7 +59,7 @@ test_that("cas.min", {
   expect_equivalent(cas.min(ct[1:4]), col_min)
 })
 
-test_that("cas.min", {
+test_that("cas.min(iris)", {
   expect_that(cas.min(i2), is_a("data.frame"))
   column <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
   mins <- c(min(iris[1]), min(iris[2]), min(iris[3]), min(iris[4]))
@@ -76,6 +76,20 @@ test_that("cas.min", {
   expect_equivalent(cas.min(ct0[1:4]), col_min)
 })
 
+test_that("min", {
+  cas_min <- min(i2)
+  expect_that(cas_min, is_a("numeric"))
+  expect_equivalent(cas_min, min(iris[, c("Sepal.Length", "Sepal.Width",
+                                          "Petal.Length", "Petal.Width")]))
+
+  expect_equivalent(min(i2[, "Sepal.Length"]), min(iris[, "Sepal.Length"]))
+  expect_equivalent(min(i2[, "Sepal.Width"]), min(iris[, "Sepal.Width"]))
+  expect_equivalent(min(i2[, "Petal.Length"]), min(iris[, "Petal.Length"]))
+  expect_equivalent(min(i2[, "Petal.Width"]), min(iris[, "Petal.Width"]))
+
+  expect_error(function() min(i2[, "Species"]))
+})
+
 test_that("cas.max", {
   expect_that(cas.max(i2), is_a("data.frame"))
   column <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
@@ -107,39 +121,6 @@ test_that("cas.median", {
   col_median <- data.frame(column, median)
   col_median$column <- as.character(col_median$column)
   expect_equivalent(cas.median(ctn[1:4]), col_median)
-})
-
-test_that("cas.median", {
-  expect_that(cas.median(mtcars_ct), is_a("data.frame"))
-  variable <- c("mpg", "cyl", "disp", "hp")
-  median <- c(median(mtcars[[1]]), median(mtcars[[2]]),
-              median(mtcars[[3]]), median(mtcars[[4]]))
-  col_median <- data.frame(variable, median)
-  expect_equivalent(cas.median(mtcars_ct[1:4])[2], col_median[2])
-
-  expect_that(cas.median(ctn), is_a("data.frame"))
-  column <- c("n1", "n2", "n3", "n4")
-  median <- c(median(dfn[[1]], na.rm = TRUE), median(dfn[[2]], na.rm = TRUE),
-              median(dfn[[3]], na.rm = TRUE), median(dfn[[4]], na.rm = TRUE))
-  col_median <- data.frame(column, median)
-  col_median$column <- as.character(col_median$column)
-  expect_equivalent(cas.median(ctn[1:4]), col_median)
-})
-
-test_that("cas.max", {
-  expect_that(cas.max(i2), is_a("data.frame"))
-  column <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
-  maxs <- c(max(iris[1]), max(iris[2]), max(iris[3]), max(iris[4]))
-  col_max <- data.frame(column, maxs)
-  col_max$column <- as.character(col_max$column)
-  expect_equivalent(cas.max(i2[1:4]), col_max)
-
-  expect_that(cas.max(ct), is_a("data.frame"))
-  column <- c("n1", "n2", "n3", "n4")
-  maxs <- c(598, 120, 198, 1120)
-  col_max <- data.frame(column, maxs)
-  col_max$column <- as.character(col_max$column)
-  expect_equivalent(cas.max(ct0[1:4]), col_max)
 })
 
 test_that("cas.mode", {

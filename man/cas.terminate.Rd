@@ -12,3 +12,6 @@ cas.terminate(conn)
 \description{
 End a CAS session and close the connection
 }
+\seealso{
+\code{\link{cas.close}}
+}

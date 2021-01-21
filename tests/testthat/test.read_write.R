@@ -225,7 +225,7 @@ test_that("Read web dat file", {
     casOut = list(replace = TRUE)
   )
   import_df0_skipnul_rdf <- as.data.frame(import_df0_skipnul)
-  import_df0_skipnul_cdf <- to.casDataFrame(import_df0_skipnul_cas)
+  import_df0_skipnul_cdf <- to.CASDataFrame(import_df0_skipnul_cas)
   import_df0_skipnul_cas2rdf <- to.data.frame(import_df0_skipnul_cdf)
 
   expect_equivalent(import_df0_skipnul_cas2rdf[1:4], import_df0_skipnul_rdf[1:4])

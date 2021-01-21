@@ -41,6 +41,7 @@ setMethod(
     vars <- c(x@names, x@computedVars)
     vars <- vars[vars != ""]
     res <- casRetrieve(x@conn, "simple.topK", table = tp, inputs = vars, bottomk = 0)
+    .check_for_cas_errors(res)
     return(max(as.numeric(res$results$Topk$FmtVar)))
   }
 )
@@ -69,6 +70,7 @@ setMethod(
     tp <- .gen_table_param(x)
     nvars <- swat::numericVarList(x)
     res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars, subSet = list("MIN"))
+    .check_for_cas_errors(res)
     return(min(res$results$Summary[2]))
   }
 )

@@ -37,5 +37,5 @@ test_that("Load ActionSet and List ActionSet Functions", {
 test_that("Test that the class for R-SWAT objects is returned correctly", {
   expect_is(caz, "CAS")
   expect_is(ct, "CASTable")
-  expect_is(to.casDataFrame(ct), "casDataFrame")
+  expect_is(to.CASDataFrame(ct), "casDataFrame")
 })

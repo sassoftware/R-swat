@@ -103,6 +103,50 @@ translate <- function(df, col = 2L) {
   return(tp)
 }
 
+#' Combine multiple coverage reports into one
+#'
+#' @param ... one or more covr::coverage objects
+#'
+#' @return covr::coverage
+#'
+#' @export
+#'
+.combine_reports <- function(...) {
+  args <- list(...)
+  if (length(args) < 1) {
+    stop("no coverage reports given")
+  }
+  if (length(args) < 2) {
+     return(args[[1]])
+  }
+  out <- args[[1]]
+  for (i in 2:length(args)) {
+    for (j in seq_len(length(out))) {
+      out[[j]]$value <- out[[j]]$value + args[[i]][[j]]$value
+    }
+  }
+  return(out)
+}
+
+#' Combine multiple coverage report files into one
+#'
+#' @param ... one or more filenames containing covr::coverage objects
+#'
+#' @export
+#'
+.combine_coverage_files <- function(..., file = 'coverage.rds', ignore.missing = TRUE) {
+  files <- list(...)
+  reports <- list()
+  for ( f in files ) {
+    if (!file.exists(f)) {
+      if (!ignore.missng) {
+        stop(paste("file '", f, "' does not exist", sep = ""))
+      }
+    }
+    reports[[length(reports)+1]] <- readRDS(f)
+  }
+  saveRDS(do.call(".combine_reports", reports), file = file)
+} 
 
 #' Check if CAS submission had errors
 #'

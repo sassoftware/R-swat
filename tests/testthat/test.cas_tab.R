@@ -152,7 +152,7 @@ test_that("drop multiple columns, missing data", {
   my_df0[3:6] <- list(NULL)
   my_ct0[3:6] <- list(NULL)
 
-  my_ct_df0 <- to.casDataFrame(my_ct0)
+  my_ct_df0 <- to.CASDataFrame(my_ct0)
   my_ct_df0 <- to.data.frame(my_ct_df0)
   expect_equivalent(my_df0, my_ct_df0)
   expect_equivalent(dimnames(my_df0), dimnames(my_ct_df0))
@@ -183,7 +183,7 @@ test_that("drop multiple columns", {
   my_df <- df[- (3:6)]
   my_ct <- ct[- (3:6)]
 
-  my_ct_df <- to.casDataFrame(my_ct)
+  my_ct_df <- to.CASDataFrame(my_ct)
   my_ct_df <- to.data.frame(my_ct_df)
   expect_equivalent(my_df, my_ct_df)
   expect_equivalent(dimnames(my_df), dimnames(my_ct_df))
@@ -269,18 +269,18 @@ test_that("as.castable and dropTable", {
 })
 
 
-test_that("to.casDataFrame, as.data.frame, and rownames", {
+test_that("to.CASDataFrame, as.data.frame, and rownames", {
   df_cmpct <- as.casTable(caz, df_cmp, casOut = list(name = "df_cmpct", replace = TRUE))
-  df_cmp_cdf <- to.casDataFrame(df_cmpct)
+  df_cmp_cdf <- to.CASDataFrame(df_cmpct)
   df_cmp_rdf <- as.data.frame(df_cmp_cdf)
-  df_cmp_cdf2 <- to.casDataFrame(df_cmpct, obs = 3)
+  df_cmp_cdf2 <- to.CASDataFrame(df_cmpct, obs = 3)
   df_cmp_rdf2 <- df_cmp_rdf[1:3, ]
   rnms <- rownames(df_cmp_cdf)
   rnms2 <- rownames(df_cmp_cdf2)
 
 
-  # to.casDataFrame w/ obs= option
-  expect_equivalent(to.casDataFrame(df_cmpct, obs = 3), df_cmp_rdf[1:3, ])
+  # to.CASDataFrame w/ obs= option
+  expect_equivalent(to.CASDataFrame(df_cmpct, obs = 3), df_cmp_rdf[1:3, ])
 
   # testing that rownames (which just numbers the rows) matches the nrows
   expect_equivalent(as.numeric(tail(rnms, n = 1)), nrow(df_cmp_rdf))

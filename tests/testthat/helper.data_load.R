@@ -138,7 +138,7 @@ ct_cmp <- as.casTable(caz, df, casOut = list(name = "ct_cmp", replace = TRUE))
 ct_cmp["cv1"] <- ct_cmp$n1 + 0
 ct_cmp["cv2"] <- ct_cmp$n2 + 0
 ct_cmp["cv3"] <- ct_cmp$n3 + 0
-df_cmp <- to.data.frame(to.casDataFrame(ct_cmp))
+df_cmp <- to.data.frame(to.CASDataFrame(ct_cmp))
 
 
 

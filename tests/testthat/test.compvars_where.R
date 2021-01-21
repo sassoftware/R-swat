@@ -26,7 +26,7 @@ test_that("Row indexing on character values, ==", {
   cas <- df0_ct[df0_ct["s0"] == "dd", 1:5]
   df0_ct@where <- "s0 = 'dd'"
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(df0_ct[1:5], cas)
@@ -39,7 +39,7 @@ test_that("Row indexing on missing character values", {
   cas <- df0_ct[df0_ct["s0"] == " ", 1:5]
   df0_ct@where <- "s0 = ' '"
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(df0_ct[1:5], cas)
@@ -52,7 +52,7 @@ test_that("Row indexing on numeric values, ==", {
   cas <- df_ct[df_ct["n5"] == 1.2, 1:5]
   df0_ct@where <- "n5 = 1.2"
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(df0_ct[1:5], cas)
@@ -65,7 +65,7 @@ test_that("Row indexing on character values, !=", {
   cas <- df0_ct[df0_ct["s0"] != "dd", 1:5]
   df0_ct@where <- "s0 ^= 'dd'"
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(df0_ct[1:5], cas)
@@ -78,7 +78,7 @@ test_that("Row indexing on numeric values, !=", {
   cas <- df_ct[df_ct["n2"] != 7, 1:5]
   df0_ct@where <- "n2 ^= '7"
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(df0_ct[1:5], cas)
@@ -91,7 +91,7 @@ test_that("Row indexing with multiple conditions, &", {
   cas <- df_ct[df_ct["s"] == "dd" & df_ct["n4"] <= 15, c(1, 2)]
   df_ct@where <- "s='dd' and n4<=15"
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(df0_ct[1:2], cas)
@@ -104,7 +104,7 @@ test_that("Row indexing with multiple conditions, |", {
   cas <- df_ct[df_ct["s"] == "dd" | df_ct["n4"] <= 15, c(3, 4)]
   df_ct@where <- "s='dd' | n4<=15"
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(df0_ct[3:4], cas)
@@ -116,7 +116,7 @@ test_that("Row indexing with integer division, !=", {
   r <- df_[df_["n4"] %/% df_["n5"] <= 11, c(4, 5)]
   cas <- df_ct[df_ct["n4"] %/% df_ct["n5"] <= 11, c(4, 5)]
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(length(dimnames(cas)[1]), length(dimnames(r)[1]))
@@ -129,8 +129,8 @@ test_that("Row indexing with non-integer division, !=", {
   df_ct$nonintdiv <- df_ct["n4"] / df_ct["n5"]
   df_ct$nonintdiv2 <- "nonintdiv2 = n4 / n5;"
   rdf <- as.data.frame(df_$nonintdiv)
-  cdf <- to.casDataFrame(df_ct$nonintdiv)
-  cdf2 <- to.casDataFrame(df_ct$nonintdiv2)
+  cdf <- to.CASDataFrame(df_ct$nonintdiv)
+  cdf2 <- to.CASDataFrame(df_ct$nonintdiv2)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)
@@ -145,7 +145,7 @@ test_that("Row indexing with compVars", {
   cas <- df_ct[df_ct["comp1"] < 30, c(1, 2, 3, 4, 5, 8)]
   df_ct@where <- "comp1<30"
   rdf <- as.data.frame(r)
-  cdf <- to.casDataFrame(cas)
+  cdf <- to.CASDataFrame(cas)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(df_ct[c(1, 2, 3, 4, 5, 8)], cas)
@@ -157,7 +157,7 @@ test_that("df0_['cmp1'] <- df0_$n1+df0_$n2", {
   df0_["cmp1"] <- df0_$n1 + df0_$n2
   df0_ct["cmp1"] <- "cmp1 = n1+n2;"
   rdf <- as.data.frame(df0_$cmp1)
-  cdf <- to.casDataFrame(df0_ct$cmp1)
+  cdf <- to.CASDataFrame(df0_ct$cmp1)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
@@ -167,7 +167,7 @@ test_that("df0_$cmp2 <- df0_$n3+df0_$n4", {
   df0_$cmp2 <- df0_$n3 + df0_$n4
   df0_ct$cmp2 <- "cmp2 = n3+n4"
   rdf <- as.data.frame(df0_$cmp2)
-  cdf <- to.casDataFrame(df0_ct$cmp2)
+  cdf <- to.CASDataFrame(df0_ct$cmp2)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
@@ -177,7 +177,7 @@ test_that("df0_['cmp3'] <- df0_$n4 - df0_$n2 * df0_$n1", {
   df0_["cmp3"] <- df0_$n4 - df0_$n2 * df0_$n1
   df0_ct["cmp3"] <- df0_ct$n4 - df0_ct$n2 * df0_ct$n1
   rdf <- as.data.frame(df0_$cmp3)
-  cdf <- to.casDataFrame(df0_ct$cmp3)
+  cdf <- to.CASDataFrame(df0_ct$cmp3)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
@@ -187,7 +187,7 @@ test_that("df0_$cmp4 <- df0_$n4 - df0_$n1", {
   df0_$cmp4 <- df0_$n4 - df0_$n1
   df0_ct$cmp4 <- df0_ct$n4 - df0_ct$n1
   rdf <- as.data.frame(df0_$cmp4)
-  cdf <- to.casDataFrame(df0_ct$cmp4)
+  cdf <- to.CASDataFrame(df0_ct$cmp4)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
@@ -197,7 +197,7 @@ test_that("df0_$cmp5 <- df0_$n4 - 3", {
   df0_$cmp5 <- df0_$n4 - 3
   df0_ct$cmp5 <- df0_ct$n4 - 3
   rdf <- as.data.frame(df0_$cmp5)
-  cdf <- to.casDataFrame(df0_ct$cmp5)
+  cdf <- to.CASDataFrame(df0_ct$cmp5)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
@@ -207,7 +207,7 @@ test_that("df0_$cmp6 <- df0_$n4 + 3 - 2", {
   df0_$cmp6 <- df0_$n4 + 3 - 2
   df0_ct$cmp6 <- df0_ct$n4 + 3 - 2
   rdf <- as.data.frame(df0_$cmp6)
-  cdf <- to.casDataFrame(df0_ct$cmp6)
+  cdf <- to.CASDataFrame(df0_ct$cmp6)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
@@ -217,7 +217,7 @@ test_that("df0_[8] <- df0_$n1 / 3 * df0_$n2", {
   df0_[8] <- df0_$n1 / 3 * df0_$n2
   df0_ct[8] <- df0_ct$n1 / 3 * df0_ct$n2
   rdf <- as.data.frame(df0_[8])
-  cdf <- to.casDataFrame(df0_ct[8])
+  cdf <- to.CASDataFrame(df0_ct[8])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -226,7 +226,7 @@ test_that("df0_[8] <- df0_$n1 / 3 + df0_$n2", {
   df0_[8] <- df0_$n1 / 3 + df0_$n2
   df0_ct[8] <- df0_ct$n1 / 3 + df0_ct$n2
   rdf <- as.data.frame(df0_[8])
-  cdf <- to.casDataFrame(df0_ct[8])
+  cdf <- to.CASDataFrame(df0_ct[8])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -235,7 +235,7 @@ test_that("df0_[8] <- df0_$n1 + 3 / df0_$n2", {
   df0_[8] <- df0_$n1 + 3 / df0_$n2
   df0_ct[8] <- df0_ct$n1 + 3 / df0_ct$n2
   rdf <- as.data.frame(df0_[8])
-  cdf <- to.casDataFrame(df0_ct[8])
+  cdf <- to.CASDataFrame(df0_ct[8])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -244,7 +244,7 @@ test_that("df0_[8] <- (df0_$n1 + 3) / df0_$n2", {
   df0_[8] <- (df0_$n1 + 3) / df0_$n2
   df0_ct[8] <- (df0_ct$n1 + 3) / df0_ct$n2
   rdf <- as.data.frame(df0_[8])
-  cdf <- to.casDataFrame(df0_ct[8])
+  cdf <- to.CASDataFrame(df0_ct[8])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -253,7 +253,7 @@ test_that("df0_[8] <- df0_$n1 / 3 + df0_$n2", {
   df0_[8] <- df0_$n1 / 3 + df0_$n2
   df0_ct[8] <- df0_ct$n1 / 3 + df0_ct$n2
   rdf <- as.data.frame(df0_[8])
-  cdf <- to.casDataFrame(df0_ct[8])
+  cdf <- to.CASDataFrame(df0_ct[8])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -262,7 +262,7 @@ test_that("df0_[8] <- df0_$n1 / (3 + df0_$n2)", {
   df0_[8] <- df0_$n1 / (3 + df0_$n2)
   df0_ct[8] <- df0_ct$n1 / (3 + df0_ct$n2)
   rdf <- as.data.frame(df0_[8])
-  cdf <- to.casDataFrame(df0_ct[8])
+  cdf <- to.CASDataFrame(df0_ct[8])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -271,7 +271,7 @@ test_that("df0_[8] <- (df0_$n1 / 3) + df0_$n2", {
   df0_[8] <- (df0_$n1 / 3) + df0_$n2
   df0_ct[8] <- (df0_ct$n1 / 3) + df0_ct$n2
   rdf <- as.data.frame(df0_[8])
-  cdf <- to.casDataFrame(df0_ct[8])
+  cdf <- to.CASDataFrame(df0_ct[8])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -280,7 +280,7 @@ test_that("df0_[8] <- df0_$n1 / (3 + df0_$n2)", {
   df0_[8] <- df0_$n1 / (3 + df0_$n2)
   df0_ct[8] <- df0_ct$n1 / (3 + df0_ct$n2)
   rdf <- as.data.frame(df0_[8])
-  cdf <- to.casDataFrame(df0_ct[8])
+  cdf <- to.CASDataFrame(df0_ct[8])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -290,8 +290,8 @@ test_that("Using modular arithmetic with missing values", {
   df0_ct$compmod <- df0_ct$n2 %% 3
   df0_ct$compmod2 <- "compmod2=mod(n2, 3)"
   rdf <- as.data.frame(df0_$compmod)
-  cdf <- to.casDataFrame(df0_ct$compmod)
-  cdf2 <- to.casDataFrame(df0_ct$compmod2)
+  cdf <- to.CASDataFrame(df0_ct$compmod)
+  cdf2 <- to.CASDataFrame(df0_ct$compmod2)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)
@@ -303,8 +303,8 @@ test_that("df0_$compExp <- df0_$n1^2 with missing values", {
   df0_ct$compexp <- df0_ct$n1^2
   df0_ct["compexp2"] <- "compexp2=n1**2;"
   rdf <- as.data.frame(df0_$compexp)
-  cdf <- to.casDataFrame(df0_ct$compexp)
-  cdf2 <- to.casDataFrame(df0_ct$compexp2)
+  cdf <- to.CASDataFrame(df0_ct$compexp)
+  cdf2 <- to.CASDataFrame(df0_ct$compexp2)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)
@@ -316,8 +316,8 @@ test_that("df0_$compExp<-df0_$n5^3", {
   df0_ct$compexp <- df0_ct$n5^3
   df0_ct["compexp2"] <- "compexp2=n5**3;"
   rdf <- as.data.frame(df0_$compexp)
-  cdf <- to.casDataFrame(df0_ct$compexp)
-  cdf2 <- to.casDataFrame(df0_ct$compexp2)
+  cdf <- to.CASDataFrame(df0_ct$compexp)
+  cdf2 <- to.CASDataFrame(df0_ct$compexp2)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)
@@ -328,8 +328,8 @@ test_that("df0_$compExp<-df0_$n1^df0_$n5", {
   df0_ct$compexp <- df0_ct$n1^df0_ct$n5
   df0_ct["compexp2"] <- "compExp2=n1**n5;"
   rdf <- as.data.frame(df0_$compexp)
-  cdf <- to.casDataFrame(df0_ct$compexp2)
-  cdf2 <- to.casDataFrame(df0_ct$compexp)
+  cdf <- to.CASDataFrame(df0_ct$compexp2)
+  cdf2 <- to.CASDataFrame(df0_ct$compexp)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)
@@ -341,8 +341,8 @@ test_that("Using subtraction to get negative numbers", {
   df0_ct["comp_sub"] <- df0_ct$n3 - df0_ct$n4
   df0_ct["comp_sub2"] <- "comp_sub2=n3-n4;"
   rdf <- as.data.frame(df0_$comp_sub)
-  cdf <- to.casDataFrame(df0_ct$comp_sub)
-  cdf2 <- to.casDataFrame(df0_ct$comp_sub2)
+  cdf <- to.CASDataFrame(df0_ct$comp_sub)
+  cdf2 <- to.CASDataFrame(df0_ct$comp_sub2)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)
@@ -353,7 +353,7 @@ test_that("Using division and round function", {
   df0_["comp_round"] <- floor(df0_$n4 / 3)
   df0_ct$comp_round <- "comp_round = floor(n4/3);"
   rdf <- as.data.frame(df0_$comp_round)
-  cdf <- to.casDataFrame(df0_ct$comp_round)
+  cdf <- to.CASDataFrame(df0_ct$comp_round)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
 })
@@ -363,8 +363,8 @@ test_that("Assign constant value with different syntax", {
   df_ct["constant"] <- "constant=0.5;"
   df_ct$constant2 <- 0.5
   rdf <- as.data.frame(df_$constant)
-  cdf <- to.casDataFrame(df_ct["constant"])
-  cdf2 <- to.casDataFrame(df_ct["constant2"])
+  cdf <- to.CASDataFrame(df_ct["constant"])
+  cdf2 <- to.CASDataFrame(df_ct["constant2"])
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)
@@ -378,8 +378,8 @@ test_that("Using one compVar to create another", {
   df_ct$weighted_var <- df_ct$constant * df_ct$n1 + ((1 - df_ct$constant) * df_ct$n2)
   df_ct$weighted_var2 <- "weighted_var2 = constant*n1 + ((1-constant)*n2);"
   rdf <- as.data.frame(df_$weighted_var)
-  cdf <- to.casDataFrame(df_ct$weighted_var)
-  cdf2 <- to.casDataFrame(df_ct$weighted_var2)
+  cdf <- to.CASDataFrame(df_ct$weighted_var)
+  cdf2 <- to.CASDataFrame(df_ct$weighted_var2)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)
@@ -391,8 +391,8 @@ test_that("Creating a duplicate column", {
   df0_ct$n5dup <- df0_ct$n5
   df0_ct["n5dup2"] <- "n5dup2=n5;"
   rdf <- as.data.frame(df0_$n5dup)
-  cdf <- to.casDataFrame(df0_ct$n5dup)
-  cdf2 <- to.casDataFrame(df0_ct$n5dup2)
+  cdf <- to.CASDataFrame(df0_ct$n5dup)
+  cdf2 <- to.CASDataFrame(df0_ct$n5dup2)
   cas2rdf <- to.data.frame(cdf)
   expect_equivalent(cas2rdf, rdf)
   expect_equivalent(cdf, cdf2)

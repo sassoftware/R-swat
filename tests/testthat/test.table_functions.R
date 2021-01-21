@@ -172,7 +172,7 @@ test_that("rbind numeric, different data", {
   df_bind <- rbind(df1, df2)
   ct_bind <- rbind(ct1, ct2)
 
-  ct_df <- to.casDataFrame(ct_bind)
+  ct_df <- to.CASDataFrame(ct_bind)
   ct_df <- to.data.frame(ct_df)
   df_bind <- df_bind[order(df_bind$X1, df_bind$X2), ]
   ct_df <- ct_df[order(ct_df$X1, ct_df$X2), ]
@@ -184,7 +184,7 @@ test_that("rbind numeric, repeated data", {
   df_bind <- rbind(df1, df1)
   ct_bind <- rbind(ct1, ct1)
 
-  ct_df <- to.casDataFrame(ct_bind)
+  ct_df <- to.CASDataFrame(ct_bind)
   ct_df <- to.data.frame(ct_df)
   df_bind <- df_bind[order(df_bind$X1, df_bind$X2), ]
   ct_df <- ct_df[order(ct_df$X1, ct_df$X2), ]
@@ -201,7 +201,7 @@ test_that("rbind numeric and character with missing", {
 test_that("cbind numeric, different data", {
   df_bind <- cbind(df1, df3)
   ct_bind <- cbind(ct1, ct3)
-  ct_df <- to.casDataFrame(ct_bind)
+  ct_df <- to.CASDataFrame(ct_bind)
   ct_df <- to.data.frame(ct_df)
   expect_equivalent(df_bind, ct_df)
 })
@@ -216,7 +216,7 @@ test_that("cbind numeric and character with missing", {
   df_bind <- cbind(df1, df3)
   ct_bind <- cbind(ct1, ct3)
 
-  ct_df <- to.casDataFrame(ct_bind)
+  ct_df <- to.CASDataFrame(ct_bind)
   ct_df <- to.data.frame(ct_df)
   expect_equivalent(df_bind, ct_df)
 })
@@ -317,7 +317,7 @@ test_that("Test that length returns the correct values for CASTables", {
 
 test_that("Test that length returns the correct values for casDataFrames", {
   # Pull the casDataFrame from the ct CASTable
-  ct_df <- to.casDataFrame(ct)
+  ct_df <- to.CASDataFrame(ct)
 
   # length(casDataFrame) returns the same values as length(data.frame)
   expect_equivalent(length(df), length(ct_df))
@@ -336,7 +336,7 @@ test_that("Test that ncol returns the correct values for CASTables", {
 
 test_that("Test that ncol returns the correct values for casDataFrames", {
   # Pull the casDataFrame from the ct CASTable
-  ct_df <- to.casDataFrame(ct)
+  ct_df <- to.CASDataFrame(ct)
 
   # length(casDataFrame) returns the same values as length(data.frame)
   expect_equivalent(ncol(df), ncol(ct_df))
@@ -358,7 +358,7 @@ test_that("Test that dim returns the correct values for CASTables", {
 
 test_that("Test that dim returns the correct values for casDataFrames", {
   # Pull the casDataFrame from the ct CASTable
-  ct_df <- to.casDataFrame(ct)
+  ct_df <- to.CASDataFrame(ct)
 
   # dim(casDataFrame) returns the same values as dim(data.frame)
   expect_equivalent(dim(df), dim(ct_df))
