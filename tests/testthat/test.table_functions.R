@@ -25,8 +25,8 @@ test_that("unique", {
   # unique(data.frame) returns a data.frame
   expect_that(unique(df), is_a("data.frame"))
 
-  # unique(CASTable) returns a casDataFrame
-  expect_is(unique(i2), "casDataFrame")
+  # unique(CASTable) returns a CAS data.frame
+  expect_is(unique(i2), "data.frame")
 
   # Numeric uniques
   expect_is(unique(i2[1]), "numeric")
@@ -46,7 +46,7 @@ test_that("unique", {
 test_that("subset", {
   expect_equivalent(
     subset(ct, subset = ct$n4 > 15, select = c("n1", "n4", "s"), drop = FALSE),
-    as.casTable(caz, subset(df, subset = df$n4 > 15, select = c("n1", "n4", "s"), drop = FALSE),
+    as.CASTable(caz, subset(df, subset = df$n4 > 15, select = c("n1", "n4", "s"), drop = FALSE),
       casOut = list(name = "foo", replace = TRUE)
     )
   )
@@ -66,49 +66,49 @@ test_that("subset", {
 
   expect_equivalent(
     subset(df0_ct, s == "dd"),
-    as.casTable(caz, subset(df0_, s == "dd"), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df0_, s == "dd"), casOut = list(replace = TRUE))
   )
 
   # Subsetting on character value, , !=
   expect_equivalent(
     subset(df0_ct, s != "dd", drop = FALSE),
-    as.casTable(caz, subset(df0_, s0 != " ", drop = FALSE), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df0_, s0 != " ", drop = FALSE), casOut = list(replace = TRUE))
   )
 
   # Subsetting on missing character values, !=
   expect_equivalent(
     subset(df0_ct, s0 != " ", drop = FALSE),
-    as.casTable(caz, subset(df0_, s != "dd", drop = FALSE), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df0_, s != "dd", drop = FALSE), casOut = list(replace = TRUE))
   )
 
   # Subsetting on missing character values, ==
   expect_equivalent(
     subset(df0_ct, s0 == " ", drop = FALSE),
-    as.casTable(caz, subset(df0_, s == "dd", drop = FALSE), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df0_, s == "dd", drop = FALSE), casOut = list(replace = TRUE))
   )
 
   # Subsetting on numeric values, !=
   expect_equivalent(
     subset(df_ct, n5 != 1.2, drop = FALSE),
-    as.casTable(caz, subset(df_, n5 != 1.2, drop = FALSE), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df_, n5 != 1.2, drop = FALSE), casOut = list(replace = TRUE))
   )
 
   # Row indexing on character values, ==
   expect_equivalent(
     subset(df_ct, n5 == 1.2, drop = FALSE),
-    as.casTable(caz, subset(df_, n5 == 1.2, drop = FALSE), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df_, n5 == 1.2, drop = FALSE), casOut = list(replace = TRUE))
   )
 
   # Subsetting with multiple conditions, |
   expect_equivalent(
     subset(df_ct, s == "dd" | n4 <= 15, drop = FALSE),
-    as.casTable(caz, subset(df_, s == "dd" | n4 <= 15, drop = FALSE), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df_, s == "dd" | n4 <= 15, drop = FALSE), casOut = list(replace = TRUE))
   )
 
   # Subsetting with multiple conditions, &
   expect_equivalent(
     subset(df_ct, s == "dd" & n4 <= 15, drop = FALSE),
-    as.casTable(caz, subset(df_, s == "dd" & n4 <= 15, drop = FALSE), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df_, s == "dd" & n4 <= 15, drop = FALSE), casOut = list(replace = TRUE))
   )
 
   # Subsetting with compVar
@@ -116,42 +116,42 @@ test_that("subset", {
   df_ct$comp1 <- df_ct$n3 + df_ct$n4
   expect_equivalent(
     subset(df_ct, comp1 < 30, drop = FALSE),
-    as.casTable(caz, subset(df_, comp1 < 30, drop = FALSE), casOut = list(replace = TRUE))
+    as.CASTable(caz, subset(df_, comp1 < 30, drop = FALSE), casOut = list(replace = TRUE))
   )
 })
 
 test_that("row index", {
   expect_equivalent(
-    as.casTable(caz, df[df$n4 > 15 & df$n1 < 6, c(1, 4, 5)], casOut = list(replace = TRUE)),
+    as.CASTable(caz, df[df$n4 > 15 & df$n1 < 6, c(1, 4, 5)], casOut = list(replace = TRUE)),
     ct[ct$n4 > 15 & ct$n1 < 6, c("n1", "n4", "s")]
   )
   expect_equivalent(
-    as.casTable(caz, df[df$n4 > 15 & df[1] < 6, c(1, 4, 5)], casOut = list(replace = TRUE)),
+    as.CASTable(caz, df[df$n4 > 15 & df[1] < 6, c(1, 4, 5)], casOut = list(replace = TRUE)),
     ct[ct$n4 > 15 & ct[1] < 6, c("n1", "n4", "s")]
   )
   expect_equivalent(
-    as.casTable(caz, df[df$n4 > 15 | df[1] < 6, c(1, 4, 5)], casOut = list(replace = TRUE)),
+    as.CASTable(caz, df[df$n4 > 15 | df[1] < 6, c(1, 4, 5)], casOut = list(replace = TRUE)),
     ct[ct$n4 > 15 | ct[1] < 6, c("n1", "n4", "s")]
   )
   expect_equivalent(
-    as.casTable(caz, df[!df$n4 > 15 | df[1] < 6, c(1, 4, 5)], casOut = list(replace = TRUE)),
+    as.CASTable(caz, df[!df$n4 > 15 | df[1] < 6, c(1, 4, 5)], casOut = list(replace = TRUE)),
     ct[!ct$n4 > 15 | ct[1] < 6, c("n1", "n4", "s")]
   )
   expect_equivalent(
-    as.casTable(caz, df[!df$n4 > 15 | df[1] < 6, ], casOut = list(replace = TRUE)),
+    as.CASTable(caz, df[!df$n4 > 15 | df[1] < 6, ], casOut = list(replace = TRUE)),
     ct[!ct$n4 > 15 | ct[1] < 6, ]
   )
   expect_equivalent(
-    as.casTable(caz, df[!df$n4 > 15 | !df[1] < 6, ], casOut = list(replace = TRUE)),
+    as.CASTable(caz, df[!df$n4 > 15 | !df[1] < 6, ], casOut = list(replace = TRUE)),
     ct[!ct$n4 > 15 | !ct[1] < 6, ]
   )
 
   expect_equivalent(
-    as.casTable(caz, df[, c(1, 4, 5)], casOut = list(replace = TRUE)),
+    as.CASTable(caz, df[, c(1, 4, 5)], casOut = list(replace = TRUE)),
     ct[, c("n1", "n4", "s")]
   )
   expect_equivalent(
-    as.casTable(caz, df[c(1, 4, 5)], casOut = list(replace = TRUE)),
+    as.CASTable(caz, df[c(1, 4, 5)], casOut = list(replace = TRUE)),
     ct[c("n1", "n4", "s")]
   )
   expect_equivalent(ct[c(1, 4, 5)], ct[c("n1", "n4", "s")])
@@ -172,8 +172,7 @@ test_that("rbind numeric, different data", {
   df_bind <- rbind(df1, df2)
   ct_bind <- rbind(ct1, ct2)
 
-  ct_df <- to.CASDataFrame(ct_bind)
-  ct_df <- to.data.frame(ct_df)
+  ct_df <- as.data.frame(ct_bind)
   df_bind <- df_bind[order(df_bind$X1, df_bind$X2), ]
   ct_df <- ct_df[order(ct_df$X1, ct_df$X2), ]
 
@@ -184,8 +183,7 @@ test_that("rbind numeric, repeated data", {
   df_bind <- rbind(df1, df1)
   ct_bind <- rbind(ct1, ct1)
 
-  ct_df <- to.CASDataFrame(ct_bind)
-  ct_df <- to.data.frame(ct_df)
+  ct_df <- as.data.frame(ct_bind)
   df_bind <- df_bind[order(df_bind$X1, df_bind$X2), ]
   ct_df <- ct_df[order(ct_df$X1, ct_df$X2), ]
 
@@ -195,29 +193,27 @@ test_that("rbind numeric, repeated data", {
 test_that("rbind numeric and character with missing", {
   df_bind <- rbind(df, df0)
   ct_bind <- rbind(ct, ct0)
-  expect_equivalent(as.casTable(caz, df_bind, casOut = list(replace = TRUE)), ct_bind)
+  expect_equivalent(as.CASTable(caz, df_bind, casOut = list(replace = TRUE)), ct_bind)
 })
 
 test_that("cbind numeric, different data", {
   df_bind <- cbind(df1, df3)
   ct_bind <- cbind(ct1, ct3)
-  ct_df <- to.CASDataFrame(ct_bind)
-  ct_df <- to.data.frame(ct_df)
+  ct_df <- as.data.frame(ct_bind)
   expect_equivalent(df_bind, ct_df)
 })
 
 test_that("cbind numeric and character with missing", {
   df_bind <- cbind(df1, df3)
   ct_bind <- cbind(ct1, ct3)
-  expect_equivalent(as.casTable(caz, df_bind, casOut = list(replace = TRUE)), ct_bind)
+  expect_equivalent(as.CASTable(caz, df_bind, casOut = list(replace = TRUE)), ct_bind)
 })
 
 test_that("cbind numeric and character with missing", {
   df_bind <- cbind(df1, df3)
   ct_bind <- cbind(ct1, ct3)
 
-  ct_df <- to.CASDataFrame(ct_bind)
-  ct_df <- to.data.frame(ct_df)
+  ct_df <- as.data.frame(ct_bind)
   expect_equivalent(df_bind, ct_df)
 })
 
@@ -239,7 +235,7 @@ test_that("Test that names returns the correct values", {
   names_df_orig <- names(my_df)
 
   # Create a CAS table from the R data frame
-  my_ct <- as.casTable(caz, my_df, casOut = list(replace = TRUE))
+  my_ct <- as.CASTable(caz, my_df, casOut = list(replace = TRUE))
 
   # Get the columns names from the CAS table
   names_ct_orig <- names(my_ct)
@@ -273,7 +269,7 @@ test_that("Test that colnames returns the correct values", {
   colnames_df_orig <- colnames(my_df)
 
   # Create a CAS table from the R data frame
-  my_ct <- as.casTable(caz, my_df, casOut = list(replace = TRUE))
+  my_ct <- as.CASTable(caz, my_df, casOut = list(replace = TRUE))
 
   # Get the columns names from the CAS table
   colnames_ct_orig <- colnames(my_ct)
@@ -315,11 +311,11 @@ test_that("Test that length returns the correct values for CASTables", {
   expect_equivalent(1, length(ct$n1))
 })
 
-test_that("Test that length returns the correct values for casDataFrames", {
-  # Pull the casDataFrame from the ct CASTable
-  ct_df <- to.CASDataFrame(ct)
+test_that("Test that length returns the correct values for CAS data.frames", {
+  # Pull the CAS data.frame from the ct CASTable
+  ct_df <- as.data.frame(ct)
 
-  # length(casDataFrame) returns the same values as length(data.frame)
+  # length(CAS data.frame) returns the same values as length(data.frame)
   expect_equivalent(length(df), length(ct_df))
   expect_equivalent(length(df$n1), length(ct_df$n1))
   expect_equivalent(length(df[1]), length(ct_df[1]))
@@ -334,11 +330,11 @@ test_that("Test that ncol returns the correct values for CASTables", {
   expect_equivalent(1, ncol(ct$n1))
 })
 
-test_that("Test that ncol returns the correct values for casDataFrames", {
-  # Pull the casDataFrame from the ct CASTable
-  ct_df <- to.CASDataFrame(ct)
+test_that("Test that ncol returns the correct values for CAS data.frames", {
+  # Pull the CAS data.frame from the ct CASTable
+  ct_df <- as.data.frame(ct)
 
-  # length(casDataFrame) returns the same values as length(data.frame)
+  # length(CAS data.frame) returns the same values as length(data.frame)
   expect_equivalent(ncol(df), ncol(ct_df))
   expect_equivalent(ncol(df$n1), ncol(ct_df$n1))
   expect_equivalent(ncol(df[1]), ncol(ct_df[1]))
@@ -356,11 +352,11 @@ test_that("Test that dim returns the correct values for CASTables", {
   expect_failure(expect_equivalent(dim(df$n1), dim(ct$n1)))
 })
 
-test_that("Test that dim returns the correct values for casDataFrames", {
-  # Pull the casDataFrame from the ct CASTable
-  ct_df <- to.CASDataFrame(ct)
+test_that("Test that dim returns the correct values for CAS data.frames", {
+  # Pull the CAS data.frame from the ct CASTable
+  ct_df <- as.data.frame(ct)
 
-  # dim(casDataFrame) returns the same values as dim(data.frame)
+  # dim(CAS data.frame) returns the same values as dim(data.frame)
   expect_equivalent(dim(df), dim(ct_df))
   expect_equivalent(dim(df$n1), dim(ct_df$n1))
   expect_equivalent(dim(df[1]), dim(ct_df[1]))

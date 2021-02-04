@@ -62,7 +62,7 @@ cas.write.csv <- function(castable, file = "", quote = TRUE, eol = "\n", na = "N
     file <- paste(castable@tname, ".csv", sep = "")
   }
   write.csv(
-    to.CASDataFrame(castable)@df,
+    as.data.frame(castable),
     file = file,
     quote = quote,
     eol = eol,
@@ -108,7 +108,7 @@ cas.write.csv2 <- function(castable, file = "", quote = TRUE, eol = "\n", na = "
     file <- paste(castable@tname, ".csv", sep = "")
   }
   write.csv2(
-    to.CASDataFrame(castable)@df,
+    as.data.frame(castable),
     file = file,
     quote = quote,
     eol = eol,
@@ -163,7 +163,7 @@ cas.write.xlsx <- function(castable, file = "", sheetName = "Sheet1", col.names 
     file <- paste(castable@tname, ".xlsx", sep = "")
   }
   write.xlsx(
-    to.CASDataFrame(castable),
+    as.data.frame(castable),
     file = file,
     sheetName = sheetName,
     col.names = col.names,
@@ -211,7 +211,7 @@ cas.saveRDS <- function(castable, file = "", ascii = FALSE, version = NULL,
   if (nchar(file) == 0) {
     file <- paste(castable@tname, ".rds", sep = "")
   }
-  saveRDS(to.CASDataFrame(castable)@df,
+  saveRDS(as.data.frame(castable),
     file = file,
     ascii = ascii,
     version = version,
@@ -270,7 +270,7 @@ cas.write.table <- function(castable, file = "", append = FALSE, quote = TRUE, s
                             eol = "\n", na = "NA", dec = ".", row.names = TRUE,
                             col.names = TRUE, qmethod = c("escape", "double"),
                             fileEncoding = "") {
-  write.table(to.CASDataFrame(castable)@df,
+  write.table(as.data.frame(castable),
     file = file,
     append = append,
     quote = quote,
@@ -288,7 +288,7 @@ cas.write.table <- function(castable, file = "", append = FALSE, quote = TRUE, s
 #' Read a CSV File and Upload to a CAS Table
 #'
 #' This function is a convenience wrapper for
-#' the \R \code{read.csv} and \code{as.casTable} functions.
+#' the \R \code{read.csv} and \code{as.CASTable} functions.
 #' After reading the file that is accessible to the \R
 #' client, it is uploaded to an in-memory table in
 #' CAS (the server).
@@ -387,13 +387,13 @@ cas.read.csv <- function(conn, file, header = TRUE, sep = ",", quote = "\"",
   if (is.null(casOut$name) || nchar(casOut$name) == 0) {
     casOut$name <- tools::file_path_sans_ext(basename(file))
   }
-  return(as.casTable(conn, df, casOut = casOut))
+  return(as.CASTable(conn, df, casOut = casOut))
 }
 
 #' Read an XLSX File and Upload to a CAS Table
 #'
 #' This function is a convenience wrapper for
-#' the \R \code{read.xlsx} and \code{as.casTable} functions.
+#' the \R \code{read.xlsx} and \code{as.CASTable} functions.
 #' After reading the file that is accessible to the \R
 #' client, it is uploaded to an in-memory table in
 #' CAS (the server).
@@ -516,13 +516,13 @@ cas.read.xlsx <- function(conn, file, sheetIndex = 1, sheetName = NULL, rowIndex
     encoding = encoding
   )
 
-  return(as.casTable(conn, df, casOut = casOut))
+  return(as.CASTable(conn, df, casOut = casOut))
 }
 
 #' Read an RDS File and Upload to a CAS Table
 #'
 #' This function is a convenience wrapper for
-#' the \R \code{readRDS} and \code{as.casTable} functions.
+#' the \R \code{readRDS} and \code{as.CASTable} functions.
 #' After reading the file that is accessible to the \R
 #' client, it is uploaded to an in-memory table in
 #' CAS (the server).
@@ -586,13 +586,13 @@ cas.readRDS <- function(conn, file, refhook = NULL, casOut = list(name = "", rep
   if (is.null(casOut$name) || nchar(casOut$name) == 0) {
     casOut$name <- tools::file_path_sans_ext(basename(file))
   }
-  return(as.casTable(conn, df, casOut = casOut))
+  return(as.CASTable(conn, df, casOut = casOut))
 }
 
 #' Read a File and Upload to a CAS Table
 #'
 #' This function is a convenience wrapper for
-#' the \R \code{read.table} and \code{as.casTable} functions.
+#' the \R \code{read.table} and \code{as.CASTable} functions.
 #' After reading the file that is accessible to the \R
 #' client, it is uploaded to an in-memory table in
 #' CAS (the server).
@@ -749,7 +749,7 @@ cas.read.table <- function(conn, file, header = FALSE, sep = "", quote = "\"'", 
   if (is.null(casOut$name) || nchar(casOut$name) == 0) {
     casOut$name <- tools::file_path_sans_ext(basename(file))
   }
-  return(as.casTable(conn, df, casOut = casOut))
+  return(as.CASTable(conn, df, casOut = casOut))
 }
 
 #' Upload a SAS Data Set to a CAS Table
@@ -817,10 +817,10 @@ cas.read.sas7bdat <- function(conn, file, casOut = list(name = "", replace = FAL
   res <- conn$upload(file, casout = casOut)
   .check_for_cas_errors(res, stop.on.error = FALSE)
   if (!is.null(res$results$tableName)) {
-    return(swat::defCasTable(conn, res$results$tableName, caslib = res$results$caslib))
+    return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
   }
   else {
-    return(swat::defCasTable(conn, casOut$name, caslib = casOut$caslib))
+    return(CASTable(conn, casOut$name, caslib = casOut$caslib))
   }
 }
 
@@ -893,9 +893,9 @@ cas.read.jmp <- function(conn, file, casOut = NULL) {
   res <- conn$upload(file, casout = casOut)
   .check_for_cas_errors(res, stop.on.error = FALSE)
   if (!is.null(res$results$tableName)) {
-    return(swat::defCasTable(conn, res$results$tableName, caslib = res$results$caslib))
+    return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
   }
   else {
-    return(swat::defCasTable(conn, casOut$name, caslib = casOut$caslib))
+    return(CASTable(conn, casOut$name, caslib = casOut$caslib))
   }
 }

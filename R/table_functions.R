@@ -27,7 +27,7 @@
 #' @param n An optional positive integer that specifies the number of
 #'   rows to return.
 #'
-#' @return A \code{\link{casDataFrame}} object with the first n rows.
+#' @return A data.frame object with the first n rows.
 #'
 #' @examples
 #' \dontrun{
@@ -52,11 +52,11 @@ setMethod(
     }
 
     if (length(tp$orderby)) {
-      res <- casRetrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
-                         index = FALSE, to = n, from = 1, sortby = tp$orderby)
+      res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
+                          index = FALSE, to = n, from = 1, sortby = tp$orderby)
     } else {
-      res <- casRetrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
-                         index = FALSE, to = n, from = 1)
+      res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
+                          index = FALSE, to = n, from = 1)
     }
     .check_for_cas_errors(res)
     rownames(res$results$Fetch) <- 1:min(nrow(res$results$Fetch), n)
@@ -77,7 +77,7 @@ setMethod(
 #' @param n An optional positive integer that specifies the number of
 #'   rows to return.
 #'
-#' @return A \code{\link{casDataFrame}} object with the last n rows.
+#' @return A data.frame object with the last n rows.
 #'
 #' @examples
 #' \dontrun{
@@ -105,11 +105,11 @@ setMethod(
     }
 
     if (length(tp$orderby)) {
-      res <- casRetrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
-                         index = FALSE, to = r, from = r - n + 1, sortby = tp$orderby)
+      res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
+                          index = FALSE, to = r, from = r - n + 1, sortby = tp$orderby)
     } else {
-      res <- casRetrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
-                         index = FALSE, to = r, from = r - n + 1)
+      res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
+                          index = FALSE, to = r, from = r - n + 1)
     }
 
     n <- min(n, dim(res$results$Fetch)[1])
@@ -146,34 +146,9 @@ subset.CASTable <- function(x, subset, select = NULL, drop = FALSE, ...) {
   }
   out <- x[select, drop = drop, ...]
   if (!missing(subset)) {
-    out@where <- CASwhere(x, deparse(substitute(subset)))
+    out@where <- .cas_where(x, deparse(substitute(subset)))
   }
   return(out)
-}
-
-#' Return a Subset of Rows and Columns from a CAS Table
-#'
-#' Return a subset of rows and columns from a \code{\link{CASTable}} that meet
-#' subsetting criteria.
-#'
-#' @param x      \code{\link{CASTable}} object.
-#' @param subset Logical expression indicating elements or rows to keep.
-#' @param select Expression indicating columns to select from CAS table.
-#' @param drop   Passed to the \code{[} indexing operator.
-#' @param \ldots Further arguments to be passed to or from other methods.
-#'
-#' @return A CASTable object with the rows and columns that meet the subset criteria.
-#'
-#' @examples
-#' \dontrun{
-#' subset(ct, subset = ct[4] > 15, select = c("n1", "n4", "s"), drop = FALSE)
-#' subset(ct, subset = ct$n4 > 15, select = c(1, 4, 5), drop = FALSE)
-#' }
-#'
-#' @export
-subset.casTable <- function(x, subset, select = NULL, drop = FALSE, ...) {
-    message("This function has been deprecated. Use subset.CASTable instead.")
-    return(subset.CASTable(x, subset, select = select, drop = drop, ...))
 }
 
 #' @inherit subset.CASTable
@@ -193,7 +168,7 @@ setMethod("subset", "CASTable", subset.CASTable)
 #'                      See the help for base::unique.
 #' @param \dots         Arguments that are passed to method arguments.
 #'
-#' @return A \code{\link{casDataFrame}} object.
+#' @return A data.frame object.
 #'
 #' @examples
 #' \dontrun{
@@ -216,7 +191,7 @@ setMethod(
       tp$computedOnDemand <- TRUE
       tmpname <- .unique_table_name("unique_tmp1")
       tmp1 <- cas.table.partition(x@conn, casout = tmpname, table = tp)
-      tmp1 <- defCasTable(x@conn, tmpname)
+      tmp1 <- CASTable(x@conn, tmpname)
       vars <- c(x@names, x@computedVars)
       vars <- vars[vars != ""]
       delete <- TRUE
@@ -236,7 +211,7 @@ setMethod(
 
     tname <- paste('"', tmp1@tname, '"', sep = "")
     q <- paste(" select distinct ", cols, " from ", tname, ";")
-    res <- casRetrieve(x@conn, "fedSql.execDirect", query = q)
+    res <- cas.retrieve(x@conn, "fedSql.execDirect", query = q)
 
     if (delete) {
       dropTable(tmp1)
@@ -269,7 +244,7 @@ setMethod(
 #' }
 #'
 #' @export
-rbind2.casTable <- function(x, y, ...) {
+rbind2.CASTable <- function(x, y, ...) {
   if (!class(x) == "CASTable") {
     stop("The first parameter must be a CASTable object")
   }
@@ -282,14 +257,14 @@ rbind2.casTable <- function(x, y, ...) {
                 y@tname, "(caslib='", y@caslib, "'); run;", sep = "")
   .run_sas_code(x@conn, code = code)
   # return new CASTable
-  return(defCasTable(x@conn, table_name, x@caslib))
+  return(CASTable(x@conn, table_name, x@caslib))
 }
 
 #' Combine CAS Tables by Columns
 #'
-#' @rdname rbind2.casTable
+#' @rdname rbind2.CASTable
 #' @export
-setMethod("rbind2", "CASTable", rbind2.casTable)
+setMethod("rbind2", "CASTable", rbind2.CASTable)
 
 #' Combine CAS Tables by Columns
 #'
@@ -297,8 +272,8 @@ setMethod("rbind2", "CASTable", rbind2.casTable)
 #' @param deparse.level  See the help for base::rbind.
 #'
 #' @export
-rbind.casTable <- function(..., deparse.level = 1){
-  stop("This function must take two or more casTables")
+rbind.CASTable <- function(..., deparse.level = 1){
+  stop("This function must take two or more CASTables")
 }
 
 #' Combine CAS Tables by Rows
@@ -317,7 +292,7 @@ rbind.casTable <- function(..., deparse.level = 1){
 #' }
 #'
 #' @export
-setMethod("rbind", "CASTable", rbind.casTable)
+setMethod("rbind", "CASTable", rbind.CASTable)
 
 #' Combine CAS Tables by Columns
 #'
@@ -336,7 +311,7 @@ setMethod("rbind", "CASTable", rbind.casTable)
 #' }
 #'
 #' @export
-cbind2.casTable <- function(x, y, ...) {
+cbind2.CASTable <- function(x, y, ...) {
   if (!class(x) == "CASTable") {
     stop("The parameter must be a CASTable object")
   }
@@ -344,11 +319,11 @@ cbind2.casTable <- function(x, y, ...) {
     stop("The parameter must be a CASTable object")
   }
 
-  x_info <- casRetrieve(x@conn, "table.columnInfo",
-                        table = list(name = x@tname, caslib = x@caslib))
+  x_info <- cas.retrieve(x@conn, "table.columnInfo",
+                         table = list(name = x@tname, caslib = x@caslib))
   .check_for_cas_errors(x_info)
-  y_info <- casRetrieve(y@conn, "table.columnInfo",
-                        table = list(name = y@tname, caslib = y@caslib))
+  y_info <- cas.retrieve(y@conn, "table.columnInfo",
+                         table = list(name = y@tname, caslib = y@caslib))
   .check_for_cas_errors(y_info)
 
   x_cols <- tolower(x_info$results$ColumnInfo$Column)
@@ -370,15 +345,15 @@ cbind2.casTable <- function(x, y, ...) {
   .run_sas_code(x@conn, code = code)
 
   # return new CASTable
-  return(defCasTable(x@conn, table_name, x@caslib))
+  return(CASTable(x@conn, table_name, x@caslib))
 }
 
 #' Combine CAS Tables by Columns
 #'
-#' @inherit cbind2.casTable
+#' @inherit cbind2.CASTable
 #'
 #' @export
-setMethod("cbind2", "CASTable", cbind2.casTable)
+setMethod("cbind2", "CASTable", cbind2.CASTable)
 
 #' Combine CAS Tables by Columns
 #'
@@ -386,13 +361,13 @@ setMethod("cbind2", "CASTable", cbind2.casTable)
 #' @param deparse.level  See the help for base::rbind.
 #'
 #' @export
-cbind.casTable <- function(..., deparse.level = 1){
-  stop("This function must take two or more casTables")
+cbind.CASTable <- function(..., deparse.level = 1){
+  stop("This function must take two or more CASTables")
 }
 
 #' Combine CAS Tables by Columns
 #'
-#' @inherit cbind.casTable
+#' @inherit cbind.CASTable
 #'
 #' @export
-setMethod("cbind", "CASTable", cbind.casTable)
+setMethod("cbind", "CASTable", cbind.CASTable)

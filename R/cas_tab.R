@@ -74,7 +74,7 @@
 #'
 #' @return \code{CASTable}
 #'
-#' @seealso \code{as.casTable}, \code{defCasTable}
+#' @seealso \code{as.CASTable}
 #'
 #' @export
 CASTable <- setClass("CASTable",
@@ -96,15 +96,25 @@ CASTable <- setClass("CASTable",
   )
 )
 
-setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib, columns,
+setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib = "",
+                                             columns = character(0),
                                              where = "", orderby = list(),
                                              groupby = list(), gbmode = "",
                                              computedOnDemand = FALSE, computedVars = "",
                                              computedVarsProgram = "") {
+  if (class(conn) != "CAS") {
+    stop("The first parameter must be a CAS object")
+  }
+  if (class(tname) != "character") {
+    stop("The table name must be character")
+  }
+  if (tname[1] == "") {
+    stop("The table name can not be empty")
+  }
+
   .Object@conn <- conn
   .Object@tname <- tname
   .Object@caslib <- caslib
-  .Object@names <- columns
   .Object@where <- where
   .Object@orderby <- orderby
   .Object@groupby <- groupby
@@ -115,6 +125,22 @@ setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib, colum
   .Object@XcomputedVarsProgram <- ""
   .Object@XcomputedVars <- ""
   .Object@compcomp <- FALSE
+
+  if (is.null(columns)) {
+    .Object@names <- ""
+  } 
+  else if (length(columns) == 0) {
+    tab <- list(name = tname)
+    if (caslib != "") {
+      tab <- c(tab, caslib = caslib)
+    }
+    res <- cas.retrieve(conn, "table.columnInfo", table = tab)
+    .check_for_cas_errors(res)
+    .Object@names <- res$results$ColumnInfo$Column
+  }
+  else {
+    .Object@names <- columns
+  }
 
   .Object
 })
@@ -166,17 +192,17 @@ setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib, colum
 #' @examples
 #' \dontrun{
 #' s <- CAS("cloud.example.com", 5570)
-#' irisct <- as.casTable(s, iris)
+#' irisct <- as.CASTable(s, iris)
 #'
 #' # Specify a name for the in-memory table.
-#' mtcarsct <- as.casTable(s, mtcars, casOut = "mtcarsct")
+#' mtcarsct <- as.CASTable(s, mtcars, casOut = "mtcarsct")
 #'
 #' # Avoid replacing an existing in-memory table.
-#' mtcarsct <- as.casTable(s, mtcars, casOut = list(name = "mtcarsct", replace = FALSE))
+#' mtcarsct <- as.CASTable(s, mtcars, casOut = list(name = "mtcarsct", replace = FALSE))
 #' }
 #'
 #' @export
-as.casTable <- function(conn, df, casOut = "") {
+as.CASTable <- function(conn, df, casOut = "") {
   if (class(conn) != "CAS") {
     stop("The first parameter must be a CAS object")
   }
@@ -225,7 +251,7 @@ as.casTable <- function(conn, df, casOut = "") {
     caslib <- tblres$results$caslib
   }
 
-  res <- casRetrieve(conn, "table.columnInfo", table = list(name = tablename, caslib = caslib))
+  res <- cas.retrieve(conn, "table.columnInfo", table = list(name = tablename, caslib = caslib))
   if (res$disposition$severity > 1) {
     .check_for_cas_errors(res)
   }
@@ -233,68 +259,6 @@ as.casTable <- function(conn, df, casOut = "") {
   columns <- res$results$ColumnInfo$Column
 
   new("CASTable", conn, tablename, caslib, columns)
-}
-
-#' Create a CASTable object for an existing CAS table
-#'
-#' Creates a \code{\link{CASTable}} object to reference
-#' an existing in-memory table in CAS. You can use this
-#' function to reference tables that were loaded by other
-#' SAS products, other scripts, or from server-side loads
-#' with the cas.table.loadTable function.
-#'
-#' @param conn A \code{\link{CAS}} object that represents
-#'   a connection and session in CAS.
-#' @param tablename A \code{character} that specifies the in-memory
-#'   table name. You can run the cas.table.tableInfo function to
-#'   list the in-memory tables.
-#' @param caslib An optional \code{character} string that
-#'   identifies the caslib for the in-memory table. Specify
-#'   this parameter to override the active caslib.
-#' @param columns A \code{list} of column names.
-#' @param where   A \code{character} string that specifies a filter for the
-#'   rows to process. The filter uses syntax that is specific to SAS.
-#' @param orderby A \code{list} of column names. Rows are partitioned according
-#'   to the columns in the groupby parameter and then ordered according to
-#'   the values of the columns specified in this parameter.
-#' @param groupby A \code{list} of column names. If you specify this parameter
-#'   when you load an in-memory table, then the table is partitioned by the
-#'   columns.  If you specify this parameter when running an action, then
-#'   BY-groups are formed temporarily for the duration of the action.
-#' @param gbmode  A \code{character} string. Values are NOSORT (default) or
-#'   REDISTRIBUTE. See the CAS product documentation for more information.
-#'
-#' @return \code{\link{CASTable}}
-#'
-#' @examples
-#' \dontrun{
-#' irisct <- as.casTable(s, iris, casOut = "irisct")
-#'
-#' # Create another CASTable instance to the same in-memory table,
-#' # but specify that CAS actions are performed by groups of species.
-#' irisct.grouped <- defCasTable(s, tablename = "irisct", groupby = list("species"))
-#' }
-#'
-#' @export
-defCasTable <- function(conn, tablename, caslib = "", columns = "", where = "",
-                        orderby = list(), groupby = list(), gbmode = "") {
-  if (class(conn) != "CAS") {
-    stop("The first parameter must be a CAS object")
-  }
-
-  if (columns[1] == "") {
-    tab <- list(name = tablename)
-
-    if (caslib != "") {
-      tab <- c(tab, caslib = caslib)
-    }
-
-    res <- casRetrieve(conn, "table.columnInfo", table = tab)
-    .check_for_cas_errors(res)
-    columns <- res$results$ColumnInfo$Column
-  }
-
-  new("CASTable", conn, tablename, caslib, columns, where, orderby, groupby, gbmode)
 }
 
 #' Return a CASTable with filtering applied
@@ -335,7 +299,7 @@ setMethod(
         xcompvars <- i@XcomputedVars
       }
       else {
-        where <- CASwhere(x, deparse(substitute(i)))
+        where <- .cas_where(x, deparse(substitute(i)))
       }
 
       # No columns passed
@@ -486,9 +450,14 @@ setMethod(
       }
     }
 
+    vars <- vars[vars != ""]
+    if (length(vars) == 0) {
+      vars <- NULL
+    }
+
     ret <- new(
-      "CASTable", x@conn, x@tname, x@caslib, vars, where, x@orderby,
-      x@groupby, x@gbmode, FALSE, compvars, compvpgm
+      "CASTable", x@conn, x@tname, x@caslib, vars,
+      where, x@orderby, x@groupby, x@gbmode, FALSE, compvars, compvpgm
     )
     ret@XcomputedVars <- xcompvars
     return(ret)
@@ -959,7 +928,7 @@ setMethod(
       tp$orderby <- NULL
       tp <- tp[tp != ""]
     }
-    res <- casRetrieve(x@conn, "simple.numRows", table = tp)
+    res <- cas.retrieve(x@conn, "simple.numRows", table = tp)
     as.integer(res$results$numrows)
   }
 )
@@ -1095,15 +1064,15 @@ setMethod(
       tp$orderby <- NULL
       tp <- tp[tp != ""]
     }
-    res <- casRetrieve(x@conn, "simple.numRows", table = tp)
+    res <- cas.retrieve(x@conn, "simple.numRows", table = tp)
     sapply(1:as.integer(res$results$numrows), toString)
   }
 )
 
 setGeneric(
-  "dropTable",
-  function(x) {
-      return(invisible(NULL))
+  "drop.table",
+  function(x, ...) {
+    standardGeneric("drop.table")
   }
 )
 
@@ -1121,22 +1090,39 @@ setGeneric(
 #'
 #' @examples
 #' \dontrun{
-#' dropTable(ct1)
+#' drop.table(ct1)
 #' }
 #'
 #' @export
 setMethod(
-  "dropTable",
+  "drop.table",
   signature(x = "CASTable"),
   function(x) {
-    if (class(x) == "CASTable") {
-      if (x@caslib == "") {
-        res <- casRetrieve(x@conn, "table.dropTable", table = x@tname)
-      } else {
-        res <- casRetrieve(x@conn, "table.dropTable", table = x@tname, caslib = x@caslib)
-      }
-      return(invisible(res))
+    if (x@caslib == "") {
+      res <- cas.retrieve(x@conn, "table.dropTable", table = x@tname)
+    } else {
+      res <- cas.retrieve(x@conn, "table.dropTable", table = x@tname, caslib = x@caslib)
     }
+    return(invisible(res))
+  }
+)
+
+setGeneric(
+  "as.view",
+  function(x, ...) {
+    standardGeneric("as.view")
+  }
+)
+
+#' @export
+setMethod(
+  "as.view",
+  signature(x = "CASTable"),
+  function(x) {
+    tp <- .gen_table_param(x)
+    tp$computedOnDemand <- NULL
+    v <- cas.table.view(x@conn, name = .unique_table_name("view"), tables = list(tp))
+    return(CASTable(x@conn, v$viewName, caslib = v$caslib))
   }
 )
 

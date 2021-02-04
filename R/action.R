@@ -34,19 +34,19 @@
 #' @examples
 #' \dontrun{
 #' # display the active caslib for the session
-#' runAction(conn, "sessionProp.getSessOpt", name = "caslib")
+#' cas.run(conn, "sessionProp.getSessOpt", name = "caslib")
 #'
 #' # display simple summary statistics for an uploaded data frame
-#' mtcarsct <- as.casTable(conn, mtcars)
-#' runAction(mtcarsct, "simple.summary")
+#' mtcarsct <- as.CASTable(conn, mtcars)
+#' cas.run(mtcarsct, "simple.summary")
 #'
-#' # the preceding runAction function is functionally
+#' # the preceding cas.run function is functionally
 #' # equivalent to the following generated function
 #' cas.simple.summary(mtcarsct)
 #' }
 #'
 #' @export
-runAction <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
+cas.run <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
   if (is.null(CASorCASTab) || (is.character(CASorCASTab) && nchar(CASorCASTab) == 0)) {
     args <- list(...)
     if (!is.null(args[["table"]]) && class(args[["table"]]) == "CASTable") {
@@ -57,7 +57,7 @@ runAction <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
     tp <- .gen_table_param(CASorCASTab)
     conn <- CASorCASTab@conn
     pms <- list("conn" = conn, "actn" = actn, "table" = tp, ...)
-    res <- do.call("casRetrieve", pms)
+    res <- do.call("cas.retrieve", pms)
   }
   else {
     conn <- CASorCASTab
@@ -67,20 +67,20 @@ runAction <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
     if (actn == "builtins.loadActionSet") {
       stopifnot(class(conn) == "CAS")
       actionset <- list(...)[[1]]
-      res <- casRetrieve(conn, "builtins.loadActionSet", actionSet = actionset)
+      res <- cas.retrieve(conn, "builtins.loadActionSet", actionSet = actionset)
       .gen_functions(conn, actionset)
       .check_for_cas_errors(res)
     }
     else if (actn == "builtins.defineActionSet") {
       stopifnot(class(conn) == "CAS")
       actionset <- list(...)$name
-      res <- casRetrieve(conn, "builtins.defineActionSet", ...)
+      res <- cas.retrieve(conn, "builtins.defineActionSet", ...)
       .gen_functions(conn, actionset)
       .check_for_cas_errors(res)
     }
     else {
       pms <- list("conn" = conn, "actn" = actn, ...)
-      res <- do.call("casRetrieve", pms)
+      res <- do.call("cas.retrieve", pms)
     }
   }
 
@@ -101,36 +101,9 @@ runAction <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
 #' @keywords internal
 #'
 .run_sas_code <- function(conn, code = "") {
-  res <- casRetrieve(conn, "dataStep.runCode", code = code)
+  res <- cas.retrieve(conn, "dataStep.runCode", code = code)
   .check_for_cas_errors(res)
   return(res$results)
-}
-
-#' Load a CAS Action Set
-#'
-#' This function loads a CAS action set and generate an \R function
-#' for each action.
-#'
-#' @param conn An instance of a CAS object that represents
-#'  a connection and CAS session.
-#' @param actionSet A \code{string} value that specifies
-#'  the action set to load.
-#'
-#' @examples
-#' \dontrun{
-#' loadActionSet(conn, actionSet = "decisionTree")
-#' loadActionSet(conn, actionSet = "regression")
-#' }
-#'
-#' @export
-loadActionSet <- function(conn, actionSet = "") {
-  stopifnot(class(conn) == "CAS")
-  message("This function is deprecated. Use cas.builtins.loadActionSet(conn, actionSet = \"",
-         actionSet, "\").", sep = "")
-  res <- casRetrieve(conn, "builtins.loadActionSet", actionSet = actionSet)
-  .gen_functions(conn, actionSet)
-  .check_for_cas_errors(res)
-# return(res)
 }
 
 #' List CAS Action Sets
@@ -147,32 +120,16 @@ loadActionSet <- function(conn, actionSet = "") {
 #'
 #' @examples
 #' \dontrun{
-#' listActionSets(conn)
+#' .list_action_sets(conn)
 #' }
 #'
 #' @keywords internal
 #'
-#' @export
-listActionSets <- function(conn) {
+.list_action_sets <- function(conn) {
   stopifnot(class(conn) == "CAS")
-  res <- casRetrieve(conn, "builtins.actionSetInfo", all = "FALSE")
+  res <- cas.retrieve(conn, "builtins.actionSetInfo", all = "FALSE")
   .check_for_cas_errors(res)
   return(as.list(res$results$setinfo))
-}
-
-#' Utility function that is run from several exported functions
-#'
-#' @keywords internal
-#'
-casRetrieve <- function(conn, ...) {
-  if (class(conn) == "CAS") {
-    return(conn$retrieve(...,
-      "_messagelevel" = as.character(getOption("cas.message.level"))))
-  }
-  if (class(conn) == "CASTable") {
-    return(conn$retrieve(conn@conn, ...,
-      "_messagelevel" = as.character(getOption("cas.message.level"))))
-  }
 }
 
 #' Generate function wrappers from actionset reflection information
@@ -184,7 +141,7 @@ casRetrieve <- function(conn, ...) {
   if ("reflection.levels" %in% conn$serverFeatures) {
     args$levels <- 1
   }
-  res <- do.call(swat::runAction, args)
+  res <- do.call(swat::cas.run, args)
   env <- globalenv()
   if (length(res[[1]]) > 0) {
     for (i in seq_len(length(res[[1]]$actions))) {
@@ -198,7 +155,7 @@ casRetrieve <- function(conn, ...) {
         }
         fname <- paste("cas.", actionset, ".", name, sep = "")
         str1 <- paste(fname, " <- function(CASorCASTab", str, sep = "")
-        val <- paste(str1, ", ...) {\n  swat::runAction(CASorCASTab=NULL, '", actionset,
+        val <- paste(str1, ", ...) {\n  swat::cas.run(CASorCASTab=NULL, '", actionset,
                      ".", name, "'", str2, ", ...)\n} ", sep = "")
         defn <- eval(parse(text = val, env))
         environment(defn) <- env
@@ -206,7 +163,7 @@ casRetrieve <- function(conn, ...) {
       }
       else {
         fname <- paste("cas.", actionset, ".", name, sep = "")
-        val <- paste(fname, " <- function(object, ...) {\n  swat::runAction(object=NULL, '",
+        val <- paste(fname, " <- function(object, ...) {\n  swat::cas.run(object=NULL, '",
                      paste(actionset, name, sep = "."), "', ...)\n} ", sep = "")
         defn <- eval(parse(text = val, env))
         environment(defn) <- env
@@ -225,7 +182,7 @@ casRetrieve <- function(conn, ...) {
   if ("reflection.levels" %in% conn$serverFeatures) {
     args$levels <- 1
   }
-  res <- do.call(swat::runAction, args)
+  res <- do.call(swat::cas.run, args)
   str <- ""
   str2 <- ""
   str3 <- "   args <- list(...)\n"
@@ -255,7 +212,7 @@ casRetrieve <- function(conn, ...) {
   str3 <- paste(str3, "   args = c('CASorCASTab'=substitute(CASorCASTab), args)\n", sep = "")
 
   str1 <- paste("cas.", actn, " <- function(CASorCASTab", str, ", ...) {\n", sep = "")
-  str1 <- paste(str1, str3, "do.call('swat::runAction', args)\n}\n", sep = "")
+  str1 <- paste(str1, str3, "do.call('swat::cas.run', args)\n}\n", sep = "")
 
   return(str1)
 }
@@ -265,19 +222,19 @@ casRetrieve <- function(conn, ...) {
 #' @keywords internal
 #'
 .gen_functions <- function(conn, actionset) {
-  res <- casRetrieve(conn, "builtins.actionSetInfo", "extensions" = actionset)
+  res <- cas.retrieve(conn, "builtins.actionSetInfo", "extensions" = actionset)
   if (toupper(res$results$setinfo$actionset[1]) != toupper(actionset)) {
     message(paste("ActionSet ", actionset, " not found"))
   } else {
     actionset <- res$results$setinfo$actionset[1]
-    res <- casRetrieve(conn, "builtins.listActions", "actionSet" = actionset)
+    res <- cas.retrieve(conn, "builtins.listActions", "actionSet" = actionset)
     if (length(res$results) > 0) {
       acts <- as.data.frame(res$results)[, 1]
       env <- globalenv()
       for (name in acts) {
         if (!as.logical(getOption("cas.gen.function.sig"))) {
           val <- paste("cas.", actionset, ".", name,
-                       " <- function(object=NULL, ...) {swat::runAction(object, '",
+                       " <- function(object=NULL, ...) {swat::cas.run(object, '",
                        paste(actionset, name, sep = "."), "', ...) } ", sep = "")
           defn <- eval(parse(text = val, env))
           environment(defn) <- env
@@ -293,10 +250,9 @@ casRetrieve <- function(conn, ...) {
           }, error = function(e) {
               message(paste("Action ", actionset, ".", name, " Had invalid syntax: \n", val, sep = ""))
               message(paste("Error was: ", e))
-              message(paste("Defining syntax as function(object, ...) instead. ",
-                            "Use listActionParms() to see the actual paramters for this function"))
+              message(paste("Defining syntax as function(object, ...) instead. "))
               val <- paste("cas.", actionset, ".", name,
-                           " <- function(object=NULL, ...) {swat::runAction(object, '",
+                           " <- function(object=NULL, ...) {swat::cas.run(object, '",
                            paste(actionset, name, sep = "."), "', ...) } ", sep = "")
               defn <- eval(parse(text = val, env))
               environment(defn) <- env
@@ -333,17 +289,18 @@ casRetrieve <- function(conn, ...) {
 #' @examples
 #' \dontrun{
 #' # specify the action set and action name
-#' listActionParms(conn, actn = "simple.summary")
+#' .list_action_params(conn, actn = "simple.summary")
 #'
 #' # fetch is in the table action set
-#' listActionParms(s, actn = "fetch")
+#' .list_action_params(s, actn = "fetch")
 #'
 #' # specify the generated function name
-#' listActionParms(s, cas.regression.logistic)
+#' .list_action_params(s, cas.regression.logistic)
 #' }
 #'
-#' @export
-listActionParms <- function(conn, actn, display = TRUE) {
+#' @keywords internal
+#'
+.list_action_params <- function(conn, actn, display = TRUE) {
   if (typeof(actn) == "closure") {
     actn <- toString(substitute(actn))
   }

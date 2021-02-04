@@ -21,21 +21,17 @@ options(cas.print.messages = FALSE)
 context("general_functions")
 
 test_that("Load ActionSet and List ActionSet Functions", {
-  expect_error(swat::loadActionSet(caz, "foobar"))
-  expect_null(swat::loadActionSet(caz, "builtins"))
+  cas.retrieve(caz, "builtins.loadactionset", actionset = "simple")
+  expect_true("simple" %in% swat:::.list_action_sets(caz)$actionset)
 
-  loadActionSet(caz, actionSet = "simple")
-  expect_true("simple" %in% listActionSets(caz)$actionset)
-
-  p <- listActionParms(caz, actn = "summary", display = FALSE)
+  p <- swat:::.list_action_params(caz, actn = "summary", display = FALSE)
   expect_true(length(p) > 15)
   expect_equivalent(p[[1]]$name, "table")
   expect_equivalent(p[[1]]$parmType, "value_list")
 })
 
-
 test_that("Test that the class for R-SWAT objects is returned correctly", {
   expect_is(caz, "CAS")
   expect_is(ct, "CASTable")
-  expect_is(to.CASDataFrame(ct), "casDataFrame")
+  expect_is(as.data.frame(ct), "data.frame")
 })

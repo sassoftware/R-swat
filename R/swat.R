@@ -25,8 +25,6 @@
 #'         connection to the CAS server and CAS session.
 #'   \item The \code{\link{CASTable}} class provides an interface to the
 #'         in-memory tables.
-#'   \item The \code{\link{casDataFrame}} class provides an interface
-#'         to the results for most actions.
 #' }
 #'
 #' Depending on how you install the package, you might be able to use binary
@@ -46,7 +44,7 @@
 #'
 #' @section Run a simple action:
 #' \preformatted{
-#'    results <- runAction(s, "builtins.serverStatus")
+#'    results <- cas.run(s, "builtins.serverStatus")
 #'    results$server
 #'    nodes actions
 #'  1     1      15
@@ -62,12 +60,12 @@
 #'
 #' @section Upload a data.frame to a CASTable:
 #' \preformatted{
-#'   irisct <- as.casTable(s, iris)
+#'   irisct <- as.CASTable(s, iris)
 #' }
 #'
 #' @section Load a CAS actionSet:
 #' \preformatted{
-#'   runAction(s, "builtins.loadActionSet", actionSet="regression")
+#'   cas.run(s, "builtins.loadActionSet", actionSet="regression")
 #' }
 #'
 #' @section Useful links:
@@ -213,7 +211,7 @@ retry_action_code <- 0x280034
 #' @param x C extension object.
 #'
 #' @keywords internal
-errorcheck <- function(x) {
+.error_check <- function(x) {
   if (!is.null(x)) {
     m <- x$getLastErrorMessage()
     if (!is.null(m) && nchar(m[[1]]) > 0) {
@@ -254,9 +252,9 @@ CASRequest <- setRefClass(
     initialize = function(sw_request) {
       callSuper(sw_request = sw_request)
       paramlist <- sw_request$getParameters()
-      swat::errorcheck(sw_request)
+      .error_check(sw_request)
       nparams <- sw_request$getNParameters()
-      swat::errorcheck(sw_request)
+      .error_check(sw_request)
       params <<- .casvaluelist2r(paramlist, nparams)
       .self
     }
@@ -297,45 +295,45 @@ CASResponse <- setRefClass(
 
       d <- list()
       d[["severity"]] <- sw_response$getDispositionSeverity()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       d[["reason"]] <- sw_response$getDispositionReason()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       d[["status"]] <- sw_response$getDispositionStatus()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       d[["statusCode"]] <- sw_response$getDispositionStatusCode()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       d[["debug"]] <- sw_response$getDispositionDebug()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       disposition <<- d
 
       p <- list()
       p[["elapsedTime"]] <- sw_response$getElapsedTime()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["cpuUserTime"]] <- sw_response$getCPUUserTime()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["cpuSystemTime"]] <- sw_response$getCPUSystemTime()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["systemTotalMemory"]] <- sw_response$getSystemTotalMemory()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["systemNodes"]] <- sw_response$getSystemNodes()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["systemCores"]] <- sw_response$getSystemCores()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["memory"]] <- sw_response$getMemory()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["memoryOS"]] <- sw_response$getMemoryOS()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["memorySystem"]] <- sw_response$getMemorySystem()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       p[["memoryQuota"]] <- sw_response$getMemoryQuota()
-      swat::errorcheck(sw_response)
+      .error_check(sw_response)
       performance <<- p
 
       msgs <- list()
       nmessages <- sw_response$getNMessages()
       for (i in 1:nmessages) {
         m <- sw_response$getNextMessage()
-        swat::errorcheck(sw_response)
+        .error_check(sw_response)
         if (!is.null(m) && nchar(m) > 0) {
           msgs[i] <- m
           if (as.logical(getOption("cas.print.messages"))) {
@@ -465,7 +463,7 @@ CASDataMsgHandler <- setRefClass(
       sw_error <- SW_CASError(soptions)
 
       sw_databuffer <<- SW_CASDataBuffer(reclen, nbuffrows, soptions, sw_error)
-      swat::errorcheck(sw_error)
+      .error_check(sw_error)
 
       .self
     },
@@ -489,11 +487,11 @@ CASDataMsgHandler <- setRefClass(
             row - 1, vars[[col]][["offset"]],
             as.character(values[[col]])
           )
-          swat::errorcheck(sw_databuffer)
+          .error_check(sw_databuffer)
         }
         else if (tolower(vars[[col]][["type"]]) == "int32") {
           sw_databuffer$setInt32(row - 1, vars[[col]][["offset"]], as.integer(values[[col]]))
-          swat::errorcheck(sw_databuffer)
+          .error_check(sw_databuffer)
         }
         else if (tolower(vars[[col]][["type"]]) == "int64") {
           tryCatch({
@@ -504,11 +502,11 @@ CASDataMsgHandler <- setRefClass(
           }, error = function(e) {
             sw_databuffer$setInt64(row - 1, vars[[col]][["offset"]], as.integer(values[[col]]))
           })
-          swat::errorcheck(sw_databuffer)
+          .error_check(sw_databuffer)
         }
         else if (tolower(vars[[col]][["type"]]) == "date") {
           sw_databuffer$setInt32(row - 1, vars[[col]][["offset"]], rDate2cas(values[[col]]))
-          swat::errorcheck(sw_databuffer)
+          .error_check(sw_databuffer)
         }
         else if (tolower(vars[[col]][["type"]]) == "datetime" ||
           tolower(vars[[col]][["type"]]) == "time") {
@@ -525,11 +523,11 @@ CASDataMsgHandler <- setRefClass(
           }, error = function(e) {
             sw_databuffer$setInt64(row - 1, vars[[col]][["offset"]], as.integer(value))
           })
-          swat::errorcheck(sw_databuffer)
+          .error_check(sw_databuffer)
         }
         else {
           sw_databuffer$setDouble(row - 1, vars[[col]][["offset"]], as.numeric(values[[col]]))
-          swat::errorcheck(sw_databuffer)
+          .error_check(sw_databuffer)
         }
       }
     },
@@ -541,14 +539,14 @@ CASDataMsgHandler <- setRefClass(
 
       "
       rc <- sw_databuffer$send(conn$sw_connection, nrecs)
-      swat::errorcheck(sw_databuffer)
+      .error_check(sw_databuffer)
     },
 
     finish = function(conn) {
       " Tell the server that you are finished sending data. "
       finished <<- TRUE
       out <- sw_databuffer$send(conn$sw_connection, 0)
-      swat::errorcheck(sw_databuffer)
+      .error_check(sw_databuffer)
       return(out)
     },
 
@@ -1034,27 +1032,27 @@ CAS <- setRefClass(
       if (is.null(prototype)) {
         conn <- cas_connection_class(.self$hostname, .self$port, .self$username,
                                      password, soptions, sw_error)
-        swat::errorcheck(sw_error)
+        .error_check(sw_error)
         sw_connection <<- conn
       }
       else {
         sw_connection <<- prototype$sw_connection$copy()
-        swat::errorcheck(prototype$sw_connection)
+        .error_check(prototype$sw_connection)
       }
 
       # This should always be disabled.  Messages are printed by CASResponse.
       sw_connection$setBooleanOption("print_messages", FALSE)
 
       hostname <<- sw_connection$getHostname()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       port <<- sw_connection$getPort()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       username <<- sw_connection$getUsername()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       session <<- sw_connection$getSession()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       soptions <<- sw_connection$getSOptions()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       callSuper(
         sw_connection = .self$sw_connection, sw_error = .self$sw_error,
         soptions = .self$soptions, hostname = .self$hostname, port = .self$port,
@@ -1076,7 +1074,7 @@ CAS <- setRefClass(
       if (as.logical(getOption("cas.gen.function"))) {
         ml <- getOption("cas.message.level")
         options(cas.message.level = "error")
-        actsets <- listActionSets(.self)
+        actsets <- .list_action_sets(.self)
         if (!as.logical(getOption("cas.gen.function.sig"))) {
           message(paste("NOTE: To generate the functions with signatures (for tab completion), set ",
                         "      options(cas.gen.function.sig=TRUE).", sep="\n"))
@@ -1107,7 +1105,7 @@ CAS <- setRefClass(
       # connections. This function has a parameter that can also end the
       # session.
       rc <- sw_connection$close()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       return(rc)
     },
 
@@ -1136,14 +1134,14 @@ CAS <- setRefClass(
     enableDataMessages = function() {
       # Enable data messages for table.addtable action.
       rc <- sw_connection$enableDataMessages()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       return(rc)
     },
 
     disableDataMessages = function() {
       # Disable data messages after table.addtable action.
       rc <- sw_connection$enableDataMessages()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       return(rc)
     },
 
@@ -1158,26 +1156,26 @@ CAS <- setRefClass(
         datamsghandler <- args$datamsghandler
       }
       sw_message <- sw_connection$receive()
-      swat::errorcheck(sw_connection)
+      .error_check(sw_connection)
       if (!is.null(sw_message) && !sw_message$isNULL()) {
         t <- sw_message$getType()
         if (t == "response") {
           sw_response <- sw_message$toResponse(sw_connection)
-          swat::errorcheck(sw_message)
+          .error_check(sw_message)
           if (!is.null(sw_response) && !sw_message$isNULL()) {
             output <- CASResponse$new(sw_response = sw_response)
           }
         }
         else if (t == "request" && !is.null(datamsghandler)) {
           sw_request <- sw_message$toRequest(sw_connection)
-          swat::errorcheck(sw_message)
+          .error_check(sw_message)
           if (!is.null(sw_request) && !sw_message$isNULL()) {
             output <- datamsghandler$call(CASRequest$new(sw_request = sw_request), .self)
           }
         }
         else if (t == "request") {
           sw_request <- sw_message$toRequest(sw_connection)
-          swat::errorcheck(sw_message)
+          .error_check(sw_message)
           if (!is.null(sw_request) && !sw_message$isNULL()) {
             output <- CASRequest$new(sw_request = sw_request)
           }
@@ -1197,7 +1195,7 @@ CAS <- setRefClass(
       # This method is only called in special circumstances where you want
       # to run an action in the background and retrieve the responses
       # manually. Typically, the generated action wrappers 
-      # (e.g., \\code{cas.table.columninfo()}, \\code{cas.simple.summary()},
+      # (e.g., \\code{cas.table.columnInfo()}, \\code{cas.simple.summary()},
       # and so on) are used to make action calls.
       args <- list(...)
       if (class(.self$sw_connection) == "REST_CASConnection") {
@@ -1436,15 +1434,25 @@ CAS <- setRefClass(
 #' (e.g., \code{cas.table.columninfo()}, \code{cas.simple.summary()},
 #' and so on) are used to make action calls.
 #'
-#' @param conn   CAS connection object.
+#' @param conn   CAS connection or CASTable object.
 #' @param actn   String containing action name.
 #' @param \ldots Action parameters.
 #'
-#' 
+#' @return CAS connection object
 #'
 #' @export
 cas.invoke <- function(conn, actn, ...) {
+  UseMethod("cas.invoke")
+}
+
+#' @export
+cas.invoke.CAS <- function(conn, actn, ...) {
   return(invisible(conn$invoke(actn, ...)))
+}
+
+#' @export
+cas.invoke.CASTable <- function(conn, actn, ...) {
+  return(invisible(cas.invoke(conn@conn, actn, ...)))
 }
 
 #' Invoke a CAS action and return the results
@@ -1469,15 +1477,34 @@ cas.invoke <- function(conn, actn, ...) {
 #' \code{cas.simple.summary()}, and so on) call this method behind
 #' the scenes and return the \code{results} field.
 #'
-#' @param conn   CAS connection object.
+#' @param conn   CAS connection or CASTable object.
 #' @param actn   String containing action name.
 #' @param \ldots Action parameters.
 #'
 #' @return 
 #'
 #' @export
-cas.retrieve <- function(conn, actn, ...) {
-  return(conn$retrieve(actn, ...))
+cas.retrieve <- function(conn, actn, stop.on.error = FALSE, ...) {
+  UseMethod("cas.retrieve")
+}
+
+#' @export
+cas.retrieve.CAS <- function(conn, actn, stop.on.error = FALSE, ...) {
+  args <- list(...)
+  if (is.null(args$`_messagelevel`)) {
+    args$`_messagelevel` <- as.character(getOption("cas.message.level"))
+  }
+  args$actn <- actn
+  res <- do.call(conn$retrieve, args)
+  if (stop.on.error) {
+    .check_for_cas_errors(res)
+  }
+  return(res)
+}
+
+#' @export
+cas.retrieve.CASTable <- function(conn, actn, stop.on.error = FALSE, ...) {
+  return(cas.retrieve(conn@conn, actn, stop.on.error = stop.on.error, ...))
 }
 
 #' Return a copy of the CAS connection object
@@ -1485,13 +1512,33 @@ cas.retrieve <- function(conn, actn, ...) {
 #' The new connection will use all of the same settings as the original,
 #' but it will be attached to a new session.
 #'
-#' @param conn CAS connection object.
+#' @param conn CAS connection or CASTable object.
 #'
 #' @return CAS connection object
 #'
 #' @export
 cas.copy <- function(conn) {
+  UseMethod("cas.copy")
+}
+
+#' @export
+cas.copy.CAS <- function(conn) {
   return(conn$copy())
+}
+
+#' @export
+cas.copy.CASTable <- function(conn) {
+  tbl <- CASTable(conn@conn, conn@tname, caslib = c(conn@caslib),
+                  columns = c(conn@names),
+                  where = c(conn@where), orderby = c(conn@orderby),
+                  groupby = c(conn@groupby), gbmode = c(conn@gbmode),
+                  computedOnDemand = conn@computedOnDemand,
+                  computedVars = c(conn@computedVars),
+                  computedVarsProgram = c(conn@computedVarsProgram))
+  tbl@XcomputedVarsProgram <- c(conn@XcomputedVarsProgram)
+  tbl@XcomputedVars <- c(conn@XcomputedVars)
+  tbl@compcomp <- conn@compcomp
+  return(tbl)
 }
 
 #' Return a vector of \code{num} CAS connection objects
@@ -1588,11 +1635,11 @@ CASEventWatcher <- setRefClass(
           connections[[1]]$soptions, connections[[1]]$sw_error
         )
       }
-      swat::errorcheck(connections[[1]]$sw_error)
+      .error_check(connections[[1]]$sw_error)
 
       for (i in seq_len(length(connections))) {
         sw_watcher$addConnection(connections[[i]]$sw_connection)
-        swat::errorcheck(sw_watcher)
+        .error_check(sw_watcher)
       }
 
       callSuper(
@@ -1646,13 +1693,13 @@ getnext <- function(...) {
   # Get next result from response
   if (length(responses) > 0) {
     sw_result <- responses[[1]]$sw_response$getNextResult()
-    swat::errorcheck(responses[[1]]$sw_response)
+    .error_check(responses[[1]]$sw_response)
     if (is.null(sw_result) || sw_result$isNULL()) {
       return(NULL)
     }
     output <- list()
     key <- sw_result$getKey()
-    swat::errorcheck(sw_result)
+    .error_check(sw_result)
     if (is.null(key) || nchar(key) == 0) {
       val <- .cas2r(sw_result)
       if (!is.null(val)) {
@@ -1677,7 +1724,7 @@ getnext <- function(...) {
     watcher <- watchers[[1]]
     while (TRUE) {
       idx <- watcher$sw_watcher$wait()
-      swat::errorcheck(watcher$sw_watcher)
+      .error_check(watcher$sw_watcher)
 
       # Finished
       if (idx == -2) {
@@ -1737,59 +1784,59 @@ getnext <- function(...) {
 #'
 .cas2r <- function(sw_value) {
   t <- sw_value$getType()
-  swat::errorcheck(sw_value)
+  .error_check(sw_value)
   if (t == "nil") {
     return(NULL)
   } else if (t == "int32") {
     out <- sw_value$getInt32()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(out)
   } else if (t == "int64") {
     out <- sw_value$getInt64AsString()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(swat.as.integer64(out))
   } else if (t == "double") {
     out <- sw_value$getDouble()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(out)
   } else if (t == "string") {
     out <- sw_value$getString()
     if (is.null(out)) {
       out <- ""
     }
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(out)
   } else if (t == "boolean") {
     out <- sw_value$getBoolean()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(out)
   } else if (t == "date") {
     out <- sw_value$getDate()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(CASd.as.Date(out))
   } else if (t == "time") {
     out <- sw_value$getTimeAsString()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(CASdt.as.POSIXct(out))
   } else if (t == "datetime") {
     out <- sw_value$getDateTimeAsString()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(CASdt.as.POSIXct(out))
   } else if (t == "table") {
     sw_table <- sw_value$getTable()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     n_cols <- sw_table$getNColumns()
-    swat::errorcheck(sw_table)
+    .error_check(sw_table)
     n_rows <- sw_table$getNRows()
-    swat::errorcheck(sw_table)
+    .error_check(sw_table)
     table <- NULL
 
     name <- .no_null_string(sw_table$getName())
-    swat::errorcheck(sw_table)
+    .error_check(sw_table)
     label <- .no_null_string(sw_table$getLabel())
-    swat::errorcheck(sw_table)
+    .error_check(sw_table)
     title <- .no_null_string(sw_table$getTitle())
-    swat::errorcheck(sw_table)
+    .error_check(sw_table)
 
     # Get table extended attributes
     if (class(sw_table) == "REST_CASTable") {
@@ -1799,71 +1846,71 @@ getnext <- function(...) {
       attrs <- list()
       while (TRUE) {
         key <- sw_table$getNextAttributeKey()
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
         if (is.null(key)) break
         typ <- sw_table$getAttributeType(key)
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
 
         if (typ == "int32") {
           attrs[[key]] <- sw_table$getInt32Attribute(key)
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
         }
         else if (typ == "int64") {
           attrs[[key]] <- sw_table$getInt64AttributeAsString(key)
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
           attrs[[key]] <- swat.as.integer64(attrs[[key]])
         }
         else if (typ == "double") {
           attrs[[key]] <- sw_table$getDoubleAttribute(key)
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
         }
         else if (typ == "string") {
           attrs[[key]] <- .no_null_string(sw_table$getStringAttribute(key))
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
         }
         else if (typ == "date") {
           attrs[[key]] <- sw_table$getInt32Attribute(key)
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
           attrs[[key]] <- CASd.as.Date(attrs[[key]])
         }
         else if (typ == "time") {
           attrs[[key]] <- sw_table$getInt64AttributeAsString(key)
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
           attrs[[key]] <- CASdt.as.POSIXct(attrs[[key]])
         }
         else if (typ == "datetime") {
           attrs[[key]] <- sw_table$getInt64AttributeAsString(key)
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
           attrs[[key]] <- CASdt.as.POSIXct(attrs[[key]])
         }
         else if (typ == "int32-array") {
           nitems <- sw_table$getAttributeNItems()
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
           value <- list()
           for (i in 1:nitems) {
             value[[i]] <- sw_table$getInt32ArrayAttributeItem(key, i - 1)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
           }
           attrs[[key]] <- value
         }
         else if (typ == "int64-array") {
           nitems <- sw_table$getAttributeNItems()
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
           value <- list()
           for (i in 1:nitems) {
             value[[i]] <- sw_table$getInt64ArrayAttributeItemAsString(key, i - 1)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             value[[i]] <- swat.as.integer64(value[[i]])
           }
           attrs[[key]] <- value
         }
         else if (typ == "double-array") {
           nitems <- sw_table$getAttributeNItems()
-          swat::errorcheck(sw_table)
+          .error_check(sw_table)
           value <- list()
           for (i in 1:nitems) {
             value[[i]] <- sw_table$getDoubleArrayAttributeItem(key, i - 1)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
           }
           attrs[[key]] <- value
         }
@@ -1879,97 +1926,97 @@ getnext <- function(...) {
     if (n_cols > 0) {
       for (col in 0:(n_cols - 1)) {
         col_labels <- c(col_labels, .no_null_string(sw_table$getColumnLabel(col)))
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
         col_formats <- c(col_labels, .no_null_string(sw_table$getColumnFormat(col)))
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
         col_widths <- c(col_widths, sw_table$getColumnWidth(col))
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
         col_types <- c(col_types, sw_table$getColumnType(col))
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
         col_sizes <- c(col_sizes, list(1, sw_table$getColumnArrayNItems(col)))
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
       }
     }
 
     # Get column extended attributes
     if (class(sw_table) == "REST_CASTable") {
-      col.attrs <- sw_table$getColumnAttributes()
+      col_attrs <- sw_table$getColumnAttributes()
     }
     else {
       # Get column extended attributes
-      col.attrs <- c()
+      col_attrs <- c()
       if (n_cols > 0) {
         for (col in 0:(n_cols - 1)) {
           info <- list()
-          col.attrs <- c(col.attrs, info)
+          col_attrs <- c(col_attrs, info)
 
           while (TRUE) {
             key <- sw_table$getNextColumnAttributeKey(col)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (is.null(key)) break
             typ <- sw_table$getColumnAttributeType(col, key)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
 
             if (typ == "double") {
               info[[key]] <- sw_table$getColumnDoubleAttribute(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
             }
             else if (typ == "int32") {
               info[[key]] <- sw_table$getColumnInt32Attribute(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
             }
             else if (typ == "int64") {
               info[[key]] <- sw_table$getColumnInt64AttributeAsString(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               info[[key]] <- swat.as.integer64(info[[key]])
             }
             else if (typ == "string") {
               info[[key]] <- .no_null_string(sw_table$getColumnStringAttribute(col, key))
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
             }
             else if (typ == "date") {
               info[[key]] <- sw_table$getColumnInt32Attribute(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               info[[key]] <- CASd.as.Date(info[[key]])
             }
             else if (typ == "time") {
               info[[key]] <- sw_table$getColumnInt64AttributeAsString(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               info[[key]] <- CASdt.as.POSIXct(info[[key]])
             }
             else if (typ == "datetime") {
               info[[key]] <- sw_table$getColumnInt64AttributeAsString(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               info[[key]] <- CASdt.as.POSIXct(info[[key]])
             }
             else if (typ == "int32-array") {
               nitems <- sw_table$getColumnAttributeNItems(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               value <- list()
               for (i in 1:nitems) {
                 value[[i]] <- sw_table$getColumnInt32ArrayAttributeItem(col, key, i - 1)
-                swat::errorcheck(sw_table)
+                .error_check(sw_table)
               }
               info[[key]] <- value
             }
             else if (typ == "int64-array") {
               nitems <- sw_table$getColumnAttributeNItems(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               value <- list()
               for (i in 1:nitems) {
                 value[[i]] <- sw_table$getColumnInt64ArrayAttributeItemAsString(col, key, i - 1)
-                swat::errorcheck(sw_table)
+                .error_check(sw_table)
                 value[[i]] <- swat.as.integer64(value[[i]])
               }
               info[[key]] <- value
             }
             else if (typ == "double-array") {
               nitems <- sw_table$getColumnAttributeNItems(col, key)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               value <- list()
               for (i in 1:nitems) {
                 value[[i]] <- sw_table$getColumnDoubleArrayAttributeItem(col, key, i - 1)
-                swat::errorcheck(sw_table)
+                .error_check(sw_table)
               }
               info[[key]] <- value
             }
@@ -2054,11 +2101,11 @@ getnext <- function(...) {
       for (col in 0:(n_cols - 1)) {
         column <- c()
         t <- sw_table$getColumnType(col)
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
         len <- sw_table$getColumnArrayNItems(col)
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
         name <- sw_table$getColumnName(col)
-        swat::errorcheck(sw_table)
+        .error_check(sw_table)
 
         if (n_rows == 0) {
           table <- add_column(table, name, character())
@@ -2066,7 +2113,7 @@ getnext <- function(...) {
         else if (t == "int32") {
           for (row in 0:(n_rows - 1)) {
             out <- sw_table$getInt32Value(row, col)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (identical(out, numeric(0))) {
               out <- 0
             }
@@ -2079,7 +2126,7 @@ getnext <- function(...) {
             column <- c()
             for (row in 0:(n_rows - 1)) {
               out <- sw_table$getInt32ArrayValue(row, col, elem)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               if (identical(out, numeric(0))) {
                 out <- 0
               }
@@ -2092,7 +2139,7 @@ getnext <- function(...) {
           column <- c()
           for (row in 0:(n_rows - 1)) {
             out <- sw_table$getInt64ValueAsString(row, col)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (identical(out, numeric(0))) {
               out <- 0
             }
@@ -2105,7 +2152,7 @@ getnext <- function(...) {
             column <- c()
             for (row in 0:(n_rows - 1)) {
               out <- sw_table$getInt64ArrayValueAsString(row, col, elem)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               if (identical(out, numeric(0))) {
                 out <- 0
               }
@@ -2117,7 +2164,7 @@ getnext <- function(...) {
         else if (t == "double") {
           for (row in 0:(n_rows - 1)) {
             out <- sw_table$getDoubleValue(row, col)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (identical(out, numeric(0))) {
               out <- 0
             }
@@ -2130,7 +2177,7 @@ getnext <- function(...) {
             column <- c()
             for (row in 0:(n_rows - 1)) {
               out <- sw_table$getDoubleArrayValue(row, col, elem)
-              swat::errorcheck(sw_table)
+              .error_check(sw_table)
               if (identical(out, numeric(0))) {
                 out <- 0
               }
@@ -2142,7 +2189,7 @@ getnext <- function(...) {
         else if (t == "char") {
           for (row in 0:(n_rows - 1)) {
             strval <- sw_table$getStringValue(row, col)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (is.null(strval)) {
               strval <- ""
             }
@@ -2153,7 +2200,7 @@ getnext <- function(...) {
         else if (t == "varchar") {
           for (row in 0:(n_rows - 1)) {
             strval <- sw_table$getStringValue(row, col)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (is.null(strval)) {
               strval <- ""
             }
@@ -2165,7 +2212,7 @@ getnext <- function(...) {
           column <- list()
           for (row in 0:(n_rows - 1)) {
             value <- set_missing(sw_table$getDatetimeValueAsString(row, col), int64_missval)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (is.na(value)) {
               column[[length(column) + 1]] <- value
             } else {
@@ -2178,7 +2225,7 @@ getnext <- function(...) {
           column <- list()
           for (row in 0:(n_rows - 1)) {
             value <- set_missing(sw_table$getDateValue(row, col), int32_missval)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (is.na(value)) {
               column[[length(column) + 1]] <- value
             } else {
@@ -2191,7 +2238,7 @@ getnext <- function(...) {
           column <- list()
           for (row in 0:(n_rows - 1)) {
             value <- set_missing(sw_table$getTimeValueAsString(row, col), int64_missval)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (is.na(value)) {
               column[[length(column) + 1]] <- value
             } else {
@@ -2203,7 +2250,7 @@ getnext <- function(...) {
         else if (t == "binary") {
           for (row in 0:(n_rows - 1)) {
             strval <- sw_table$getBinaryBase64Value(row, col)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (is.null(strval)) {
               strval <- ""
             }
@@ -2214,7 +2261,7 @@ getnext <- function(...) {
         else if (t == "varbinary") {
           for (row in 0:(n_rows - 1)) {
             strval <- sw_table$getBinaryBase64Value(row, col)
-            swat::errorcheck(sw_table)
+            .error_check(sw_table)
             if (is.null(strval)) {
               strval <- ""
             }
@@ -2231,20 +2278,26 @@ getnext <- function(...) {
       }
     }
 
-    # TODO: name, label, attrs and colinfo needs to be added to the
-    #       output data.frame
-    return(as.CASDataFrame(table,
-      name = name, label = label, title = title, attrs = attrs,
-      col.labels = col_labels, col.formats = col_formats,
-      col.attrs = col.attrs, col.sizes = col_sizes,
-      col.types = col_types, col.widths = col_widths
-    ))
+    output <- data.frame(table, check.names = FALSE)
+
+    attributes(output)$table.name <- name
+    attributes(output)$table.label <- label
+    attributes(output)$table.title <- title
+    attributes(output)$table.attrs <- attrs
+    attributes(output)$col.labels <- col_labels
+    attributes(output)$col.formats <- col_formats
+    attributes(output)$col.attrs <- col_attrs
+    attributes(output)$col.sizes <- col_sizes
+    attributes(output)$col.types <- col_types
+    attributes(output)$col.widths <- col_widths
+
+    return(output)
   }
   else if (t == "list") {
     len <- sw_value$getListNItems()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     haskeys <- sw_value$hasKeys()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     output <- list()
 
     if (len < 1) {
@@ -2255,7 +2308,7 @@ getnext <- function(...) {
       idx <- 1
       for (i in 1:len) {
         sw_item <- sw_value$getListItem(i - 1)
-        swat::errorcheck(sw_value)
+        .error_check(sw_value)
         val <- .cas2r(sw_item)
 
         if (!is.null(val)) {
@@ -2267,9 +2320,9 @@ getnext <- function(...) {
     else {
       for (i in 0:(len - 1)) {
         sw_item <- sw_value$getListItem(i)
-        swat::errorcheck(sw_value)
+        .error_check(sw_value)
         key <- sw_item$getKey()
-        swat::errorcheck(sw_item)
+        .error_check(sw_item)
         val <- .cas2r(sw_item)
         if (!is.null(val)) {
           output[[key]] <- val
@@ -2280,7 +2333,7 @@ getnext <- function(...) {
   }
   else if (t == "blob") {
     out <- sw_value$getBlobBase64()
-    swat::errorcheck(sw_value)
+    .error_check(sw_value)
     return(jsonlite::base64_dec(as.character(out)))
   }
   else {
@@ -2309,12 +2362,15 @@ getnext <- function(...) {
   {
     rc <- sw_values$setBlobFromBase64(i, key, gsub("\\s+", "", perl=TRUE,
                                                    jsonlite::base64_enc(value)))
-    swat::errorcheck(sw_values)
+    .error_check(sw_values)
     return (i + 1)
+  }
+  else if (t == "CASTable") {
+    return(.set_list_value(sw_values, i, key, .gen_table_param(value)))
   }
   else if (t == "list" || length(value) > 1) {
     sw_sublist <- sw_values$createListAt(i, key, length(value))
-    swat::errorcheck(sw_values)
+    .error_check(sw_values)
     for (j in seq_len(length(value))) {
       if (is.null(names(value[j])) || nchar(names(value[j])) == 0) {
         .set_list_value(sw_sublist, j - 1, "", value[[j]])
@@ -2327,30 +2383,27 @@ getnext <- function(...) {
   }
   else if (t == "logical") {
     sw_values$setBoolean(i, key, value[[1]])
-    swat::errorcheck(sw_values)
+    .error_check(sw_values)
     return(i + 1)
   }
   else if (t == "integer") {
     sw_values$setInt64(i, key, value[[1]])
-    swat::errorcheck(sw_values)
+    .error_check(sw_values)
     return(i + 1)
   }
   else if (t == "numeric") {
     sw_values$setDouble(i, key, value[[1]])
-    swat::errorcheck(sw_values)
+    .error_check(sw_values)
     return(i + 1)
   }
   else if (t == "character" || t == "factor") {
     sw_values$setString(i, key, value[[1]])
-    swat::errorcheck(sw_values)
+    .error_check(sw_values)
     return(i + 1)
-  }
-  else if (t == "CASTable") {
-    return(.set_list_value(sw_values, i, key, .gen_table_param(value)))
   }
   else {
     sw_values$setNil(i, key)
-    swat::errorcheck(sw_values)
+    .error_check(sw_values)
     return(i + 1)
   }
   return(i)
@@ -2396,9 +2449,9 @@ getnext <- function(...) {
   output <- list()
   for (i in 0:(len - 1)) {
     sw_item <- sw_values$getItem(i)
-    swat::errorcheck(sw_values)
+    .error_check(sw_values)
     key <- sw_item$getKey()
-    swat::errorcheck(sw_item)
+    .error_check(sw_item)
     if (is.null(key) || nchar(key) == 0) {
       output[[num]] <- .cas2r(sw_item)
       num <- num + 1
@@ -2499,7 +2552,7 @@ cas.upload <- function(conn, frame, ...) {
 #' @export
 cas.upload.frame <- function(conn, frame, ...) {
   res <- conn$upload(frame, ...)
-  return(defCasTable(conn, res$results$tableName, caslib = res$results$caslib))
+  return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
 }
 
 #' Upload a data file to a CAS table
@@ -2516,5 +2569,5 @@ cas.upload.frame <- function(conn, frame, ...) {
 #' @export
 cas.upload.file <- function(conn, path, ...) {
   res <- conn$upload(path, ...)
-  return(defCasTable(conn, res$results$tableName, caslib = res$results$caslib))
+  return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
 }

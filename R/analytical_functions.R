@@ -18,7 +18,7 @@ sasDecisionTree <- function(x, formula = NULL, target = "", inputs = "", nominal
                             crit = "gain", maxlevel = 6L, leafsize = 5L,
                             missing = "useInSearch", assessment = TRUE, event = "") {
   if (exists("formula") & class(formula) == "formula") {
-    f1 <- swat::casFormula(formula, x)
+    f1 <- .cas_formula(formula, x)
     target <- toString(f1[1])
     inputs <- f1[[2]]
   }
@@ -26,7 +26,7 @@ sasDecisionTree <- function(x, formula = NULL, target = "", inputs = "", nominal
   # Are there nominals
   if (length(nominals) > 1 || nchar(nominals) > 0) {
     nom <- as.list(nominals)
-    res <- runAction(x, "decisionTree.dtreeTrain",
+    res <- cas.run(x, "decisionTree.dtreeTrain",
       check_errors = TRUE, inputs = as.list(inputs), target = target,
       casout = list(name = paste(x@tname, "_modelout", sep = ""), replace = TRUE),
       encodeName = TRUE, nominals = nom, crit = crit, prune = TRUE,
@@ -34,7 +34,7 @@ sasDecisionTree <- function(x, formula = NULL, target = "", inputs = "", nominal
     )
   }
   else {
-    res <- runAction(x, "decisionTree.dtreeTrain",
+    res <- cas.run(x, "decisionTree.dtreeTrain",
       check_errors = TRUE, inputs = as.list(inputs), target = target,
       crit = crit, prune = TRUE, varImp = TRUE, stat = TRUE, missing = toupper(missing)
     )
@@ -43,7 +43,7 @@ sasDecisionTree <- function(x, formula = NULL, target = "", inputs = "", nominal
   res$call <- match.call()
   vars <- c(x@names, x@computedVars)
   vars <- vars[vars != ""]
-  score <- runAction(x, "decisionTree.dtreeScore",
+  score <- cas.run(x, "decisionTree.dtreeScore",
     check_errors = TRUE,
     target = target,
     encodeName = TRUE,
@@ -53,11 +53,11 @@ sasDecisionTree <- function(x, formula = NULL, target = "", inputs = "", nominal
   )
 
   # Define score CAS table
-  score_out <- defCasTable(x@conn, toString(score$OutputCasTables[2]))
+  score_out <- CASTable(x@conn, toString(score$OutputCasTables[2]))
   if (assessment == TRUE) {
     if (paste("I_", target, sep = "") %in% colnames(score_out)) {
       stopifnot(nchar(score_out@tname) > 0 & nchar(event) > 0)
-      assess <- runAction(score_out@conn,
+      assess <- cas.run(score_out@conn,
         "percentile.assess",
         check_errors = TRUE,
         table = list(name = score_out@tname),
@@ -70,15 +70,15 @@ sasDecisionTree <- function(x, formula = NULL, target = "", inputs = "", nominal
         fitstatout = list(name = paste(x@tname, "_fitstat", sep = ""), replace = TRUE),
         rocout = list(name = paste(x@tname, "_roc", sep = ""), replace = TRUE)
       )
-      res$roc <- defCasTable(x@conn, toString(assess$OutputCasTables[2, 2]))
+      res$roc <- CASTable(x@conn, toString(assess$OutputCasTables[2, 2]))
     }
     .check_for_cas_errors(assess)
-    res$lift <- defCasTable(x@conn, toString(assess$OutputCasTables[1, 2]))
-    res$fitstat <- defCasTable(x@conn, toString(assess$OutputCasTables[3, 2]))
+    res$lift <- CASTable(x@conn, toString(assess$OutputCasTables[1, 2]))
+    res$fitstat <- CASTable(x@conn, toString(assess$OutputCasTables[3, 2]))
   }
 
   res$score <- score
-  sascode <- runAction(x@conn, "decisionTree.dtreeCode", check_errors = TRUE,
+  sascode <- cas.run(x@conn, "decisionTree.dtreeCode", check_errors = TRUE,
                        modelTable = paste(x@tname, "_modelout", sep = ""))
   res$sasCode <- sascode
   return(res)
@@ -89,7 +89,7 @@ sasDecisionForest <- function(x, formula = NULL, target = "", inputs = "", nomin
                               missing = "useInSearch", ntree = 50, vote = "majority",
                               bootstrap = .632120559) {
   if (exists("formula") & class(formula) == "formula") {
-    f1 <- swat::casFormula(formula, x)
+    f1 <- .cas_formula(formula, x)
     target <- toString(f1[1])
     inputs <- f1[[2]]
   }
@@ -97,14 +97,14 @@ sasDecisionForest <- function(x, formula = NULL, target = "", inputs = "", nomin
   # Are there nominals
   if (length(nominals) > 1 || nchar(nominals) > 0) {
     nom <- as.list(nominals)
-    res <- runAction(x, "decisionTree.forestTrain",
+    res <- cas.run(x, "decisionTree.forestTrain",
       check_errors = TRUE, inputs = as.list(inputs), target = target,
       nominals = nom, crit = crit, prune = TRUE, varImp = TRUE, missing = toupper(missing),
       nTree = ntree, bootstrap = bootstrap, vote = toupper(vote)
     )
   }
   else {
-    res <- runAction(x, "decisionTree.forestTrain",
+    res <- cas.run(x, "decisionTree.forestTrain",
       check_errors = TRUE, inputs = as.list(inputs), target = target,
       crit = crit, prune = TRUE, varImp = TRUE, missing = toupper(missing),
       nTree = ntree, bootstrap = bootstrap, vote = toupper(vote)

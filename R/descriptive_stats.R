@@ -16,16 +16,115 @@
 
 # CAS descriptive statistics ------------------------
 
-#' Maximum Values
+#' @keywords internal
+.summary_stat <- function(object, stat, na.rm = FALSE, numeric.only = FALSE) {
+  UseMethod(".summary_stat")
+}
+
+#' Function for retrieving a single summary statistic
+#'
+#' @param x CASTable
+#' @param stat Name of statistic to compute
+#' @param na.rm Should missing values be omitted from the calculations?
+#'
+#' @return Named numeric vector
+#'
+#' @keywords internal
+.summary_stat.CASTable <- function(x, stat, na.rm = FALSE, numeric.only = FALSE) {
+  stat <- tolower(stat)
+
+  if (stat %in% c("n", "nmiss")) {
+    res <- cas.retrieve(x@conn, "simple.summary", stop.on.error = TRUE,
+                        table = x, subset = stat)
+
+    res <- res$results$Summary
+
+    if (numeric.only && length(names(x)) > nrow(res)) {
+      stop("only defined on a CASTable with all numeric variables")
+    }
+
+    row.names(res) <- res$Column
+    defval <- if (stat == "n") nrow(x) else 0
+    statcol <- if (stat == "n") "N" else "NMiss"
+    res <- sapply(names(x), function(col) {
+      val <- res[col, statcol][[1]]
+      return(if (!is.na(val)) val else defval)
+    })
+  }
+
+  else if (stat %in% c("min", "max")) {
+    # Try summary first and hope there aren't any character variables.
+    res <- cas.retrieve(x@conn, "simple.summary", stop.on.error = TRUE,
+                        table = x, subset = c(stat, "nmiss"))
+
+    nmiss <- res$results$Summary$NMiss
+    res <- .translate(res$results$Summary[, !names(res$results$Summary) %in% c('NMiss')])
+
+    if (numeric.only && length(names(x)) > length(res)) {
+      stop("only defined on a CASTable with all numeric variables")
+    }
+
+    # check for missing values and set value to NA
+    if (!na.rm) {
+      res <- replace(res, nmiss > 0, NA)
+    }
+
+    # If our result has fewer items than names in the table, we have character variables.
+    # We don't do all variables here because topk treats empty strings as missing
+    # values, but that's not consistent with R's min()/max() functions.
+    if (length(res) < length(names(x))) {
+      resnames <- names(res)
+      xnames <- names(x)
+      chars <- xnames[sapply(xnames, function(y) !(y %in% resnames))]
+      topk <- if (stat == "min") 0 else 1
+      bottomk <- if (stat == "min") 1 else 0
+      out <- cas.retrieve(x@conn, "simple.topk", stop.on.error = TRUE,
+                          table = x, topk = topk, bottomk = bottomk,
+                          includemisc = FALSE, raw = TRUE,
+                          includemissing = TRUE, inputs = chars)
+      out <- out$results$Topk
+      row.names(out) <- out$Column
+      res <- sapply(names(x), function(col) {
+        if (col %in% chars) {
+          return(out[col, "CharVar"][[1]])
+        }
+        return(res[col][[1]])
+      })
+    }
+  }
+
+  else {
+    res <- cas.retrieve(x@conn, "simple.summary", stop.on.error = TRUE,
+                        table = x, subset = c(stat, "nmiss"))
+
+    nmiss <- res$results$Summary$NMiss
+    res <- .translate(res$results$Summary[, !names(res$results$Summary) %in% c('NMiss')])
+
+    if (numeric.only && length(names(x)) > length(res)) {
+      stop("only defined on a CASTable with all numeric variables")
+    }
+
+    # check for missing values and set value to NA
+    if (!na.rm) {
+      res <- replace(res, nmiss > 0, NA)
+    }
+  }
+
+  return(res)
+}
+
+#' Maximum Values (numeric)
+#'
+#' This method only computes the maximum of numeric values.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return scalar
+#' @return Numeric
 #'
 #' @seealso \code{cas.max}
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -35,27 +134,21 @@
 setMethod(
   "max",
   signature(x = "CASTable"),
-  function(x) {
-    vars <- ""
-    tp <- .gen_table_param(x)
-    vars <- c(x@names, x@computedVars)
-    vars <- vars[vars != ""]
-    res <- casRetrieve(x@conn, "simple.topK", table = tp, inputs = vars, bottomk = 0)
-    .check_for_cas_errors(res)
-    return(max(as.numeric(res$results$Topk$FmtVar)))
+  function(x, na.rm = FALSE) {
+    return(max(.summary_stat(x, "max", na.rm = na.rm, numeric.only = TRUE), na.rm = na.rm))
   }
 )
 
 #' Minimum Value
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return scalar
+#' @return Numeric
 #'
 #' @seealso \code{cas.min}
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -65,30 +158,22 @@ setMethod(
 setMethod(
   "min",
   signature(x = "CASTable"),
-  function(x) {
-    vars <- ""
-    tp <- .gen_table_param(x)
-    nvars <- swat::numericVarList(x)
-    res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars, subSet = list("MIN"))
-    .check_for_cas_errors(res)
-    return(min(res$results$Summary[2]))
+  function(x, na.rm = FALSE) {
+    return(min(.summary_stat(x, "min", na.rm = na.rm, numeric.only = TRUE), na.rm = na.rm))
   }
 )
 
-#' Mean Value for a Single Column
-#'
-#' Returns the mean value for the specified column in
-#' the input table.
+#' Mean Value
 #'
 #' @param x      \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #' @param \ldots Additional arguments. Currently ignored.
 #'
-#' @return scalar
+#' @return Numeric
 #'
 #' @seealso \code{cas.mean}
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -98,26 +183,23 @@ setMethod(
 setMethod(
   "mean",
   signature(x = "CASTable"),
-  function(x, ...) {
-    if (ncol(x) == 1) {
-      return(as.numeric(cas.mean(x)[2]))
-    }
-    else {
-      stop("The mean function accepts one column only. Use cas.mean for multple columns.")
-    }
+  function(x, na.rm = FALSE, ...) {
+    total <- .summary_stat(x, "sum", na.rm = na.rm, numeric.only = TRUE)
+    count <- .summary_stat(x, "n", na.rm = na.rm, numeric.only = TRUE)
+    return(sum(total, na.rm = na.rm) / sum(count, na.rm = na.rm))
   }
 )
 
 #' Median Values
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return scalar
+#' @return Named numeric vector
 #'
 #' @seealso \code{cas.median}
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -127,12 +209,11 @@ setMethod(
 setMethod(
   "median",
   signature(x = "CASTable"),
-  function(x) {
-    tp <- .gen_table_param(x)
-    nvars <- swat::numericVarList(x)
-    res <- casRetrieve(x@conn, "percentile.percentile", table = tp,
-                       inputs = nvars, values = "50")
-    return(as.numeric(res$results$Percentile$Value))
+  function(x, na.rm = FALSE) {
+    if (length(names(x)) > 1) {
+      stop("median can only be computed on a single table column")
+    }
+    return(cas.median(x, na.rm = na.rm)[[1]])
   }
 )
 
@@ -145,9 +226,9 @@ setMethod(
 #'
 #' @seealso \code{cas.sum}
 #'
-#' @return vector
+#' @return Named numeric vector
+#'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -158,20 +239,7 @@ setMethod(
   "colSums",
   signature(x = "CASTable"),
   function(x, na.rm = FALSE, dims = 1, ...) {
-    tp <- .gen_table_param(x)
-    nvars <- swat::numericVarList(x)
-    res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                       subSet = list("SUM"))
-    res2 <- swat::translate(res$results$Summary)
-    # check for missing values and set value to NA
-    if (!na.rm) {
-      res3 <- replace(res2, cas.nmiss(x) > 0, NA)
-    }
-    else {
-      res3 <- res2
-    }
-
-    return(res3)
+    return(.summary_stat(x, "sum", na.rm = na.rm, numeric.only = TRUE))
   }
 )
 
@@ -193,9 +261,9 @@ setMethod(
 #' @param method  Ignored. This parameter is here for compatibility with
 #'   the \code{cor()} function.
 #'
-#' @return matrix
+#' @return Matrix
+#'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -209,7 +277,7 @@ setMethod(
   signature(x = "CASTable"),
   function(x, y = NULL, use = "everything", method = c("pearson")) {
     if (!is.null(y)) {
-      if (y@tname != x@tname) {
+      if (y@tname != x@tname || y@caslib != x@caslib) {
         stop("x and y must come from the same table")
       }
       vars <- c(x@names, y@names)
@@ -260,7 +328,7 @@ setMethod(
           v2@where <- paste("(", w, ") and (", complete, ")")
         }
       }
-      res <- casRetrieve(x@conn, "simple.correlation",
+      res <- cas.retrieve(x@conn, "simple.correlation",
         table = tp,
         simple = FALSE, inputs = as.list(vars)
       )
@@ -302,7 +370,7 @@ setMethod(
       }
 
       tp <- .gen_table_param(x)
-      res <- casRetrieve(x@conn, "simple.correlation", table = tp,
+      res <- cas.retrieve(x@conn, "simple.correlation", table = tp,
                          simple = FALSE, inputs = as.list(vars))
       cormat <- unique(res$results$Correlation)
       rownames(cormat) <- as.list(unlist(t(cormat[1])))
@@ -343,10 +411,10 @@ setMethod(
 #' @param method  Ignored. This parameter is here for compatibility with
 #'   the \code{cov()} function.
 #'
-#' @return matrix
+#' @return Matrix
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
+#'
 #' @examples
 #' \dontrun{
 #' cov(ct1)
@@ -440,13 +508,13 @@ setMethod(
 #' Column Means
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return vector
+#' @return Named numeric vector
 #'
 #' @seealso \code{cas.mean}
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -456,12 +524,8 @@ setMethod(
 setMethod(
   "colMeans",
   signature(x = "CASTable"),
-  function(x) {
-    tp <- .gen_table_param(x)
-    nvars <- swat::numericVarList(x)
-    res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                       subSet = list("MEAN"))
-    return(swat::translate(res$results$Summary))
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "mean", na.rm = na.rm, numeric.only = TRUE))
   }
 )
 
@@ -474,30 +538,24 @@ setMethod(
 #'
 #' @param x \code{\link{CASTable}} object.
 #'
-#' @return casDataFrame
+#' @return Named numeric vector
 #'
 #' @seealso \code{cas.nmiss} to count missing values.
 #'
-#' The result includes one row for each numeric variable
-#' and a column that is named N for the nonmissing count.
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.count(ct[1:4])
 #' cas.count(ct$n2)
 #' }
-cas.count <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("N"))
-  .check_for_cas_errors(res)
-  return(res$results$Summary)
+cas.count <- function(object, na.rm = FALSE) {
+  UseMethod("cas.count")
+}
+
+#' @export
+cas.count.CASTable <- function(x) {
+  return(.summary_stat(x, "n"))
 }
 
 #' Maximum Values
@@ -508,31 +566,26 @@ cas.count <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return casDataFrame
+#' @return Named numeric vector
 #'
 #' @seealso \code{max,CASTable-method}
 #'
-#' The result includes one row for each numeric variable
-#' and a column that is named Max for the maximum value.
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.max(ct[1:4])
 #' cas.max(ct$n2)
 #' }
-cas.max <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("MAX"))
-  .check_for_cas_errors(res)
-  return(res$results$Summary)
+cas.max <- function(object, na.rm = FALSE) {
+  UseMethod("cas.max")
+}
+
+#' @export
+cas.max.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "max", na.rm = na.rm))
 }
 
 #' Average Values
@@ -543,30 +596,26 @@ cas.max <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return casDataFrame which includes one row for each
-#'   numeric variable and a column that is named Mean for the mean value.
+#' @return Named numeric vector
 #'
 #' @seealso \code{mean,CASTable-method}
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.mean(ct[1:4])
 #' cas.mean(ct$n2)
 #' }
-cas.mean <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("MEAN"))
-  .check_for_cas_errors(res)
-  return(res$results$Summary)
+cas.mean <- function(object, na.rm = FALSE) {
+  UseMethod("cas.mean")
+}
+
+#' @export
+cas.mean.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "mean", na.rm = na.rm))
 }
 
 #' Median Values
@@ -577,33 +626,26 @@ cas.mean <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return data.frame
+#' @return Named numeric vector
 #'
 #' @seealso \code{median,CASTable-method}
 #'
-#' The result includes one row for each numeric variable
-#' and a column that is named Median for the median value.
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.median(ct[1:4])
 #' cas.median(ct$n2)
 #' }
-cas.median <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "percentile.percentile", table = tp,
-                     inputs = nvars, values = list("50"))
-  .check_for_cas_errors(res)
-  m <- res$results$Percentile
-  colnames(m)[3] <- "Median"
-  return(m[c(1, 3)])
+cas.median <- function(object, na.rm = FALSE) {
+  UseMethod("cas.median")
+}
+
+#' @export
+cas.median.CASTable <- function(x, na.rm = FALSE) {
+  return(unlist(cas.quantile(x, q = 50, na.rm = na.rm)[1, ]))
 }
 
 #' Minimum Values
@@ -614,30 +656,26 @@ cas.median <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A casDataFrame which includes one row for each numeric variable
-#'   and a column that is named Minimum for the minimum value.
+#' @return Named numeric vector
 #'
 #' @seealso \code{min,CASTable-method}
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.min(ct[1:4])
 #' cas.min(ct$n2)
 #' }
-cas.min <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("MIN"))
-  .check_for_cas_errors(res)
-  return(res$results$Summary)
+cas.min <- function(object, na.rm = FALSE) {
+  UseMethod("cas.min")
+}
+
+#' @export
+cas.min.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "min", na.rm = na.rm))
 }
 
 #' Mode Value
@@ -645,39 +683,54 @@ cas.min <- function(x) {
 #' Returns the value that occurs most often for each column in
 #' the input table and the count for the value.
 #'
-#' This function operates on numeric and character columns.
-#'
 #' @param x \code{\link{CASTable}} object.
+#' @param max.tie Maximum number of duplicate values to return if values have the same rank.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A data.frame which includes one row for each variable.
-#'   One column is named Mode for the most common value.
-#'   Another column is named Count to show the number of rows
-#'   with the most common value.
+#' @return data.frame
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.mode(ct[1:4])
 #' cas.mode(ct$n2)
 #' }
-cas.mode <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
+cas.mode <- function(object, max.tie = 25, na.rm = FALSE) {
+  UseMethod("cas.mode")
+}
+
+#' @export
+cas.mode.CASTable <- function(x, max.tie = 25, na.rm = FALSE) {
+  nvars <- .numeric_var_list(x)
+  res <- cas.retrieve(x@conn, "simple.topk", stop.on.error = TRUE,
+                      order = "freq", includeMisc = FALSE,
+                      table = x, topK = 1, bottomK = 0, raw = TRUE,
+                      maxtie = max.tie - 1, includemissing = !na.rm)
+
+  if (!na.rm) {
+    nmiss <- cas.nmiss(x)
+    nmiss <- names(nmiss[nmiss > 0])
   }
-  tp <- .gen_table_param(x)
-  vars <- c(x@names, x@computedVars)
-  vars <- vars[vars != ""]
-  res <- casRetrieve(x@conn, "Freq", table = tp, inputs = as.list(vars))
-  .check_for_cas_errors(res)
-  dt <- res$results$Frequency[, c("Column", "FmtVar", "Frequency")]
-  r2 <- do.call(rbind, by(dt, dt$Column, function(x) x[which.max(x$Frequency), ]))
-  m <- r2[match(as.character(unlist(unique(dt[1]))), r2$Column), ]
-  colnames(m)[2] <- "Mode"
-  colnames(m)[3] <- "Count"
-  rownames(m) <- NULL
-  return(m[c(1:3)])
+
+  res <- res$results$Topk
+  cols <- lapply(unique(res$Column), function(x) {
+    col <- subset(res, Column == x)
+    if (!na.rm && x %in% nmiss) {
+      col <- NA
+    }
+    else {
+      col <- col[[ifelse(x %in% nvars, "NumVar", "CharVar")]]
+    }
+    return(col)
+  })
+
+  maxl <- max(sapply(cols, length))
+  df <- data.frame(lapply(cols, function(x) {
+    c(x, rep(ifelse(class(x) == "character", "", NA), maxl - length(x)))
+  }))
+  names(df) <- unique(res$Column)
+  return(df)
 }
 
 #' Quantile and Percentile Values
@@ -689,28 +742,56 @@ cas.mode <- function(x) {
 #'
 #' @param x \code{\link{CASTable}} object.
 #' @param q A list of numeric values.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A data.frame which includes one row for the variable,
-#'   the requested percentile, and the value.
+#' @return data.frame with row labels as variable names and column
+#'         labels as percentage labels (e.g., '25%', '50%', etc.).
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.quantile(ct[1:4], q = 50)
 #' cas.quantile(ct$n2, q = c(10, 25, 50, 75, 90))
 #' }
-cas.quantile <- function(x, q) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
+cas.quantile <- function(object, q = c(0, 25, 50, 70, 100), na.rm = FALSE) {
+  UseMethod("cas.quantile")
+}
+
+#' @export
+cas.quantile.CASTable <- function(x, q = c(0, 25, 50, 70, 100), na.rm = FALSE) {
+  res <- cas.retrieve(x@conn, "percentile.percentile", stop.on.error = TRUE,
+                      table = x, values = as.list(q))
+  res <- res$results$Percentile
+  cols <- list()
+  colnames <- c()
+  nmiss <- NULL
+  if (!na.rm) {
+    nmiss <- cas.nmiss(x)
+    nmiss <- nmiss[names(nmiss) %in% res$Variable]
   }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "percentile.percentile", table = tp,
-                     inputs = nvars, values = as.list(q))
-  .check_for_cas_errors(res)
-  return(res$results$Percentile[1:3])
+  for (item in q) {
+    values <- res[res$Pctl == item, ]$Value
+    # check for missing values and set value to NA
+    if (!na.rm) {
+      values <- replace(values, nmiss > 0, NA)
+    }
+    cols[[paste(item)]] <- values
+    colnames <- c(colnames, paste(item, "%", sep = ""))
+  }
+  cols[["row.names"]] <- res[res$Pctl == q[1], ]$Variable
+  res <- do.call("data.frame", cols)
+  names(res) <- colnames
+  return(t(res))
+}
+
+#' @export
+quantile.CASTable <- function(x, probs = seq(0, 1, 0.25), na.rm = FALSE,
+                              names = TRUE, type = 7, ...) {
+  if (length(names(x)) > 1) {
+    stop("quantile can only be computed on a single table column")
+  }
+  return(unlist(t(cas.quantile(x, q = probs * 100, na.rm = na.rm))[1, ]))
 }
 
 #' Column Sums
@@ -721,30 +802,31 @@ cas.quantile <- function(x, q) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A casDataFrame which includes one row for each
-#'   numeric variable and a column that is named Sum for the summed value.
+#' @return Named numeric vector
 #'
 #' @seealso \code{colSums,CASTable-method}
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.sum(ct[1:4])
 #' cas.sum(ct$n2)
 #' }
-cas.sum <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("SUM"))
-  .check_for_cas_errors(res)
-  return(res$results$Summary)
+cas.sum <- function(object, na.rm = FALSE) {
+  UseMethod("cas.sum")
+}
+
+#' @export
+cas.sum.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "sum", na.rm = na.rm))
+}
+
+#' @export
+sum.CASTable <- function(x, na.rm = FALSE) {
+  return(sum(cas.sum(x, na.rm = na.rm)))
 }
 
 #' Standard Deviation
@@ -755,41 +837,24 @@ cas.sum <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x     \code{\link{CASTable}} object.
-#' @param na.rm An optional \code{logical}. When set to FALSE,
-#'   missing values (NA) are not removed from the analysis.
-#'   By default, missing values are ignored.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A casDataFrame which includes one row for each numeric
-#'   variable and a column that is named Std for the standard deviation.
+#' @return Named numeric vector
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.sd(ct[1:4])
 #' cas.sd(ct$n2)
 #' }
-cas.sd <- function(x, na.rm = TRUE) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("STD"))
-  .check_for_cas_errors(res)
-  sd_res <- res$results$Summary
-  if (!na.rm) {
-    nm <- cas.nmiss(x[nvars])
-    missvar <- nm[nm > 0]
-    nm3 <- as.character(names(missvar))
-    t1 <- sd_res
-    t1["miss"] <- !t1$Column %in% nm3
+cas.sd <- function(object, na.rm = FALSE) {
+  UseMethod("cas.sd")
+}
 
-    sd_res <- transform(t1, Std = ifelse(t1$miss, Std <- t1$Std, Std <- NA))
-  }
-  return(sd_res[1:2])
+#' @export
+cas.sd.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "std", na.rm = na.rm))
 }
 
 #' Variance
@@ -800,27 +865,24 @@ cas.sd <- function(x, na.rm = TRUE) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A casDataFrame which includes one row for each
-#'    numeric variable and a column that is named Var for the variance.
+#' @return Named numeric vector
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
 #' cas.var(ct[1:4])
 #' cas.var(ct$n2)
 #' }
-cas.var <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("VAR"))
-  return(res$results$Summary)
+cas.var <- function(object, na.rm = FALSE) {
+  UseMethod("cas.var")
+}
+
+#' @export
+cas.var.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "var", na.rm = na.rm))
 }
 
 #' Number of Missing Values
@@ -832,13 +894,11 @@ cas.var <- function(x) {
 #'
 #' @param x \code{\link{CASTable}} object.
 #'
-#' @return A named numeric vector. You can access the count of
-#'   missing values by column name or index.
+#' @return Named numeric vector
 #'
 #' @seealso \code{cas.count} to count nonmissing values.
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -846,15 +906,13 @@ cas.var <- function(x) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.nmiss <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("NMISS"))
-  swat::translate(res$results$Summary)
+cas.nmiss <- function(object, na.rm = FALSE) {
+  UseMethod("cas.nmiss")
+}
+
+#' @export
+cas.nmiss.CASTable <- function(x) {
+  return(.summary_stat(x, "nmiss"))
 }
 
 #' Standard Error
@@ -865,12 +923,11 @@ cas.nmiss <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A named numeric vector. You can access the standard error
-#'   by column name or index.
+#' @return Named numeric vector
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -878,15 +935,13 @@ cas.nmiss <- function(x) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.stderr <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("STD"))
-  swat::translate(res$results$Summary)
+cas.stderr <- function(object, na.rm = FALSE) {
+  UseMethod("cas.stderr")
+}
+
+#' @export
+cas.stderr.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "std", na.rm = na.rm))
 }
 
 #' Uncorrected Sum of Squares
@@ -897,12 +952,11 @@ cas.stderr <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A named numeric vector. You can access the uncorrected
-#'   sum of squares by column name or index.
+#' @return Named numeric vector
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -910,15 +964,13 @@ cas.stderr <- function(x) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.uss <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("USS"))
-  swat::translate(res$results$Summary)
+cas.uss <- function(object, na.rm = FALSE) {
+  UseMethod("cas.uss")
+}
+
+#' @export
+cas.uss.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "uss", na.rm = na.rm))
 }
 
 #' Corrected Sum of Squares
@@ -929,12 +981,11 @@ cas.uss <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A named numeric vector. You can access the corrected
-#'   sum of squares by column name or index.
+#' @return Named numeric vector
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -942,15 +993,13 @@ cas.uss <- function(x) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.css <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("CSS"))
-  swat::translate(res$results$Summary)
+cas.css <- function(object, na.rm = FALSE) {
+  UseMethod("cas.css")
+}
+
+#' @export
+cas.css.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "css", na.rm = na.rm))
 }
 
 #' Coefficient of Variation
@@ -961,12 +1010,11 @@ cas.css <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A named numeric vector. You can access the coefficient
-#'   of variation by column name or index.
+#' @return Named numeric vector
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -974,15 +1022,13 @@ cas.css <- function(x) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.cv <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("CV"))
-  swat::translate(res$results$Summary)
+cas.cv <- function(object, na.rm = FALSE) {
+  UseMethod("cas.cv")
+}
+
+#' @export
+cas.cv.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "cv", na.rm = na.rm))
 }
 
 #' T-Statistics for Hypothesis Testing
@@ -993,12 +1039,11 @@ cas.cv <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A named numeric vector. You can access the t-statistic
-#'   by column name or index.
+#' @return Named numeric vector
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -1006,15 +1051,13 @@ cas.cv <- function(x) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.tvalue <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("TSTAT"))
-  swat::translate(res$results$Summary)
+cas.tvalue <- function(object, na.rm = FALSE) {
+  UseMethod("cas.tvalue")
+}
+
+#' @export
+cas.tvalue.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "t", na.rm = na.rm))
 }
 
 #' P-Value of the T-Statistics
@@ -1025,12 +1068,11 @@ cas.tvalue <- function(x) {
 #' This function operates on numeric columns only.
 #'
 #' @param x \code{\link{CASTable}} object.
+#' @param na.rm Should missing values be omitted from the calculations?
 #'
-#' @return A named numeric vector. You can access the p-value by
-#'   column name or index.
+#' @return Named numeric vector
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -1038,15 +1080,13 @@ cas.tvalue <- function(x) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.probt <- function(x) {
-  if (class(x) != "CASTable") {
-    stop("Method only valid on a CASTable")
-  }
-  tp <- .gen_table_param(x)
-  nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, "simple.summary", table = tp, inputs = nvars,
-                     subSet = list("PROBT"))
-  swat::translate(res$results$Summary)
+cas.probt <- function(object, na.rm = FALSE) {
+  UseMethod("cas.probt")
+}
+
+#' @export
+cas.probt.CASTable <- function(x, na.rm = FALSE) {
+  return(.summary_stat(x, "probt", na.rm = na.rm))
 }
 
 #' Summary Statistics
@@ -1062,7 +1102,6 @@ cas.probt <- function(x) {
 #' @return table
 #'
 #' @export
-#' @rawRd % Copyright SAS Institute
 #'
 #' @examples
 #' \dontrun{
@@ -1074,41 +1113,35 @@ setMethod(
   signature(object = "CASTable"),
   function(object, maxsum = 7, digits = max(3, getOption("digits") - 3), ...) {
     tp <- .gen_table_param(object)
-    if (sum(nchar(tp$computedVars))) {
-      tp$vars <- c(tp$vars, tp$computedVars)
-      tp$vars <- tp$vars[tp$vars != ""]
-    }
-    res <- casRetrieve(object@conn, "table.columninfo", table = tp)
-    d <- dim(res$results$ColumnInfo)
+
     # initialize variable lists
-    ret <- list()
-    nvars <- list()
-    cvars <- list()
-    for (i in 1:d[1]) {
-      if (res$results$ColumnInfo$Column[i] %in% c(object@names, object@computedVars)) {
-        if (res$results$ColumnInfo$Type[i] %in% c("double", "int32", "int64")) {
-          nvars <- c(nvars, res$results$ColumnInfo$Column[i])
-        } else {
-          cvars <- c(cvars, res$results$ColumnInfo$Column[i])
-        }
-      }
-    }
+    vars <- .column_types(object)
+    ctypes <- c("char", "varchar", "binary", "varbinary")
+    nvars <- vars[!(vars %in% ctypes)]
+    cvars <- vars[vars %in% ctypes]
+
     # get distinct counts for NA's (missing values)
-    distinct_res <- casRetrieve(object@conn, "simple.distinct", table = tp)
+    distinct_res <- cas.retrieve(object, "simple.distinct", table = tp,
+                                 stop.on.error = TRUE)
+
     if (length(nvars) > 0) {
       # get statistics for numeric variables
-      nres <- casRetrieve(object@conn, "simple.summary", table = tp,
-                          inputs = nvars, subSet = list("NMISS", "MIN", "MEAN", "MAX"))
-      ret <- nres$results$Summary
-      pctres <- casRetrieve(object@conn, "percentile.percentile", table = tp,
-                            inputs = nvars, values = list("25", "50", "75"))
-      pet <- pctres$results$Percentile
+      sumres <- cas.retrieve(object, "simple.summary", table = tp,
+                             inputs = nvars, subset = c("min", "mean", "max", "nmiss"),
+                             stop.on.error = TRUE)
+      sum <- nres$results$Summary
+
+      pctres <- cas.retrieve(object, "percentile.percentile", table = tp,
+                             inputs = nvars, values = c(25, 50, 75),
+                             stop.on.error = TRUE)
+      pct <- pctres$results$Percentile
     }
 
     # format items to look like the summary function
+
     # create empty list
-    z <- vector("list", length = nrow(res$results$ColumnInfo[1]))
-    names(z) <- t(res$results$ColumnInfo[1])
+    z <- vector("list", length = length(vars))
+    names(z) <- names(vars)
 
     ncw <- function(x) {
       z <- nchar(x, type = "w")
@@ -1117,21 +1150,11 @@ setMethod(
       }
       z
     }
-    if (length(cvars) > 0) {
-      # get statistics for character variables
-      freqres <- casRetrieve(object@conn, "simple.topk",
-        table = tp, inputs = cvars,
-        topk = 6, bottomk = 0, order = "freq", includeMisc = FALSE,
-        includeMissing = FALSE
-      )
-      fres <- freqres$results$Topk@df[, c("Column", "FmtVar", "Score")]
-      fres <- fres[order(fres$Column, fres$FmtVar, -fres$Score), ]
-    }
 
     sumpop <- function(v, n = maxsum) {
       # create numeric statistics
       if (v %in% nvars) {
-        s1 <- unlist(pet[pet$Variable == v, 3])
+        s1 <- unlist(pct[pct$Variable == v, 3])
         names(s1) <- c("1st Qu.", "Median", "3rd Qu.")
         s2 <- unlist(ret[ret$Column == v, c(2, 5, 3)])
         names(s2) <- c("Min.", "Mean", "Max.")
@@ -1162,6 +1185,7 @@ setMethod(
         return(f3)
       }
     }
+
     nm <- tp$vars
     nv <- length(nvars) + length(cvars)
     for (i in seq_len(nv)) {
@@ -1174,6 +1198,7 @@ setMethod(
     } else {
       0
     }
+
     for (i in seq_len(nv)) {
       z[[i]] <- sumpop(names(z[i]))
 
@@ -1184,6 +1209,7 @@ setMethod(
       length(sms2) <- nr
       z[[i]] <- sms2
     }
+
     if (nv) {
       z <- unlist(z, use.names = TRUE)
       dim(z) <- c(nr, nv)
@@ -1200,7 +1226,9 @@ setMethod(
       nm <- paste0(substring(blanks, 1, pad), nm)
       dimnames(z) <- list(rep.int("", nr), nm)
     }
+
     attr(z, "class") <- c("table")
+
     return(z)
   }
 )

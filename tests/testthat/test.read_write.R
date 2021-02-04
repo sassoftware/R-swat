@@ -38,7 +38,7 @@ test.data <- function(data) {
 test_that("Read CSV files", {
   class_csv <- test.data("class.csv")
 
-  from_df <- as.casTable(caz, titanic, casOut = list(name = "from_df", replace = TRUE))
+  from_df <- as.CASTable(caz, titanic, casOut = list(name = "from_df", replace = TRUE))
   from_csv <- cas.read.csv(caz, file = titanic_csv, casOut = list(name = "from_csv"), row.names = 1)
   expect_equivalent(head(from_df), head(from_csv))
   expect_error(read.csv.cas(caz, file = "", tablename = "from_csv"))
@@ -54,7 +54,7 @@ test_that("Read CSV files", {
 test_that("Read Table files", {
   missing_vals_txt <- test.data("missing_vals.txt")
 
-  from_df <- as.casTable(caz, titanic, casOut = list(name = "from_df", replace = TRUE))
+  from_df <- as.CASTable(caz, titanic, casOut = list(name = "from_df", replace = TRUE))
   from_csv <- cas.read.csv(caz, file = titanic_csv, casOut = list(name = "from_csv", replace = TRUE), row.names = 1)
   expect_equivalent(from_df, from_csv)
   expect_error(read.csv.cas(caz, file = "", tablename = "from_csv"))
@@ -65,7 +65,7 @@ test_that("Read Table files", {
   nastr <- c("NA", "NaN")
   import_df0_skipnul <- read.table(missing_vals_txt, row.names = NULL, header = TRUE, na.strings = nastr)
   import_df0_skipnul_cas <- cas.read.table(caz, missing_vals_txt, row.names = NULL, header = TRUE, na.strings = nastr)
-  expect_equivalent(as.casTable(caz, import_df0_skipnul, casOut = list(replace = TRUE)), import_df0_skipnul_cas)
+  expect_equivalent(as.CASTable(caz, import_df0_skipnul, casOut = list(replace = TRUE)), import_df0_skipnul_cas)
 })
 
 
@@ -225,8 +225,7 @@ test_that("Read web dat file", {
     casOut = list(replace = TRUE)
   )
   import_df0_skipnul_rdf <- as.data.frame(import_df0_skipnul)
-  import_df0_skipnul_cdf <- to.CASDataFrame(import_df0_skipnul_cas)
-  import_df0_skipnul_cas2rdf <- to.data.frame(import_df0_skipnul_cdf)
+  import_df0_skipnul_cas2rdf <- as.data.frame(import_df0_skipnul_cas)
 
   expect_equivalent(import_df0_skipnul_cas2rdf[1:4], import_df0_skipnul_rdf[1:4])
   expect_true("" %in% import_df0_skipnul_cas2rdf$l)

@@ -20,11 +20,11 @@
 #'
 #' @keywords internal
 #'
-translate <- function(df, col = 2L) {
+.translate <- function(df, col = 2L) {
   if (is.data.frame(df)) {
     x <- as.vector(t(df[, col]))
   }
-  names(x) <- as.list(df[, 1])
+  names(x) <- df[, 1]
   return(x)
 }
 
@@ -77,13 +77,15 @@ translate <- function(df, col = 2L) {
     tp[["computedOnDemand"]] <- ct@computedOnDemand
     tp[["computedVarsProgram"]] <- paste(paste(ct@computedVarsProgram, collapse = ";"), ";", sep = "")
 
-    if (length(ct@names) > 1 || nchar(ct@names)) {
-      tp[["vars"]] <- c(ct@names)
+    tp[["vars"]] <- ct@names[ct@names != ""]
+    if (length(tp[["vars"]]) == 0) {
+      tp[["vars"]] <- list()
     }
   }
   else {
-    if (length(ct@names) > 1 || nchar(ct@names)) {
-      tp[["vars"]] <- c(ct@names)
+    tp[["vars"]] <- ct@names[ct@names != ""]
+    if (length(tp[["vars"]]) == 0) {
+      tp[["vars"]] <- list()
     }
     if (sum(nchar(ct@XcomputedVars))) {
       tp[["computedVars"]] <- c(ct@XcomputedVars)
@@ -196,16 +198,17 @@ translate <- function(df, col = 2L) {
 }
 
 # https://ww2.coastal.edu/kingw/statistics/R-tutorials/formulae.html
+
 #' CAS Function to extract information from an \R formula object
 #'
-#' @param f1 a formula object
+#' @param f A formula object
+#' @param ct CASTable object
 #'
 #' @return list with target and inputs as members
-#' @export
-#' @rawRd % Copyright SAS Institute
+#'
 #' @keywords internal
 #'
-casFormula <- function(f, ct) {
+.cas_formula <- function(f, ct) {
   if (class(f) != "formula") {
     stop("must be a formula")
   }
@@ -241,10 +244,8 @@ casFormula <- function(f, ct) {
   return(list(target, inputs[[1]]))
 }
 
-#' @export
-#' @rawRd % Copyright SAS Institute
 #' @keywords internal
-CASwhere <- function(ct, s) {
+.cas_where <- function(ct, s) {
   # String $ operator and prior string
   a <- gsub("\\b\\w+\\$", " ", s, perl = TRUE)
 
@@ -267,27 +268,32 @@ CASwhere <- function(ct, s) {
   return(e)
 }
 
+#' Retrieve a vector of the column types
+#'
 #' @keywords internal
-#' @export
-#' @rawRd % Copyright SAS Institute
-numericVarList <- function(object) {
-  tp <- .gen_table_param(object)
+.column_types <- function(x) {
+  tp <- .gen_table_param(x)
   if (sum(nchar(tp$computedVars))) {
     tp$vars <- c(tp$vars, tp$computedVars)
     tp$vars <- tp$vars[tp$vars != ""]
   }
-  res <- casRetrieve(object@conn, "columninfo", table = tp)
-  d <- dim(res$results$ColumnInfo)
-  nvars <- list()
-  cvars <- list()
-  for (i in 1:d[1]) {
-    if (res$results$ColumnInfo$Column[i] %in% c(object@names, object@computedVars)) {
-      if (res$results$ColumnInfo$Type[i] %in% c("double", "int32", "int64")) {
-        nvars <- c(nvars, res$results$ColumnInfo$Column[i])
-      } else {
-        cvars <- c(cvars, res$results$ColumnInfo$Column[i])
-      }
-    }
-  }
-  return(nvars)
+  info <- cas.retrieve(x, "table.columninfo", table = tp, stop.on.error = TRUE)
+  info <- info$results$ColumnInfo
+  row.names(info) <- info$Column
+  info <- info[, "Type"]
+  return(unlist(t(info)[1, ]))
+}
+
+#' Retrieve numeric variable list
+#'
+#' @keywords internal
+.numeric_var_list <- function(x) {
+  types <- .column_types(x)
+  return(types[!(types %in% c("char", "varchar", "binary", "varbinary"))])
+}
+
+#' @keywords internal
+.character_var_list <- function(x) {
+  types <- .column_types(x)
+  return(types[types %in% c("char", "varchar", "binary", "varbinary")])
 }

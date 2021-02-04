@@ -121,30 +121,28 @@ df3 <- data.frame(matrix(rnorm(20), 10))
 names(df3) <- c("V3", "V4")
 
 # Load data to CAS
-ct1 <- as.casTable(caz, df1, casOut = list(replace = TRUE))
-ct2 <- as.casTable(caz, df2, casOut = list(replace = TRUE))
-ct3 <- as.casTable(caz, df3, casOut = list(replace = TRUE))
+ct1 <- as.CASTable(caz, df1, casOut = list(replace = TRUE))
+ct2 <- as.CASTable(caz, df2, casOut = list(replace = TRUE))
+ct3 <- as.CASTable(caz, df3, casOut = list(replace = TRUE))
 
-ct0_1 <- as.casTable(caz, df0_1, casOut = list(replace = TRUE))
-ct0 <- as.casTable(caz, df0, casOut = list(replace = TRUE))
-ct <- as.casTable(caz, df, casOut = list(replace = TRUE))
-i2 <- as.casTable(caz, iris, casOut = list(replace = TRUE))
-df_ct <- as.casTable(caz, df_, casOut = list(replace = TRUE))
-df0_ct <- as.casTable(caz, df0_, casOut = list(replace = TRUE))
+ct0_1 <- as.CASTable(caz, df0_1, casOut = list(replace = TRUE))
+ct0 <- as.CASTable(caz, df0, casOut = list(replace = TRUE))
+ct <- as.CASTable(caz, df, casOut = list(replace = TRUE))
+i2 <- as.CASTable(caz, iris, casOut = list(replace = TRUE))
+df_ct <- as.CASTable(caz, df_, casOut = list(replace = TRUE))
+df0_ct <- as.CASTable(caz, df0_, casOut = list(replace = TRUE))
 
-ctn <- as.casTable(caz, dfn, casOut = list(replace = TRUE))
+ctn <- as.CASTable(caz, dfn, casOut = list(replace = TRUE))
 
-ct_cmp <- as.casTable(caz, df, casOut = list(name = "ct_cmp", replace = TRUE))
+ct_cmp <- as.CASTable(caz, df, casOut = list(name = "ct_cmp", replace = TRUE))
 ct_cmp["cv1"] <- ct_cmp$n1 + 0
 ct_cmp["cv2"] <- ct_cmp$n2 + 0
 ct_cmp["cv3"] <- ct_cmp$n3 + 0
-df_cmp <- to.data.frame(to.CASDataFrame(ct_cmp))
-
-
+df_cmp <- as.data.frame(ct_cmp)
 
 titanic <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/course/Kaggle/train.csv")
-t <- as.casTable(caz, titanic, casOut = list(replace = TRUE))
+t <- as.CASTable(caz, titanic, casOut = list(replace = TRUE))
 
 titanic_csv <- tempfile(pattern = "titanic_", fileext = ".csv")
 write.csv(titanic, file = titanic_csv)
-mtcars_ct <- as.casTable(caz, mtcars, casOut = list(replace = TRUE))
+mtcars_ct <- as.CASTable(caz, mtcars, casOut = list(replace = TRUE))

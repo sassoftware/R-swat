@@ -202,6 +202,7 @@ test_that("test.test_echo", {
 })
 
 test_that("test.test_summary", {
+  # TODO: Load data from local file
   out <- caz$retrieve("loadactionset", actionset = "simple")
   out <- caz$retrieve("loadtable",
     path = "datasources/cars_single.sashdat",
@@ -306,6 +307,7 @@ test_that("test.test_alltypes", {
 })
 
 test_that("test.test_array_types", {
+  # TODO: Upload data from local file
   out <- caz$retrieve("loadtable",
     path = "datasources/summary_array.sashdat",
     caslib = "castesttmp"

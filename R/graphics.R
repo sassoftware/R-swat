@@ -54,14 +54,14 @@ setMethod(
 
     # If the number of observations is less than download size
     if (nrow(x) <= download_obs) {
-      t1 <- to.CASDataFrame(v2)
+      t1 <- as.data.frame(v2)
       return(plot(t1, ... = ...))
     }
     else {
       # Sample rows
       if (length(x@groupby)) { # SRS
         name <- uniqueTableName(x@tname)
-        res <- runAction(x@conn, "sampling.srs",
+        res <- cas.run(x@conn, "sampling.srs",
           check_errors = TRUE,
           samppct = eval(download_obs / nrow(x) * 100),
           table = x@tname,
@@ -70,7 +70,7 @@ setMethod(
             replace = TRUE
           ), copyvars = list(vars))
         )
-        srs <- defCasTable(x@conn, name,
+        srs <- CASTable(x@conn, name,
           columns = vars, where = x@where,
           orderby = x@orderby, groupby = x@groupby, gbmode = x@gbmode
         )
@@ -78,12 +78,12 @@ setMethod(
                     "because the nrows in", nrow(x),
                     "which is greater than the max download size of", download_obs)
         cat(m1[1])
-        srs2 <- to.CASDataFrame(srs, obs = eval(nrow(srs)))
+        srs2 <- as.data.frame(srs, obs = eval(nrow(srs)))
         return(plot(srs2, ... = ...))
       }
       else { # Stratified
         name <- uniqueTableName(x@tname)
-        res <- runAction(x@conn, "sampling.srs",
+        res <- cas.run(x@conn, "sampling.srs",
           check_errors = TRUE,
           samppct = eval(download_obs / nrow(x) * 100),
           table = x@tname,
@@ -92,7 +92,7 @@ setMethod(
             replace = TRUE
           ), copyvars = list(vars))
         )
-        srs <- defCasTable(x@conn, name,
+        srs <- CASTable(x@conn, name,
           columns = vars, where = x@where,
           orderby = x@orderby, groupby = x@groupby, gbmode = x@gbmode
         )
@@ -100,7 +100,7 @@ setMethod(
                     "because the nrows in", nrow(x),
                     "which is greater than the max download size of", download_obs)
         cat(m1[1])
-        srs2 <- to.CASDataFrame(srs, obs = eval(nrow(srs)))
+        srs2 <- as.data.frame(srs, obs = eval(nrow(srs)))
         return(plot(srs2, ... = ...))
       }
     }

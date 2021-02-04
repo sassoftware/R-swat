@@ -33,21 +33,21 @@ test_that("delete column", {
 })
 
 test_that("row index where", {
-  expect_equivalent(as.casTable(caz, df[df$n4 > 15 & df$n1 < 6, c(1, 4, 5)]),
+  expect_equivalent(as.CASTable(caz, df[df$n4 > 15 & df$n1 < 6, c(1, 4, 5)]),
                     ct[ct$n4 > 15 & ct$n1 < 6, c("n1", "n4", "s")])
-  expect_equivalent(as.casTable(caz, df[df$n4 > 15 & df[1] < 6, c(1, 4, 5)]),
+  expect_equivalent(as.CASTable(caz, df[df$n4 > 15 & df[1] < 6, c(1, 4, 5)]),
                     ct[ct$n4 > 15 & ct[1] < 6, c("n1", "n4", "s")])
-  expect_equivalent(as.casTable(caz, df[df$n4 > 15 | df[1] < 6, c(1, 4, 5)]),
+  expect_equivalent(as.CASTable(caz, df[df$n4 > 15 | df[1] < 6, c(1, 4, 5)]),
                     ct[ct$n4 > 15 | ct[1] < 6, c("n1", "n4", "s")])
-  expect_equivalent(as.casTable(caz, df[!df$n4 > 15 | df[1] < 6, c(1, 4, 5)]),
+  expect_equivalent(as.CASTable(caz, df[!df$n4 > 15 | df[1] < 6, c(1, 4, 5)]),
                     ct[!ct$n4 > 15 | ct[1] < 6, c("n1", "n4", "s")])
-  expect_equivalent(as.casTable(caz, df[!df$n4 > 15 | df[1] < 6, ]),
+  expect_equivalent(as.CASTable(caz, df[!df$n4 > 15 | df[1] < 6, ]),
                     ct[!ct$n4 > 15 | ct[1] < 6, ])
-  expect_equivalent(as.casTable(caz, df[!df$n4 > 15 | !df[1] < 6, ]),
+  expect_equivalent(as.CASTable(caz, df[!df$n4 > 15 | !df[1] < 6, ]),
                     ct[!ct$n4 > 15 | !ct[1] < 6, ])
 
-  expect_equivalent(as.casTable(caz, df[, c(1, 4, 5)]), ct[, c("n1", "n4", "s")])
-  expect_equivalent(as.casTable(caz, df[c(1, 4, 5)]), ct[c("n1", "n4", "s")])
+  expect_equivalent(as.CASTable(caz, df[, c(1, 4, 5)]), ct[, c("n1", "n4", "s")])
+  expect_equivalent(as.CASTable(caz, df[c(1, 4, 5)]), ct[c("n1", "n4", "s")])
   expect_equivalent(ct[c(1, 4, 5)], ct[c("n1", "n4", "s")])
 
   # There are issues with the return type.
@@ -63,17 +63,17 @@ test_that("drop columns by column number", {
   # drop number column
   my_df[2] <- NULL
   my_ct[2] <- NULL
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 
   # drop character column
   my_df[4] <- NULL
   my_ct[4] <- NULL
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 
   # drop date column
   my_df[4] <- NULL
   my_ct[4] <- NULL
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 })
 
 test_that("drop columns by column name", {
@@ -83,17 +83,17 @@ test_that("drop columns by column name", {
   # drop number column
   my_df$n2 <- NULL
   my_ct$n2 <- NULL
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 
   # drop character column
   my_df$s <- NULL
   my_ct$s <- NULL
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 
   # drop date column
   my_df$d <- NULL
   my_ct$d <- NULL
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 })
 
 test_that("drop multiple columns", {
@@ -102,7 +102,7 @@ test_that("drop multiple columns", {
 
   my_df[3:6] <- list(NULL)
   my_ct[3:6] <- list(NULL)
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 })
 
 test_that("drop columns by number w/missing data", {
@@ -112,17 +112,17 @@ test_that("drop columns by number w/missing data", {
   # drop number column
   my_df0[2] <- NULL
   my_ct0[2] <- NULL
-  expect_equivalent(as.casTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
+  expect_equivalent(as.CASTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
 
   # drop character column
   my_df0[4] <- NULL
   my_ct0[4] <- NULL
-  expect_equivalent(as.casTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
+  expect_equivalent(as.CASTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
 
   # drop date column
   my_df0[4] <- NULL
   my_ct0[4] <- NULL
-  expect_equivalent(as.casTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
+  expect_equivalent(as.CASTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
 })
 
 test_that("drop by column name, missing data", {
@@ -132,17 +132,17 @@ test_that("drop by column name, missing data", {
   # drop number column
   my_df0$n2 <- NULL
   my_ct0$n2 <- NULL
-  expect_equivalent(as.casTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
+  expect_equivalent(as.CASTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
 
   # drop character column
   my_df0$s <- NULL
   my_ct0$s <- NULL
 
-  expect_equivalent(as.casTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
+  expect_equivalent(as.CASTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
   # drop date column
   my_df0$d <- NULL
   my_ct0$d <- NULL
-  expect_equivalent(as.casTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
+  expect_equivalent(as.CASTable(caz, my_df0, casOut = list(replace = TRUE)), my_ct0)
 })
 
 test_that("drop multiple columns, missing data", {
@@ -152,8 +152,7 @@ test_that("drop multiple columns, missing data", {
   my_df0[3:6] <- list(NULL)
   my_ct0[3:6] <- list(NULL)
 
-  my_ct_df0 <- to.CASDataFrame(my_ct0)
-  my_ct_df0 <- to.data.frame(my_ct_df0)
+  my_ct_df0 <- as.data.frame(my_ct0)
   expect_equivalent(my_df0, my_ct_df0)
   expect_equivalent(dimnames(my_df0), dimnames(my_ct_df0))
 })
@@ -166,102 +165,101 @@ test_that("drop by column number", {
   # drop number column
   my_df <- df[-2]
   my_ct <- ct[-2]
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 
   # drop character column
   my_df <- df[-4]
   my_ct <- ct[-4]
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 
   # drop date column
   my_df <- df[-4]
   my_ct <- ct[-4]
-  expect_equivalent(as.casTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
+  expect_equivalent(as.CASTable(caz, my_df, casOut = list(replace = TRUE)), my_ct)
 })
 
 test_that("drop multiple columns", {
   my_df <- df[- (3:6)]
   my_ct <- ct[- (3:6)]
 
-  my_ct_df <- to.CASDataFrame(my_ct)
-  my_ct_df <- to.data.frame(my_ct_df)
+  my_ct_df <- as.data.frame(my_ct)
   expect_equivalent(my_df, my_ct_df)
   expect_equivalent(dimnames(my_df), dimnames(my_ct_df))
 })
 
 # Create object to reference an existing in-memory table in CAS
-test_that("defCasTable", {
-  esophct <- as.casTable(caz, esoph, casOut = list(name = "esophct", replace = TRUE))
-  df_cmpct <- as.casTable(caz, df_cmp, casOut = list(name = "df_cmpct", replace = TRUE))
+test_that("CASTable", {
+  esophct <- as.CASTable(caz, esoph, casOut = list(name = "esophct", replace = TRUE))
+  df_cmpct <- as.CASTable(caz, df_cmp, casOut = list(name = "df_cmpct", replace = TRUE))
 
   # groupby option
-  esophct_grouped <- defCasTable(caz, tablename = "esophct", groupby = list("alcgp"))
+  esophct_grouped <- CASTable(caz, "esophct", groupby = list("alcgp"))
   expect_silent(esophct_grouped)
 
-  df_cmpct_grouped <- defCasTable(caz, tablename = "df_cmpct", groupby = list("s"))
+  df_cmpct_grouped <- CASTable(caz, "df_cmpct", groupby = list("s"))
   expect_silent(df_cmpct_grouped)
 
   # orderby
-  esophct_orderby <- defCasTable(caz, tablename = "esophct", orderby = list("ncontrols"))
+  esophct_orderby <- CASTable(caz, "esophct", orderby = list("ncontrols"))
   esophr_orderby <- esoph[order(esoph$ncontrols), ]
-  expect_equivalent(esophct_orderby, as.casTable(caz, esophr_orderby))
+  expect_equivalent(esophct_orderby, as.CASTable(caz, esophr_orderby))
 
-  df_cmpct_orderby <- defCasTable(caz, tablename = "df_cmpct", orderby = list("s"))
+  df_cmpct_orderby <- CASTable(caz, "df_cmpct", orderby = list("s"))
   df_cmpr_orderby <- df_cmp[order(df_cmp$s), ]
-  expect_equivalent(df_cmpct_orderby, as.casTable(caz, df_cmpr_orderby))
+  expect_equivalent(df_cmpct_orderby, as.CASTable(caz, df_cmpr_orderby))
 
 
   # where option
-  esophct_where <- defCasTable(caz, tablename = "esophct", where = "agegp='25-34'")
+  esophct_where <- CASTable(caz, "esophct", where = "agegp='25-34'")
   esophr_where <- esoph[esoph$agegp == "25-34", ]
-  expect_equivalent(esophct_where, as.casTable(caz, esophr_where))
+  expect_equivalent(esophct_where, as.CASTable(caz, esophr_where))
 
-  df_cmpct_where <- defCasTable(caz, tablename = "df_cmpct", where = "cv3<=15")
+  df_cmpct_where <- CASTable(caz, "df_cmpct", where = "cv3<=15")
   df_cmpr_where <- df_cmp[df_cmp$cv3 <= 15, ]
-  expect_equivalent(df_cmpct_where, as.casTable(caz, df_cmpr_where))
+  expect_equivalent(df_cmpct_where, as.CASTable(caz, df_cmpr_where))
 
 
   # columns option
-  esophct_cols1 <- defCasTable(caz, tablename = "esophct", columns = c("ncases"))
+  esophct_cols1 <- CASTable(caz, "esophct", columns = c("ncases"))
   esophr_cols1 <- esoph[4]
-  expect_equivalent(esophct_cols1, as.casTable(caz, esophr_cols1))
+  expect_equivalent(esophct_cols1, as.CASTable(caz, esophr_cols1))
 
-  df_cmpct_cols1 <- defCasTable(caz, tablename = "df_cmpct", columns = c("n1"))
+  df_cmpct_cols1 <- CASTable(caz, "df_cmpct", columns = c("n1"))
   df_cmpr_cols1 <- df_cmp[1]
-  expect_equivalent(df_cmpct_cols1, as.casTable(caz, df_cmpr_cols1))
+  expect_equivalent(df_cmpct_cols1, as.CASTable(caz, df_cmpr_cols1))
 
   # more than on column specified for the columns option
-  esophct_cols2 <- defCasTable(caz, tablename = "esophct", columns = c("agegp", "alcgp", "tobgp"))
+  esophct_cols2 <- CASTable(caz, "esophct", columns = c("agegp", "alcgp", "tobgp"))
   esophr_cols2 <- esoph[1:3]
-  expect_equivalent(esophct_cols2, as.casTable(caz, esophr_cols2))
+  expect_equivalent(esophct_cols2, as.CASTable(caz, esophr_cols2))
 
-  df_cmpct_cols2 <- defCasTable(caz, tablename = "df_cmpct", columns = c("n1", "s", "cv2"))
+  df_cmpct_cols2 <- CASTable(caz, "df_cmpct", columns = c("n1", "s", "cv2"))
   df_cmpr_cols2 <- df_cmp[c(1, 5, 8)]
-  expect_equivalent(df_cmpct_cols2, as.casTable(caz, df_cmpr_cols2))
+  expect_equivalent(df_cmpct_cols2, as.CASTable(caz, df_cmpr_cols2))
 })
 
 
-test_that("as.castable and dropTable", {
+test_that("as.castable and drop", {
   # Testing that an existing CAS table can't be overwriten by default
-  df_cmpct1 <- as.casTable(caz, df_cmp, casOut = list(name = "df_cmpct1", replace = TRUE))
-  expect_error(as.casTable(caz, df, casOut = "df_cmpct1"))
+  df_cmpct1 <- as.CASTable(caz, df_cmp, casOut = list(name = "df_cmpct1", replace = TRUE))
+  expect_error(as.CASTable(caz, df, casOut = "df_cmpct1"))
 
   # Testing that an existing CAS table can't be overwriten with replace=FALSE
-  expect_error(as.casTable(caz, df, casOut = list(name = "df_cmpct1", replace = FALSE)))
+  expect_error(as.CASTable(caz, df, casOut = list(name = "df_cmpct1", replace = FALSE)))
 
-  dropTable(df_cmpct1)
+  drop.table(df_cmpct1)
 
   ti <- cas.table.tableInfo(caz)$TableInfo
   expect_equivalent(nrow(ti[ti$Name == "DF_CMPCT1", ]), 0)
 
-  as.casTable(caz, df_cmp, casOut = list(name = "df_cmpct1", replace = FALSE))
+  as.CASTable(caz, df_cmp, casOut = list(name = "df_cmpct1", replace = FALSE))
 
   ti <- cas.table.tableInfo(caz)$TableInfo
   expect_equivalent(nrow(ti[ti$Name == "DF_CMPCT1", ]), 1)
   create_time <- ti[ti$Name == "DF_CMPCT1", ]$CreateTime
 
   # Testing that an existing CAS table can be overwriten with replace option
-  df_cmpct1 <- as.casTable(caz, df_cmp, casOut = list(name = "df_cmpct1", replace = TRUE))
+  df_cmpct1 <- as.CASTable(caz, df_cmp, casOut = list(name = "df_cmpct1", replace = TRUE))
 
   ti <- cas.table.tableInfo(caz)$TableInfo
   expect_equivalent(nrow(ti[ti$Name == "DF_CMPCT1", ]), 1)
@@ -269,18 +267,16 @@ test_that("as.castable and dropTable", {
 })
 
 
-test_that("to.CASDataFrame, as.data.frame, and rownames", {
-  df_cmpct <- as.casTable(caz, df_cmp, casOut = list(name = "df_cmpct", replace = TRUE))
-  df_cmp_cdf <- to.CASDataFrame(df_cmpct)
-  df_cmp_rdf <- as.data.frame(df_cmp_cdf)
-  df_cmp_cdf2 <- to.CASDataFrame(df_cmpct, obs = 3)
+test_that("as.data.frame, and rownames", {
+  df_cmpct <- as.CASTable(caz, df_cmp, casOut = list(name = "df_cmpct", replace = TRUE))
+  df_cmp_rdf <- as.data.frame(df_cmpct)
+  df_cmp_cdf2 <- as.data.frame(df_cmpct, obs = 3)
   df_cmp_rdf2 <- df_cmp_rdf[1:3, ]
-  rnms <- rownames(df_cmp_cdf)
+  rnms <- rownames(df_cmp_rdf)
   rnms2 <- rownames(df_cmp_cdf2)
 
-
-  # to.CASDataFrame w/ obs= option
-  expect_equivalent(to.CASDataFrame(df_cmpct, obs = 3), df_cmp_rdf[1:3, ])
+  # as.data.frame w/ obs= option
+  expect_equivalent(as.data.frame(df_cmpct, obs = 3), df_cmp_rdf[1:3, ])
 
   # testing that rownames (which just numbers the rows) matches the nrows
   expect_equivalent(as.numeric(tail(rnms, n = 1)), nrow(df_cmp_rdf))
