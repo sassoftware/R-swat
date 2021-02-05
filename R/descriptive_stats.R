@@ -456,10 +456,10 @@ setMethod(
         cor <- cor(table[vars])
       }
       if (startsWith(use, "c")) {
-        stdev <- as.numeric(unlist(t(cas.sd(table, na.rm = TRUE)[2])))
+        stdev <- as.numeric(unlist(t(cas.sd(table, na.rm = TRUE))))
       }
       else {
-        stdev <- as.numeric(unlist(t(cas.sd(table, na.rm = FALSE)[2])))
+        stdev <- as.numeric(unlist(t(cas.sd(table, na.rm = FALSE))))
       }
       b <- stdev %*% t(stdev)
       cov <- b * cor
@@ -761,7 +761,7 @@ cas.quantile <- function(object, q = c(0, 25, 50, 70, 100), na.rm = FALSE) {
 #' @export
 cas.quantile.CASTable <- function(x, q = c(0, 25, 50, 70, 100), na.rm = FALSE) {
   res <- cas.retrieve(x@conn, "percentile.percentile", stop.on.error = TRUE,
-                      table = x, values = as.list(q))
+                      table = x, pctldef = 3, values = as.list(q))
   res <- res$results$Percentile
   cols <- list()
   colnames <- c()
@@ -1096,6 +1096,9 @@ cas.probt.CASTable <- function(x, na.rm = FALSE) {
 #' @param object \code{\link{CASTable}} object.
 #' @param maxsum Integer indicating how many levels should be shown
 #'   for factors.
+#' @param factor.threshold Integer indicating the maximum number of
+#'   distinct character values a variable can have before it is no
+#'   longer considered a factor.
 #' @param digits Integer used for number formatting.
 #' @param \ldots Additional arguments. Currently ignored.
 #'
@@ -1111,87 +1114,108 @@ cas.probt.CASTable <- function(x, na.rm = FALSE) {
 setMethod(
   "summary",
   signature(object = "CASTable"),
-  function(object, maxsum = 7, digits = max(3, getOption("digits") - 3), ...) {
+  function(object, maxsum = 7, digits = max(3, getOption("digits") - 3),
+           factor.threshold = 10, ...) {
     tp <- .gen_table_param(object)
 
     # initialize variable lists
     vars <- .column_types(object)
     ctypes <- c("char", "varchar", "binary", "varbinary")
-    nvars <- vars[!(vars %in% ctypes)]
-    cvars <- vars[vars %in% ctypes]
+    nvars <- names(vars[!(vars %in% ctypes)])
+    cvars <- names(vars[vars %in% ctypes])
+
+    nrows <- nrow(object)
 
     # get distinct counts for NA's (missing values)
-    distinct_res <- cas.retrieve(object, "simple.distinct", table = tp,
-                                 stop.on.error = TRUE)
+    dis <- cas.retrieve(object, "simple.distinct", table = tp,
+                        stop.on.error = TRUE)$results$Distinct
+    row.names(dis) <- dis$Column
 
     if (length(nvars) > 0) {
       # get statistics for numeric variables
-      sumres <- cas.retrieve(object, "simple.summary", table = tp,
-                             inputs = nvars, subset = c("min", "mean", "max", "nmiss"),
-                             stop.on.error = TRUE)
-      sum <- nres$results$Summary
+      sum <- cas.retrieve(object, "simple.summary", table = tp,
+                          inputs = nvars, subset = c("min", "mean", "max", "nmiss"),
+                          stop.on.error = TRUE)$results$Summary
+      row.names(sum) <- sum$Column
 
-      pctres <- cas.retrieve(object, "percentile.percentile", table = tp,
-                             inputs = nvars, values = c(25, 50, 75),
-                             stop.on.error = TRUE)
-      pct <- pctres$results$Percentile
+      pct <- cas.retrieve(object, "percentile.percentile", table = tp,
+                          inputs = nvars, values = c(25, 50, 75), pctldef = 3,
+                          stop.on.error = TRUE)$results$Percentile
+    }
+
+    if (length(cvars) > 0) {
+      # get statistics for character variables
+      fres <- cas.retrieve(object, "simple.topk",
+                           table = tp, inputs = cvars,
+                           topk = maxsum - 1, bottomk = 0, order = "freq",
+                           includeMisc = FALSE, includeMissing = TRUE,
+                           stop.on.error = TRUE, raw = TRUE)$results$Topk
+      fres <- fres[, c("Column", "CharVar", "Score")]
+      fres <- fres[order(fres$Column, fres$CharVar, -fres$Score), ]
     }
 
     # format items to look like the summary function
+
+    factors <- c()
+
+    sumpop <- function(v, n = maxsum) {
+      # create numeric statistics
+      if (v %in% nvars) {
+        s1 <- as.numeric(unlist(pct[pct$Variable == v, "Value"]))
+        names(s1) <- c("1st Qu.", "Median", "3rd Qu.")
+        s2 <- as.numeric(unlist(sum[v, c("Min", "Mean", "Max")]))
+        names(s2) <- c("Min.", "Mean", "Max.")
+        s <- c(s2[1], s1[1], s1[2], s2[2], s1[3], s2[3])
+        if (length(vars) > 1) {
+          s <- format(s, digits = digits)
+        }
+        s3 <- dis[v, "NMiss"]
+        if (s3 > 0) {
+          names(s3) <- "NA's"
+          return(c(s, s3[1]))
+        }
+        return(s)
+      }
+
+      # else, create character statistics
+      if (dis[dis == v, "NDistinct"] <= factor.threshold) {
+        factors <- c(factors, v)
+        ch <- as.character(fres[fres$Column == v, "Score"])
+        names(ch) <- fres[fres$Column == v, "CharVar"]
+        other <- nrows - sum(as.numeric(ch))
+        if (other > 0) {
+          ch <- c(ch, other)
+          names(ch) <- c(fres[fres$Column == v, "CharVar"], "(Other)")
+        }
+        if (length(vars) > 1){
+          return(format(ch))
+        }
+        return(ch)
+      }
+
+      ch <- c(nrows, "character", "character")
+      names(ch) <- c("Length", "Class", "Mode")
+      if (length(vars) > 1){
+        return(format(ch))
+      }
+      return(ch)
+    }
 
     # create empty list
     z <- vector("list", length = length(vars))
     names(z) <- names(vars)
 
-    ncw <- function(x) {
-      z <- nchar(x, type = "w")
-      if (any(na <- is.na(z))) {
-        z[na] <- nchar(encodeString(z[na]), "b")
-      }
-      z
-    }
-
-    sumpop <- function(v, n = maxsum) {
-      # create numeric statistics
-      if (v %in% nvars) {
-        s1 <- unlist(pct[pct$Variable == v, 3])
-        names(s1) <- c("1st Qu.", "Median", "3rd Qu.")
-        s2 <- unlist(ret[ret$Column == v, c(2, 5, 3)])
-        names(s2) <- c("Min.", "Mean", "Max.")
-        s3 <- distinct_res$results$Distinct[distinct_res$results$Distinct$Column == v, 3]
-        if (s3 > 0) {
-          names(s3) <- "NA's"
-          s3[1] <- as.character(s3[1])
-          return(c(s2[1], s1[1], s1[2], s2[2], s1[3], s2[3], s3[1]))
-        }
-        else {
-          return(c(s2[1], s1[1], s1[2], s2[2], s1[3], s2[3]))
-        }
-      }
-      else {
-        my_df <- as.data.frame(fres[fres$Column == v, 2:3])
-        nmiss <- distinct_res$results$Distinct[distinct_res$results$Distinct$Column == v, 3]
-        if (nmiss > 0) {
-          my_df <- rbind(my_df, c("NA's", nmiss))
-        }
-        f2 <- unlist(my_df[2])
-        names(f2) <- unlist(my_df[1])
-        f3 <- f2
-        if (names(f2[1]) == "NA's") {
-          na <- f2[1]
-          f2 <- f2[-1]
-          f3 <- c(f2, na)
-        }
-        return(f3)
-      }
-    }
-
-    nm <- tp$vars
-    nv <- length(nvars) + length(cvars)
+    nm <- names(vars)
+    nv <- length(vars)
     for (i in seq_len(nv)) {
       z[[i]] <- sumpop(names(z[i]))
     }
 
+    if (length(z) == 1) {
+      return(z[[1]])
+    }
+
+    # compute maximum number of variable stat lines
     lw <- numeric(nv)
     nr <- if (nv) {
       max(vapply(z, function(x) NROW(x) + (!is.null(attr(x, "NAs"))), integer(1)))
@@ -1199,12 +1223,20 @@ setMethod(
       0
     }
 
+    ncw <- function(x) {
+      z <- nchar(x, type = "w")
+      if (any(na <- is.na(z))) {
+        z[na] <- nchar(encodeString(z[na]), "b")
+      }
+      return(z)
+    }
+
+    # format variable stat lines
     for (i in seq_len(nv)) {
       z[[i]] <- sumpop(names(z[i]))
-
       sms <- z[[i]]
       lbs <- format(trimws(names(sms)))
-      sms2 <- paste0(lbs, ":", format(as.numeric(sms), digits = digits), "  ")
+      sms2 <- paste0(lbs, ":", sms, "  ")
       lw[i] <- ncw(lbs[1L])
       length(sms2) <- nr
       z[[i]] <- sms2
@@ -1219,9 +1251,7 @@ setMethod(
           paste(which(is.na(lw)), collapse = ", ")
         )
       }
-      blanks <- paste(character(max(lw, na.rm = TRUE) + 2L),
-        collapse = " "
-      )
+      blanks <- paste(character(max(lw, na.rm = TRUE) + 2L), collapse = " ")
       pad <- floor(lw - ncw(nm) / 2)
       nm <- paste0(substring(blanks, 1, pad), nm)
       dimnames(z) <- list(rep.int("", nr), nm)

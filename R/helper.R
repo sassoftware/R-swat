@@ -111,7 +111,7 @@
 #'
 #' @return covr::coverage
 #'
-#' @export
+#' @keywords internal
 #'
 .combine_reports <- function(...) {
   args <- list(...)
@@ -134,7 +134,7 @@
 #'
 #' @param ... one or more filenames containing covr::coverage objects
 #'
-#' @export
+#' @keywords internal
 #'
 .combine_coverage_files <- function(..., file = 'coverage.rds', ignore.missing = TRUE) {
   files <- list(...)
@@ -279,9 +279,10 @@
   }
   info <- cas.retrieve(x, "table.columninfo", table = tp, stop.on.error = TRUE)
   info <- info$results$ColumnInfo
-  row.names(info) <- info$Column
-  info <- info[, "Type"]
-  return(unlist(t(info)[1, ]))
+  n <- info$Column
+  info <- unlist(t(info$Type)[1, ])
+  names(info) <- n
+  return(info)
 }
 
 #' Retrieve numeric variable list
@@ -289,11 +290,11 @@
 #' @keywords internal
 .numeric_var_list <- function(x) {
   types <- .column_types(x)
-  return(types[!(types %in% c("char", "varchar", "binary", "varbinary"))])
+  return(names(types[!(types %in% c("char", "varchar", "binary", "varbinary"))]))
 }
 
 #' @keywords internal
 .character_var_list <- function(x) {
   types <- .column_types(x)
-  return(types[types %in% c("char", "varchar", "binary", "varbinary")])
+  return(names(types[types %in% c("char", "varchar", "binary", "varbinary")]))
 }
