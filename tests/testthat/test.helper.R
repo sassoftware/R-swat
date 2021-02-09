@@ -21,26 +21,26 @@ options(cas.print.messages = FALSE)
 
 context("test.helper.R")
 
-test_that("casFormula Functions", {
+test_that(".cas_formula Functions", {
   t1 <- y ~ x1
-  casFormula(t1)
-  expect_that(casFormula(t1), is_a("list"))
+  swat:::.cas_formula(t1)
+  expect_that(swat:::.cas_formula(t1), is_a("list"))
 
   t2 <- y ~ x1 + x2
-  expect_that(casFormula(t2), is_a("list"))
+  expect_that(swat:::.cas_formula(t2), is_a("list"))
 
   t3 <- y ~ x1 + x2 + x3
-  foo <- casFormula(t3)
+  foo <- swat:::.cas_formula(t3)
   valid <- list(as.name("y"), c("x1", "x2", "x3"))
   expect_equivalent(foo[[1]], as.name("y"))
   expect_equivalent(foo, valid)
 
 
   t4 <- y ~ x1 + x2 * x3
-  expect_error(casFormula(t4))
+  expect_error(swat:::.cas_formula(t4))
 
   t5 <- ~ x1 + x2 * x3
-  expect_error(casFormula(t5))
+  expect_error(swat:::.cas_formula(t5))
 })
 
 test_that("help function", {

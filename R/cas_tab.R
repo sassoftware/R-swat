@@ -880,6 +880,19 @@ setMethod(
   }
 )
 
+#' Set names of a CAS Table
+#'
+#' @param x A CASTable object.
+#'
+#' @export
+setMethod(
+  "names<-",
+  signature(x = "CASTable"),
+  function(x) {
+    stop("column names of a CAS table can not be changed")
+  }
+)
+
 #' Dimensions of a CAS Table
 #'
 #' Returns the number of rows and columns for the in-memory
@@ -1141,4 +1154,85 @@ setMethod(
 #' @export
 is.CASTable <- function(x) {
   return(class(x) == "CASTable")
+}
+
+#' Convert a CAS Table to a Data Frame (Download)
+#'
+#' Downloads the in-memory table that is referenced by
+#' the CASTable object and stores it as a data.frame
+#' in R. This function is used primarily by the package
+#' to store the results of a CAS action.
+#'
+#' @param x   The CAS table data to download.
+#' @param obs Optional integer indicating the maximum number of rows
+#'   of data to download.
+#'
+#' @return Returns a data.frame object that contains
+#'         a copy of the in-memory data.
+#'
+#' @examples
+#' \dontrun{
+#' cdf <- as.data.frame(CASTable)
+#' }
+#'
+#' @export
+as.data.frame.CASTable <- function(x, obs = 32768) {
+  tp <- .gen_table_param(x)
+  fv <- c(tp$vars, tp$computedVars)
+  fv <- fv[fv != ""]
+  if (sum(nchar(x@XcomputedVars))) {
+    for (Xcmp in x@XcomputedVars) {
+      if (!(Xcmp %in% x@computedVars)) {
+        fv <- fv[fv != Xcmp]
+      }
+    }
+  }
+
+  if (length(tp$orderby)) {
+    res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
+                        index = FALSE, from = 1, to = obs, maxRows = 10, sortby = tp$orderby)
+  } else {
+    res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
+                        index = FALSE, from = 1, to = obs, maxRows = 10)
+  }
+
+  fetch <- res$results$Fetch
+
+  name <- attributes(fetch)$table.name
+  label <- attributes(fetch)$table.label
+  title <- attributes(fetch)$table.title
+  attrs <- attributes(fetch)$table.attrs
+  col.labels <- attributes(fetch)$col.labels
+  col.formats <- attributes(fetch)$col.formats
+  col.attrs <- attributes(fetch)$col.attrs
+  col.sizes <- attributes(fetch)$col.sizes
+  col.types <- attributes(fetch)$col.types
+  col.widths <- attributes(fetch)$col.widths
+
+  out <- list()
+  for (i in seq_len(length(res$results))) {
+    if (i == 1) {
+      keyname <- "Fetch"
+    } else {
+      keyname <- paste("Fetch", i - 1, sep = "")
+    }
+    if (is.null(res$results[keyname])) {
+      break
+    }
+    out[[i]] <- res$results[[keyname]]
+  }
+
+  out <- do.call("rbind", out)
+  row.names(out) <- NULL
+  attributes(out)$table.name <- name
+  attributes(out)$table.label <- label
+  attributes(out)$table.title <- title
+  attributes(out)$table.attrs <- attrs
+  attributes(out)$col.labels <- col.labels
+  attributes(out)$col.formats <- col.formats
+  attributes(out)$col.attrs <- col.attrs
+  attributes(out)$col.sizes <- col.sizes
+  attributes(out)$col.types <- col.types
+  attributes(out)$col.widths <- col.widths
+  return(out)
 }

@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
 #'
 #' SWAT: SAS Wrapper for Analytics Transfer (SWAT)
 #'
@@ -725,7 +724,6 @@ CASDataMsgHandler <- setRefClass(
 #' @return List containing all connection parmeters resolved.
 #'
 #' @keywords internal
-#' @export
 .get_connection_info <- function(hostname, port, username, password, protocol, path) {
   # Get defaults from environment
   hostname <- hostname[hostname != ""]
@@ -925,7 +923,6 @@ CASDataMsgHandler <- setRefClass(
 #' s <- CAS("cloud.example.com", 8777, protocol = "auto", username = "sasdemo", password = "!s3cret")
 #' }
 #'
-#' @rawRd % Copyright SAS Institute
 #' @export
 CAS <- setRefClass(
   Class = "CAS",
@@ -1552,7 +1549,7 @@ cas.copy.CASTable <- function(conn) {
 #' @return Vector of CAS connection objects
 #'
 #' @export
-cas.fork <- function(conn, num = 2) {
+cas.fork.CAS <- function(conn, num = 2) {
   return(conn$fork(num))
 }
 
@@ -1577,7 +1574,6 @@ cas.fork <- function(conn, num = 2) {
 #'   that require data uploads.
 #'
 #' @keywords internal
-#'
 CASEventWatcher <- setRefClass(
   Class = "CASEventWatcher",
 
@@ -1766,7 +1762,6 @@ getnext <- function(...) {
 #'   given is returned.
 #'
 #' @keywords internal
-#'
 .no_null_string <- function(str) {
   if (is.null(str)) {
     return("")
@@ -1781,7 +1776,6 @@ getnext <- function(...) {
 #' @return An R object corresponding to the given value.
 #'
 #' @keywords internal
-#'
 .cas2r <- function(sw_value) {
   t <- sw_value$getType()
   .error_check(sw_value)
@@ -2352,7 +2346,6 @@ getnext <- function(...) {
 #' @return The next list index to be populated.
 #'
 #' @keywords internal
-#'
 .set_list_value <- function(sw_values, i, key, value) {
   if (key == "datamsghandler") {
     return(i)
@@ -2416,7 +2409,6 @@ getnext <- function(...) {
 #' @param a Arbitrary R object to convert.
 #'
 #' @keywords internal
-#'
 .r2cas <- function(soptions, sw_error, a) {
   len <- length(a)
   if (!is.null(a$datamsghandler)) {
@@ -2443,7 +2435,6 @@ getnext <- function(...) {
 #' @param len The length of the CAS value list
 #'
 #' @keywords internal
-#'
 .casvaluelist2r <- function(sw_values, len) {
   num <- 1
   output <- list()
@@ -2503,7 +2494,7 @@ rbind.bygroups <- function(res) {
 #' @seealso \code{\link{cas.terminate}}
 #'
 #' @export
-cas.close <- function(conn, close_session = FALSE) {
+cas.close.CAS <- function(conn, close_session = FALSE) {
   if (close_session) {
       conn$retrieve("session.endsession", `_messagelevel` = "error")
   }
@@ -2517,7 +2508,7 @@ cas.close <- function(conn, close_session = FALSE) {
 #' @seealso \code{\link{cas.close}}
 #'
 #' @export
-cas.terminate <- function(conn) {
+cas.terminate.CAS <- function(conn) {
   return(invisible(cas.close(conn, close_session = TRUE)))
 }
 
@@ -2534,7 +2525,7 @@ cas.terminate <- function(conn) {
 #' @seealso \code{\link{cas.upload.frame}}, \code{\link{cas.upload.file}}
 #'
 #' @export
-cas.upload <- function(conn, frame, ...) {
+cas.upload.CAS <- function(conn, frame, ...) {
   return(conn$upload(frame, ...))
 }
 
@@ -2550,7 +2541,7 @@ cas.upload <- function(conn, frame, ...) {
 #' @seealso \code{\link{cas.upload.file}}
 #'
 #' @export
-cas.upload.frame <- function(conn, frame, ...) {
+cas.upload.frame.CAS <- function(conn, frame, ...) {
   res <- conn$upload(frame, ...)
   return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
 }
@@ -2567,7 +2558,18 @@ cas.upload.frame <- function(conn, frame, ...) {
 #' @seealso \code{\link{cas.upload.frame}}
 #'
 #' @export
-cas.upload.file <- function(conn, path, ...) {
+cas.upload.file.CAS <- function(conn, path, ...) {
   res <- conn$upload(path, ...)
   return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
+}
+
+#' Display help for a given action
+#'
+#' @param conn The \code{\link{CAS}} connection object
+#' @param x    The action name to display help for.
+#'
+#' @export
+cas.help.CAS <- function(conn, x) {
+  invisible(sapply(cas.retrieve(conn, 'builtins.help', action=x)$messages,
+                   function(y) { cat(gsub('^.*?: ', '', y, perl=TRUE)); cat("\n") }))
 }

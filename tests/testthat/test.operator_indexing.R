@@ -23,11 +23,7 @@ context("test.operatorindexing.R")
 test_that("test that multi-column referencing with : works", {
   expect_equivalent(colSums(ct[1:4]), colSums(df[1:4]))
   expect_equivalent(median(ct[2]), median(data.matrix(df[2])))
-  #
-  # swat::median returns the median for each column.  stats::median.default returns
-  # the median across all selected columns, it seems.
-  #
-  expect_failure(expect_equivalent(median(ct[2:3]), median(data.matrix(df[2:3]))))
+  expect_equivalent(sum(ct[2:3]), sum(sapply(df[2:3], sum)))
 })
 
 test_that("test that multi-comlumn referencing with vector works", {

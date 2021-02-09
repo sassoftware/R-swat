@@ -20,7 +20,6 @@ options(cas.print.messages = FALSE)
 
 context("compvars_where.R")
 
-
 test_that("Row indexing on character values, ==", {
   r <- df0_[df0_["s0"] == "dd", 1:5]
   cas <- df0_ct[df0_ct["s0"] == "dd", 1:5]
@@ -124,7 +123,7 @@ test_that("Row indexing with non-integer division, !=", {
   cas2rdf <- as.data.frame(df_ct$nonintdiv)
   cdf2 <- as.data.frame(df_ct$nonintdiv2)
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
   expect_equivalent(length(dimnames(df_ct)[1]), length(dimnames(df_)[1]))
   expect_equivalent(dimnames(df_ct)[2], dimnames(df_)[2])
 })
@@ -269,7 +268,7 @@ test_that("Using modular arithmetic with missing values", {
   cas2rdf <- as.data.frame(df0_ct$compmod)
   cdf2 <- as.data.frame(df0_ct$compmod2)
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
 })
 
@@ -281,7 +280,7 @@ test_that("df0_$compExp <- df0_$n1^2 with missing values", {
   cas2rdf <- as.data.frame(df0_ct$compexp)
   cdf2 <- as.data.frame(df0_ct$compexp2)
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
 })
 
@@ -293,7 +292,7 @@ test_that("df0_$compExp<-df0_$n5^3", {
   cas2rdf <- as.data.frame(df0_ct$compexp)
   cdf2 <- as.data.frame(df0_ct$compexp2)
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
 })
 
 test_that("df0_$compExp<-df0_$n1^df0_$n5", {
@@ -304,7 +303,7 @@ test_that("df0_$compExp<-df0_$n1^df0_$n5", {
   cas2rdf <- as.data.frame(df0_ct$compexp2)
   cdf2 <- as.data.frame(df0_ct$compexp)
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
 })
 
@@ -316,7 +315,7 @@ test_that("Using subtraction to get negative numbers", {
   cas2rdf <- as.data.frame(df0_ct$comp_sub)
   cdf2 <- as.data.frame(df0_ct$comp_sub2)
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
 })
 
@@ -336,7 +335,7 @@ test_that("Assign constant value with different syntax", {
   cas2rdf <- as.data.frame(df_ct["constant"])
   cdf2 <- as.data.frame(df_ct["constant2"])
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
   expect_equivalent(dimnames(df_ct[1:8]), dimnames(df_))
 })
 
@@ -350,7 +349,7 @@ test_that("Using one compVar to create another", {
   cas2rdf <- as.data.frame(df_ct$weighted_var)
   cdf2 <- as.data.frame(df_ct$weighted_var2)
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
   expect_equivalent(dimnames(df_ct[1:9]), dimnames(df_))
 })
 
@@ -362,7 +361,7 @@ test_that("Creating a duplicate column", {
   cas2rdf <- as.data.frame(df0_ct$n5dup)
   cdf2 <- as.data.frame(df0_ct$n5dup2)
   expect_equivalent(cas2rdf, rdf)
-  expect_equivalent(cdf, cdf2)
+  expect_equivalent(rdf, cdf2)
   expect_equivalent(dimnames(df0_ct[1:8]), dimnames(df0_))
 })
 

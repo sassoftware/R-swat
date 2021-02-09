@@ -754,12 +754,12 @@ cas.mode.CASTable <- function(x, max.tie = 25, na.rm = FALSE) {
 #' cas.quantile(ct[1:4], q = 50)
 #' cas.quantile(ct$n2, q = c(10, 25, 50, 75, 90))
 #' }
-cas.quantile <- function(object, q = c(0, 25, 50, 70, 100), na.rm = FALSE) {
+cas.quantile <- function(object, q = c(0, 25, 50, 75, 100), na.rm = FALSE) {
   UseMethod("cas.quantile")
 }
 
 #' @export
-cas.quantile.CASTable <- function(x, q = c(0, 25, 50, 70, 100), na.rm = FALSE) {
+cas.quantile.CASTable <- function(x, q = c(0, 25, 50, 75, 100), na.rm = FALSE) {
   res <- cas.retrieve(x@conn, "percentile.percentile", stop.on.error = TRUE,
                       table = x, pctldef = 3, values = as.list(q))
   res <- res$results$Percentile

@@ -49,218 +49,219 @@ teardown({
 
 test_that("test.connection_info", {
   f <- function() {
-    return(.get_connection_info(NULL, NULL, NULL, NULL, NULL, NULL))
+    return(swat:::.get_connection_info(NULL, NULL, NULL, NULL, NULL, NULL))
   }
   expect_error(f())
 
   f <- function() {
-    return(.get_connection_info("cas-server-1.com", NULL, NULL, NULL, NULL, NULL))
+    return(swat:::.get_connection_info("cas-server-1.com", NULL, NULL, NULL, NULL, NULL))
   }
   expect_error(f())
 
   # cas
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            NULL, NULL, NULL, NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     NULL, NULL, NULL, NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "", password = "", protocol = "cas"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", NULL, NULL, NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", NULL, NULL, NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "myuserid", password = "", protocol = "cas"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            NULL, "mytoken", NULL, NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     NULL, "mytoken", NULL, NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "mytoken", NULL, NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", NULL, NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
   # http
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            NULL, NULL, "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     NULL, NULL, "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345", port = 12345,
                          username = "", password = "", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", NULL, "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", NULL, "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345", port = 12345,
                          username = "myuserid", password = "", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            NULL, "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     NULL, "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345", port = 12345,
                          username = "", password = "mytoken", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "http"))
 
   # cas with path (which means nothing)
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "", "", NULL, "cas-server/base")
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "", "", NULL, "cas-server/base")
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "", password = "", protocol = "cas"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "", NULL, "cas-server/base")
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "", NULL, "cas-server/base")
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "myuserid", password = "", protocol = "cas"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            NULL, "mytoken", "", "cas-server/base")
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     NULL, "mytoken", "", "cas-server/base")
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "mytoken", NULL, "cas-server/base")
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", NULL, "cas-server/base")
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
   # http with path
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "", "", "http", "cas-server/base")
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "", "", "http", "cas-server/base")
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "", password = "", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "", "http", "cas-server/base")
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "", "http", "cas-server/base")
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "myuserid", password = "", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            NULL, "mytoken", "http", "cas-server/base")
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     NULL, "mytoken", "http", "cas-server/base")
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "", password = "mytoken", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "mytoken", "http", "cas-server/base")
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", "http", "cas-server/base")
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "http"))
 
   # URL with path and separate port
-  out <- .get_connection_info("cas-server-1.com/cas-server/base", 12345,
-                            "", "", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com/cas-server/base", 12345,
+                                     "", "", "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "", password = "", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com/cas-server/base", 12345,
-                            "myuserid", "", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com/cas-server/base", 12345,
+                                     "myuserid", "", "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "myuserid", password = "", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com/cas-server/base", 12345,
-                            NULL, "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com/cas-server/base", 12345,
+                                     NULL, "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "", password = "mytoken", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com/cas-server/base", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com/cas-server/base", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "http"))
 
-  out <- .get_connection_info("https://cas-server-1.com/cas-server/base", 12345,
-                            "", "", "http", NULL)
+  out <- swat:::.get_connection_info("https://cas-server-1.com/cas-server/base", 12345,
+                                     "", "", "http", NULL)
   expect_equal(out, list(hostname = "https://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "", password = "", protocol = "https"))
 
-  out <- .get_connection_info("https://cas-server-1.com/cas-server/base", 12345,
-                            "myuserid", "", "http", NULL)
+  out <- swat:::.get_connection_info("https://cas-server-1.com/cas-server/base", 12345,
+                                     "myuserid", "", "http", NULL)
   expect_equal(out, list(hostname = "https://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "myuserid", password = "", protocol = "https"))
 
-  out <- .get_connection_info("https://cas-server-1.com/cas-server/base", 12345,
-                            "", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("https://cas-server-1.com/cas-server/base", 12345,
+                                     "", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "https://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "", password = "mytoken", protocol = "https"))
 
-  out <- .get_connection_info("https://cas-server-1.com/cas-server/base", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("https://cas-server-1.com/cas-server/base", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "https://cas-server-1.com:12345/cas-server/base", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "https"))
 })
 
 test_that("test.protocols", {
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "mytoken", "auto", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", "auto", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:12345", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "http"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "mytoken", "https", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", "https", NULL)
   expect_equal(out, list(hostname = "https://cas-server-1.com:12345", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "https"))
 
-  out <- .get_connection_info("cas-server-1.com", 12345,
-                            "myuserid", "mytoken", "cas", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", "cas", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
   f <- function() {
-    return(.get_connection_info("cas-server-1.com", 12345, "myuserid", "mytoken", "unknown", NULL))
+    return(swat:::.get_connection_info("cas-server-1.com", 12345,
+                                       "myuserid", "mytoken", "unknown", NULL))
   }
   expect_error(f())
 })
 
 test_that("test.duplicate_parameters", {
-  out <- .get_connection_info("cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", "cas", NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", "cas", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 5570,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas://cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas://cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 5570,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas://otheruser:@cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas://otheruser:@cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 5570,
                          username = "otheruser", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas://:otherpassword@cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas://:otherpassword@cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 5570,
                          username = "myuserid", password = "otherpassword", protocol = "cas"))
 
-  out <- .get_connection_info("cas://otheruser:otherpassword@cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas://otheruser:otherpassword@cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 5570,
                          username = "otheruser", password = "otherpassword", protocol = "cas"))
 
-  out <- .get_connection_info("http://cas-server-1.com:5570", 12345, "myuserid",
-                            "mytoken", "cas", NULL)
+  out <- swat:::.get_connection_info("http://cas-server-1.com:5570", 12345, "myuserid",
+                                     "mytoken", "cas", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:5570", port = 5570,
                          username = "myuserid", password = "mytoken", protocol = "http"))
 
-  out <- .get_connection_info("http://otheruser:@cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", "cas", NULL)
+  out <- swat:::.get_connection_info("http://otheruser:@cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", "cas", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:5570", port = 5570,
                          username = "otheruser", password = "mytoken", protocol = "http"))
 
-  out <- .get_connection_info("http://otheruser:otherpassword@cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", "cas", NULL)
+  out <- swat:::.get_connection_info("http://otheruser:otherpassword@cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", "cas", NULL)
   expect_equal(out, list(hostname = "http://cas-server-1.com:5570", port = 5570,
                          username = "otheruser", password = "otherpassword", protocol = "http"))
 })
 
 test_that("test.multiple_hosts", {
   f <- function() {
-    return(.get_connection_info(NULL, NULL, NULL, NULL, NULL, NULL))
+    return(swat:::.get_connection_info(NULL, NULL, NULL, NULL, NULL, NULL))
   }
   expect_error(f())
 
   f <- function() {
-    return(.get_connection_info(c(
+    return(swat:::.get_connection_info(c(
       "cas-server-1.com",
       "cas-server-2.com",
       "cas-server-3.com"
@@ -269,7 +270,7 @@ test_that("test.multiple_hosts", {
   expect_error(f())
 
   # cas
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -283,7 +284,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "", protocol = "cas"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -297,7 +298,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "myuserid", password = "", protocol = "cas"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -311,7 +312,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "mytoken", protocol = "cas"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -326,7 +327,7 @@ test_that("test.multiple_hosts", {
   ))
 
   # http
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -340,7 +341,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -354,7 +355,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "myuserid", password = "", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -368,7 +369,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "mytoken", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -383,7 +384,7 @@ test_that("test.multiple_hosts", {
   ))
 
   # cas with path (which means nothing)
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -397,7 +398,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "", protocol = "cas"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -411,7 +412,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "myuserid", password = "", protocol = "cas"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -425,7 +426,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "mytoken", protocol = "cas"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -440,7 +441,7 @@ test_that("test.multiple_hosts", {
   ))
 
   # http with path
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -454,7 +455,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -468,7 +469,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "myuserid", password = "", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -482,7 +483,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "mytoken", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com",
     "cas-server-2.com",
     "cas-server-3.com"
@@ -497,7 +498,7 @@ test_that("test.multiple_hosts", {
   ))
 
   # URL with path and separate port
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com/cas-server/base",
     "cas-server-2.com/cas-server/base"
   ), 12345, NULL, NULL, "http", NULL)
@@ -509,7 +510,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com/cas-server/base",
     "cas-server-2.com/cas-server/base"
   ), 12345, "myuserid", NULL, "http", NULL)
@@ -521,7 +522,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "myuserid", password = "", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com/cas-server/base",
     "cas-server-2.com/cas-server/base"
   ), 12345, NULL, "mytoken", "http", NULL)
@@ -533,7 +534,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "mytoken", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "cas-server-1.com/cas-server/base",
     "cas-server-2.com/cas-server/base"
   ), 12345, "myuserid", "mytoken", "http", NULL)
@@ -545,7 +546,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "myuserid", password = "mytoken", protocol = "http"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "https://cas-server-1.com/cas-server/base",
     "https://cas-server-2.com/cas-server/base"
   ), 12345, NULL, NULL, "http", NULL)
@@ -557,7 +558,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "", protocol = "https"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "https://cas-server-1.com/cas-server/base",
     "https://cas-server-2.com/cas-server/base"
   ), 12345, "myuserid", NULL, "http", NULL)
@@ -569,7 +570,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "myuserid", password = "", protocol = "https"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "https://cas-server-1.com/cas-server/base",
     "https://cas-server-2.com/cas-server/base"
   ), 12345, NULL, "mytoken", "http", NULL)
@@ -581,7 +582,7 @@ test_that("test.multiple_hosts", {
     port = 12345, username = "", password = "mytoken", protocol = "https"
   ))
 
-  out <- .get_connection_info(c(
+  out <- swat:::.get_connection_info(c(
     "https://cas-server-1.com/cas-server/base",
     "https://cas-server-2.com/cas-server/base"
   ), 12345, "myuserid", "mytoken", "http", NULL)
@@ -595,8 +596,8 @@ test_that("test.multiple_hosts", {
 })
 
 test_that("test.hostname_expansion", {
-  out <- .get_connection_info("cas-server-[1,2,3].com:5570", 12345,
-                            "myuserid", "mytoken", "cas", NULL)
+  out <- swat:::.get_connection_info("cas-server-[1,2,3].com:5570", 12345,
+                                     "myuserid", "mytoken", "cas", NULL)
   expect_equal(out, list(
     hostname = paste(
       "cas-server-1.com",
@@ -606,13 +607,13 @@ test_that("test.hostname_expansion", {
     port = 5570, username = "myuserid", password = "mytoken", protocol = "cas"
   ))
 
-  out <- .get_connection_info("cas-server-[1].com:5570", 12345,
-                            "myuserid", "mytoken", "cas", NULL)
+  out <- swat:::.get_connection_info("cas-server-[1].com:5570", 12345,
+                                     "myuserid", "mytoken", "cas", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 5570,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("[cas-server-1,cas-server-2].com:5570]", NULL,
-                            "myuserid", "mytoken", NULL, NULL)
+  out <- swat:::.get_connection_info("[cas-server-1,cas-server-2].com:5570]", NULL,
+                                     "myuserid", "mytoken", NULL, NULL)
   expect_equal(out, list(
     hostname = paste(
       "cas-server-1.com",
@@ -621,8 +622,8 @@ test_that("test.hostname_expansion", {
     port = 5570, username = "myuserid", password = "mytoken", protocol = "cas"
   ))
 
-  out <- .get_connection_info("cas-server-[1,2,3].com:5570", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-[1,2,3].com:5570", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(
     hostname = paste(
       "http://cas-server-1.com:5570",
@@ -632,15 +633,15 @@ test_that("test.hostname_expansion", {
     port = 5570, username = "myuserid", password = "mytoken", protocol = "http"
   ))
 
-  out <- .get_connection_info("cas-server-[1].com:5570", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas-server-[1].com:5570", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(
     hostname = "http://cas-server-1.com:5570",
     port = 5570, username = "myuserid", password = "mytoken", protocol = "http"
   ))
 
-  out <- .get_connection_info("[cas-server-1,cas-server-2].com:5570]", NULL,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("[cas-server-1,cas-server-2].com:5570]", NULL,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(
     hostname = paste(
       "http://cas-server-1.com:5570",
@@ -651,23 +652,23 @@ test_that("test.hostname_expansion", {
 })
 
 test_that("test.cas_url", {
-  out <- .get_connection_info("cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", NULL, NULL)
+  out <- swat:::.get_connection_info("cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", NULL, NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 5570,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas://cas-server-1.com", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas://cas-server-1.com", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas://cas-server-1.com:5570", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas://cas-server-1.com:5570", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 5570,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 
-  out <- .get_connection_info("cas://cas-server-1.com/cas-server/base", 12345,
-                            "myuserid", "mytoken", "http", NULL)
+  out <- swat:::.get_connection_info("cas://cas-server-1.com/cas-server/base", 12345,
+                                     "myuserid", "mytoken", "http", NULL)
   expect_equal(out, list(hostname = "cas-server-1.com", port = 12345,
                          username = "myuserid", password = "mytoken", protocol = "cas"))
 })

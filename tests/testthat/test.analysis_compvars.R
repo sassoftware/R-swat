@@ -6,10 +6,11 @@ options(cas.print.messages = FALSE)
 
 .num_cols <- function(x) {
   if (class(x) != "data.frame") stop("parameter must be a data frame")
-  return(names(x)[sapply(names(x), function(y) class(x[, y]) != "character")])
+  return(names(x)[sapply(names(x), function(y) !(class(x[, y]) %in% c("character", "factor")))])
 }
 
 context("test.analysis_compvars.R")
+
 test_that("unique", {
   # Computed columns are not supported with the unique function
   expect_error(expect_equivalent(unique(ct_cmp$n1), unique(ct_cmp$cv1)))
@@ -378,7 +379,6 @@ test_that("stderr", {
   expect_equivalent(names(cout), nums)
   # expect_equivalent(cout, dfout)
 
-  # na.rm = TRUE
   cout <- cas.stderr(t, na.rm = TRUE)
   # dfout <- sapply(titanic[, nums], stderr, na.rm = TRUE)
   expect_true(length(names(cout)) > 0)
@@ -396,7 +396,6 @@ test_that("uss", {
   expect_equivalent(names(cout), nums)
   # expect_equivalent(cout, dfout)
 
-  # na.rm = TRUE
   cout <- cas.uss(t, na.rm = TRUE)
   # dfout <- sapply(titanic[, nums], uss, na.rm = TRUE)
   expect_true(length(names(cout)) > 0)
@@ -404,22 +403,48 @@ test_that("uss", {
   # expect_equivalent(cout, dfout)
 })
 
-test_that("cv", {
+test_that("css", {
   # TODO: Need a way to verify numbers
   nums <- .num_cols(titanic)
 
-  cout <- cas.uss(t)
-  # dfout <- sapply(titanic[, nums], uss)
+  cout <- cas.css(t)
+  # dfout <- sapply(titanic[, nums], css)
   expect_true(length(names(cout)) > 0)
   expect_equivalent(names(cout), nums)
   # expect_equivalent(cout, dfout)
 
-  # na.rm = TRUE
-  cout <- cas.uss(t, na.rm = TRUE)
-  # dfout <- sapply(titanic[, nums], uss, na.rm = TRUE)
+  cout <- cas.css(t, na.rm = TRUE)
+  # dfout <- sapply(titanic[, nums], css, na.rm = TRUE)
   expect_true(length(names(cout)) > 0)
   expect_equivalent(names(cout), nums)
   # expect_equivalent(cout, dfout)
+})
+
+test_that("cv", {
+  cv <- function(x, na.rm = FALSE) {
+    if (na.rm) {
+      x <- x[!is.na(x)]
+    }
+    if (any(is.na(x))) {
+      return(NA)
+    } else {
+      return(100*(sd(x)/mean(x)))
+    }
+  }
+
+  nums <- .num_cols(titanic)
+
+  cout <- cas.cv(t)
+  dfout <- sapply(titanic[, nums], cv)
+  expect_true(length(names(cout)) > 0)
+  expect_equivalent(names(cout), nums)
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.cv(t, na.rm = TRUE)
+  dfout <- sapply(titanic[, nums], cv, na.rm = TRUE)
+  expect_true(length(names(cout)) > 0)
+  expect_equivalent(names(cout), nums)
+  expect_equivalent(cout, dfout)
 })
 
 test_that("probt", {
@@ -432,7 +457,6 @@ test_that("probt", {
   expect_equivalent(names(cout), nums)
   # expect_equivalent(cout, dfout)
 
-  # na.rm = TRUE
   cout <- cas.probt(t, na.rm = TRUE)
   # dfout <- sapply(titanic[, nums], uss, na.rm = TRUE)
   expect_true(length(names(cout)) > 0)
@@ -464,9 +488,13 @@ test_that("cov", {
 })
 
 test_that("summary", {
-  print('')
-  print(summary(t))
-  print(summary(titanic))
-  expect_true(all.equal(summary(ct_cmp[c(1:4, 7:8)]),
-                        summary(df_cmp[c(1:4, 7:8)]), check.attributes = FALSE))
+  expect_true(all.equal(summary(t, factor.threshold = 0),
+                        summary(titanic, quantile.type = 1)))
+  expect_true(all.equal(summary(ct_cmp, factor.threshold = 0),
+                        summary(df_cmp, quantile.type = 1)))
+
+  t2 <- data.frame(titanic)
+  cols <- names(t2)[!(names(t2) %in% "Embarked")]
+  t2$Sex <- as.factor(t2$Sex)
+  expect_true(all.equal(summary(t[, cols]), summary(t2[, cols], quantile.type = 1)))
 })

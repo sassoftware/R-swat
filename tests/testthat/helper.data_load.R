@@ -25,7 +25,7 @@ options(cas.gen.function.sig = FALSE, cas.print.messages = FALSE)
 #
 # Setup connection parameters
 #
-info <- swat::.get_connection_info(NULL, NULL, NULL, NULL, NULL, NULL)
+info <- swat:::.get_connection_info(NULL, NULL, NULL, NULL, NULL, NULL)
 HOSTNAME <- info$hostname
 PORT <- info$port
 USERNAME <- info$username

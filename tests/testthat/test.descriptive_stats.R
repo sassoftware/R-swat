@@ -17,6 +17,10 @@ library(swat)
 
 options(cas.print.messages = FALSE)
 
+.num_cols <- function(x) {
+  if (class(x) != "data.frame") stop("parameter must be a data frame")
+  return(names(x)[sapply(names(x), function(y) !(class(x[, y]) %in% c("character", "factor")))])
+}
 
 context("descriptive_stats.R")
 
@@ -42,118 +46,305 @@ test_that("Table Meta Functions", {
 })
 
 test_that("cas.count", {
-  expect_that(cas.count(ct1), is_a("data.frame"))
-  column <- c("n1", "n2", "n3", "n4")
-  n <- c(6)
-  col_count <- data.frame(column, n)
-  col_count$column <- as.character(col_count$column)
-  expect_equivalent(cas.count(ct[1:4]), col_count)
-})
-
-test_that("cas.min", {
-  expect_that(cas.min(ct1), is_a("data.frame"))
-  column <- c("n1", "n2", "n3", "n4")
-  mins <- c(2, 5, 8, 8)
-  col_min <- data.frame(column, mins)
-  col_min$column <- as.character(col_min$column)
-  expect_equivalent(cas.min(ct[1:4]), col_min)
-})
-
-test_that("cas.min(iris)", {
-  expect_that(cas.min(i2), is_a("data.frame"))
-  column <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
-  mins <- c(min(iris[1]), min(iris[2]), min(iris[3]), min(iris[4]))
-  col_min <- data.frame(column, mins)
-  col_min$column <- as.character(col_min$column)
-  expect_equivalent(cas.min(i2[1:4]), col_min)
-
-  # missing values
-  expect_that(cas.min(ct), is_a("data.frame"))
-  column <- c("n1", "n2", "n3", "n4")
-  mins <- c(2, 5, 12, 8)
-  col_min <- data.frame(column, mins)
-  col_min$column <- as.character(col_min$column)
-  expect_equivalent(cas.min(ct0[1:4]), col_min)
+  cout <- cas.count(t)
+  dfout <- sapply(titanic, function(x) sum(!is.na(x)))
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
 })
 
 test_that("min", {
-  cas_min <- min(i2)
-  expect_that(cas_min, is_a("numeric"))
-  expect_equivalent(cas_min, min(iris[, c("Sepal.Length", "Sepal.Width",
-                                          "Petal.Length", "Petal.Width")]))
+  nums <- .num_cols(iris)
+  cout <- min(i2[, nums])
+  dfout <- min(iris[, nums])
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+})
 
-  expect_equivalent(min(i2[, "Sepal.Length"]), min(iris[, "Sepal.Length"]))
-  expect_equivalent(min(i2[, "Sepal.Width"]), min(iris[, "Sepal.Width"]))
-  expect_equivalent(min(i2[, "Petal.Length"]), min(iris[, "Petal.Length"]))
-  expect_equivalent(min(i2[, "Petal.Width"]), min(iris[, "Petal.Width"]))
+test_that("cas.min", {
+  nums <- .num_cols(titanic)
 
-  expect_error(function() min(i2[, "Species"]))
+  cout <- cas.min(t)
+  dfout <- sapply(titanic, min)
+  expect_that(cout, is_a("character"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.min(t, na.rm = TRUE)
+  dfout <- sapply(titanic, min, na.rm = TRUE)
+  expect_that(cout, is_a("character"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.min(t[, nums])
+  dfout <- sapply(titanic[, nums], min)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.min(t[, nums], na.rm = TRUE)
+  dfout <- sapply(titanic[, nums], min, na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  nums <- .num_cols(iris)
+
+  cout <- cas.min(i2[, nums])
+  dfout <- sapply(iris[, nums], min)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.min(i2[, nums], na.rm = TRUE)
+  dfout <- sapply(iris[, nums], min, na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+})
+
+test_that("max", {
+  nums <- .num_cols(iris)
+  cout <- max(i2[, nums])
+  dfout <- max(iris[, nums])
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  nums <- .num_cols(titanic)
+  cout <- max(t[, nums])
+  dfout <- max(titanic[, nums])
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- max(t[, nums], na.rm = TRUE)
+  dfout <- max(titanic[, nums], na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
 })
 
 test_that("cas.max", {
-  expect_that(cas.max(i2), is_a("data.frame"))
-  column <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
-  maxs <- c(max(iris[1]), max(iris[2]), max(iris[3]), max(iris[4]))
-  col_max <- data.frame(column, maxs)
-  col_max$column <- as.character(col_max$column)
-  expect_equivalent(cas.max(i2[1:4]), col_max)
+  nums <- .num_cols(titanic)
 
-  expect_that(cas.max(ct), is_a("data.frame"))
-  column <- c("n1", "n2", "n3", "n4")
-  maxs <- c(598, 120, 198, 1120)
-  col_max <- data.frame(column, maxs)
-  col_max$column <- as.character(col_max$column)
-  expect_equivalent(cas.max(ct0[1:4]), col_max)
+  cout <- cas.max(t)
+  dfout <- sapply(titanic, max)
+  expect_that(cout, is_a("character"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.max(t, na.rm = TRUE)
+  dfout <- sapply(titanic, max, na.rm = TRUE)
+  expect_that(cout, is_a("character"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.max(t[, nums])
+  dfout <- sapply(titanic[, nums], max)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.max(t[, nums], na.rm = TRUE)
+  dfout <- sapply(titanic[, nums], max, na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  nums <- .num_cols(iris)
+
+  cout <- cas.max(i2[, nums])
+  dfout <- sapply(iris[, nums], max)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.max(i2[, nums], na.rm = TRUE)
+  dfout <- sapply(iris[, nums], max, na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+})
+
+test_that("median", {
+  expect_error(median(i2))
+  expect_error(median(i2$Species))
+
+  # R's median averages the median of even numbered variables.
+  # Petal.Length is different than for CAS.
+  vars <- c("Sepal.Length", "Sepal.Width", "Petal.Width")
+
+  cout <- sapply(vars, function (x) median(i2[, x]))
+  dfout <- sapply(vars, function (x) median(iris[, x]))
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- sapply(vars, function (x) median(i2[, x], na.rm = TRUE))
+  dfout <- sapply(vars, function (x) median(iris[, x], na.rm = TRUE))
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
 })
 
 test_that("cas.median", {
-  expect_that(cas.median(mtcars_ct), is_a("data.frame"))
-  variable <- c("mpg", "cyl", "disp", "hp")
-  median <- c(median(mtcars[[1]]), median(mtcars[[2]]),
-              median(mtcars[[3]]), median(mtcars[[4]]))
-  col_median <- data.frame(variable, median)
-  expect_equivalent(cas.median(mtcars_ct[1:4])[2], col_median[2])
+  # cas.median only does numerics 
+  nums <- .num_cols(titanic)
 
-  expect_that(cas.median(ctn), is_a("data.frame"))
-  column <- c("n1", "n2", "n3", "n4")
-  median <- c(median(dfn[[1]], na.rm = TRUE), median(dfn[[2]], na.rm = TRUE),
-              median(dfn[[3]], na.rm = TRUE), median(dfn[[4]], na.rm = TRUE))
-  col_median <- data.frame(column, median)
-  col_median$column <- as.character(col_median$column)
-  expect_equivalent(cas.median(ctn[1:4]), col_median)
+  cout <- cas.median(t)
+  dfout <- sapply(titanic[, nums], median, quantile.type = 1)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.median(t, na.rm = TRUE)
+  dfout <- sapply(titanic[, nums], median, quantile.type = 1, na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  vars <- c("Sepal.Length", "Sepal.Width", "Petal.Width")
+
+  cout <- cas.median(i2[, vars])
+  dfout <- sapply(iris[, vars], median, quantile.type = 1)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.median(i2[, vars], na.rm = TRUE)
+  dfout <- sapply(iris[, vars], median, quantile.type = 1, na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
 })
 
 test_that("cas.mode", {
-  expect_that(cas.mode(ct), is_a("data.frame"))
-  expect_equivalent(names(cas.mode(ct[5])), c("Column", "Mode", "Count"))
-  expect_equivalent(dim(cas.mode(ct)), c(6, 3))
-  expect_equivalent(dim(cas.mode(ct[1:5])), c(5, 3))
-  expect_equivalent(dim(cas.mode(i2)), c(5, 3))
-  expect_equivalent(cas.mode(i2)[4, 3], 29)
+  compute.mode <- function(v, na.rm = FALSE) {
+    u <- unique(v)
+    if (na.rm) {
+      u <- u[u != ""]
+      u <- u[!(is.na(u))]
+    }
+    u[which.max(tabulate(match(v, u)))]
+  }
+
+  cout <- cas.mode(t)
+  expect_equivalent(nrow(cout), 25)
+  expect_equivalent(ncol(cout), ncol(titanic))
+
+  cout <- cas.mode(t, max.tie = 5)
+  expect_equivalent(nrow(cout), 5)
+  expect_equivalent(ncol(cout), ncol(titanic))
+
+  # Remove PassengerID and Name since they are all unique values
+  cols <- names(t)
+  cols <- cols[!(cols %in% c("PassengerId", "Name"))]
+
+  # dfout only contains one value for each column
+  cout <- cas.mode(t[, cols])
+  dfout <- data.frame(lapply(titanic[, cols], compute.mode))
+  expect_true(all(sapply(cols, function (x) {
+    dfout[, x][[1]] %in% cout[, x]
+  })))
+
+  cout <- cas.mode(t[, cols], na.rm = TRUE)
+  dfout <- data.frame(lapply(titanic[, cols], compute.mode, na.rm = TRUE))
+  expect_true(all(sapply(cols, function (x) {
+    dfout[, x][[1]] %in% cout[, x]
+  })))
+})
+
+test_that("quantile", {
+  expect_error(quantile(i2))
+  expect_error(quantile(i2$Species))
+
+  # R's median averages the quantile of even numbered variables.
+  # Petal.Length is different than for CAS.
+  vars <- c("Sepal.Length", "Sepal.Width", "Petal.Width")
+
+  cout <- sapply(vars, function (x) quantile(i2[, x]))
+  dfout <- sapply(vars, function (x) quantile(iris[, x]))
+  expect_that(cout, is_a("matrix"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- sapply(vars, function (x) quantile(i2[, x], na.rm = TRUE))
+  dfout <- sapply(vars, function (x) quantile(iris[, x], na.rm = TRUE))
+  expect_that(cout, is_a("matrix"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
 })
 
 test_that("cas.quantile", {
-  expect_that(cas.quantile(ct1, q = list(25, 50, 75)), is_a("data.frame"))
-  expect_error(cas.quantile(ct))
-  variable <- c("n1", "n1", "n2", "n2", "n3", "n3", "n4", "n4")
-  pctl <- c(25, 75)
-  value <- c(3, 5, 6, 8, 12, 15, 15, 17)
-  col_quant <- data.frame(variable, pctl, value)
-  col_quant$variable <- as.character(col_quant$variable)
-  expect_equivalent(cas.quantile(ct[1:4], q = c(25, 75)), col_quant)
-})
+  # R's median averages the quantile of even numbered variables.
+  # Petal.Length is different than for CAS.
+  vars <- c("Sepal.Length", "Sepal.Width", "Petal.Width")
 
-test_that("cas.tvalue", {
-  expect_that(cas.tvalue(ct), is_a("numeric"))
-  n1 <- c(3, 3, 3, 3, 3, 3)
-  n2 <- c(5, 6, 7, 7, 8, 120)
-  n3 <- c(12, 13, 15, 15, 8, 198)
-  n4 <- c(15, 16, 17, 15, 8, 1120)
-  dfc <- data.frame(n1, n2, n3, n4)
-  ctc <- as.casTable(caz, dfc)
-  response <- as.numeric(c(NaN, 1.348879, 1.406952, 1.077021))
-  names(response) <- c("n1", "n2", "n3", "n4")
-  expect_equal(cas.tvalue(ctc), response, tolerance = 1e-6)
+  cout <- cas.quantile(i2[, vars])
+  dfout <- sapply(vars, function (x) quantile(iris[, x], quantile.type = 1))
+  expect_that(cout, is_a("matrix"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.quantile(i2[, vars], q = c(25, 75))
+  dfout <- sapply(vars, function (x) quantile(iris[, x], probs = c(.25, .75), quantile.type = 1))
+  expect_that(cout, is_a("matrix"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.quantile(i2[, vars], na.rm = TRUE)
+  dfout <- sapply(vars, function (x) quantile(iris[, x], na.rm = TRUE, quantile.type = 1))
+  expect_that(cout, is_a("matrix"))
+  expect_equivalent(names(cout), names(dfout))
+  expect_equivalent(cout, dfout)
+
+  nums <- .num_cols(titanic)
+
+  passenger_id <- c(1, 223, 446, 669, 891)
+  survived <- c(0, 0, 0, 1, 1)
+  pclass <- c(1, 2, 3, 3, 3)
+  age <- c(.42, 20, 28, 38, 80)
+  sibsp <- c(0, 0, 0, 1, 8)
+  parch <- c(0, 0, 0, 0, 6)
+  fare <- c(0, 7.8958, 14.4542, 31, 512.3292)
+
+  cout <- cas.quantile(t)
+  expect_that(cout, is_a("matrix"))
+  expect_equivalent(colnames(cout), nums)
+  expect_equivalent(rownames(cout), c("0%", "25%", "50%", "75%", "100%"))
+  expect_equivalent(cout[, "PassengerId"], passenger_id)
+  expect_equivalent(cout[, "Survived"], survived)
+  expect_equivalent(cout[, "Pclass"], pclass)
+  expect_equivalent(length(is.na(cout[, "Age"])), 5)
+  expect_equivalent(cout[, "SibSp"], sibsp)
+  expect_equivalent(cout[, "Parch"], parch)
+  expect_equivalent(cout[, "Fare"], fare)
+
+  cout <- cas.quantile(t, q = c(25, 75))
+  expect_that(cout, is_a("matrix"))
+  expect_equivalent(colnames(cout), nums)
+  expect_equivalent(rownames(cout), c("25%", "75%"))
+  expect_equivalent(cout[, "PassengerId"], passenger_id[c(2, 4)])
+  expect_equivalent(cout[, "Survived"], survived[c(2, 4)])
+  expect_equivalent(cout[, "Pclass"], pclass[c(2, 4)])
+  expect_equivalent(length(is.na(cout[, "Age"])), 2)
+  expect_equivalent(cout[, "SibSp"], sibsp[c(2, 4)])
+  expect_equivalent(cout[, "Parch"], parch[c(2, 4)])
+  expect_equivalent(cout[, "Fare"], fare[c(2, 4)])
+
+  cout <- cas.quantile(t, na.rm = TRUE)
+  expect_that(cout, is_a("matrix"))
+  expect_equivalent(colnames(cout), nums)
+  expect_equivalent(rownames(cout), c("0%", "25%", "50%", "75%", "100%"))
+  expect_equivalent(cout[, "PassengerId"], passenger_id)
+  expect_equivalent(cout[, "Survived"], survived)
+  expect_equivalent(cout[, "Pclass"], pclass)
+  expect_equivalent(cout[, "Age"], age)
+  expect_equivalent(cout[, "SibSp"], sibsp)
+  expect_equivalent(cout[, "Parch"], parch)
+  expect_equivalent(cout[, "Fare"], fare)
 })
 
 test_that("colSums", {
@@ -256,7 +447,7 @@ test_that("str", {
 
 test_that("summary", {
   expect_that(summary(i2), is_a("table"))
-  expect_equivalent(summary(i2), summary(iris))
+  expect_true(all.equal(summary(i2), summary(iris, quantile.type = 1), check.attributes = FALSE))
 })
 
 test_that("column selection", {
@@ -265,38 +456,103 @@ test_that("column selection", {
   expect_equivalent(i2["Sepal.Length"], i2$Sepal.Length)
 })
 
+test_that("cas.tvalue", {
+  expect_that(cas.tvalue(ct), is_a("numeric"))
+  n1 <- c(3, 3, 3, 3, 3, 3)
+  n2 <- c(5, 6, 7, 7, 8, 120)
+  n3 <- c(12, 13, 15, 15, 8, 198)
+  n4 <- c(15, 16, 17, 15, 8, 1120)
+  dfc <- data.frame(n1, n2, n3, n4)
+  ctc <- as.CASTable(caz, dfc)
+  response <- as.numeric(c(NaN, 1.348879, 1.406952, 1.077021))
+  names(response) <- c("n1", "n2", "n3", "n4")
+  expect_equal(cas.tvalue(ctc), response, tolerance = 1e-6)
+})
+
 test_that("cas.uss", {
   expect_equivalent(cas.uss(i2[1:4]), c(5223.85, 1430.40, 2582.71, 302.33))
 })
 
 test_that("cas.cv", {
-  testthat::skip("Issue 87")
-  cv1 <- c(14.17113, 14.25642, 46.97441, 63.55511)
-  expect_true(all.equal(cas.cv(i2[1:4]), cv1, check.names = FALSE,
-                        tolerance = 1.e-4))
-  expect_true(all.equal(cas.cv(ct0[1:4]), c(235.9001012, 187.7981392, 162.8643165, 210.3022417),
-              tolerance = 1.e-4, check.names = FALSE))
-})
+  cv <- function(x, na.rm = FALSE) {
+    if (na.rm) {
+      x <- x[!is.na(x)]
+    }
+    if (any(is.na(x))) {
+      return(NA)
+    } else {
+      return(100*(sd(x)/mean(x)))
+    }
+  }
+  nums <- .num_cols(iris)
 
-test_that("cas.quantile", {
-  quantile <- c(19.200, 6.000, 196.300, 123.000)
-  expect_equivalent(cas.quantile(mtcars_ct[1:4], 50)[[3]], quantile)
-  quantile <- c(2.5, 5.5, 13, 11.5)
-  expect_equivalent(cas.quantile(ctn[1:4], 20)[[3]], quantile)
+  # testthat::skip("Issue 87")
+  cv1 <- sapply(nums, function(x) cv(iris[, x]))
+  names(cv1) <- nums
+
+  cout <- cas.cv(i2)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(cv1))
+  expect_true(all.equal(cout, cv1, tolerance = 1.e-5))
+
+  cout <- cas.cv(i2, na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(cv1))
+  expect_true(all.equal(cout, cv1, tolerance = 1.e-5))
+
+  nums <- c("n1", "n2", "n3", "n4")
+  cv1 <- sapply(df0[, nums], cv)
+  cv1.na.rm <- sapply(df0[, nums], cv, na.rm = TRUE)
+  names(cv1) <- nums
+  names(cv1.na.rm) <- nums
+
+  cout <- cas.cv(ct0)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(cv1))
+  expect_true(all.equal(cout, cv1, tolerance = 1.e-4))
+
+  cout <- cas.cv(ct0, na.rm = TRUE)
+  expect_that(cout, is_a("numeric"))
+  expect_equivalent(names(cout), names(cv1.na.rm))
+  expect_true(all.equal(cout, cv1.na.rm, tolerance = 1.e-4))
 })
 
 test_that("cas.sd", {
-  sd <- c(6.0269481, 1.7859216, 123.9386938, 68.5628685)
-  expect_equivalent(cas.sd(mtcars_ct[1:4])[[2]], sd)
-  sd <- c(265.75985, 50.87730, 82.40934, 494.63087)
-  all.equal(cas.sd(ctn[1:4])[[2]], sd, tolerance = 1.e-7)
+  cout <- cas.sd(mtcars_ct)
+  dfout <- sapply(mtcars, sd)
+  expect_equivalent(cout, dfout)
+
+  cout <- cas.sd(mtcars_ct, na.rm = TRUE)
+  dfout <- sapply(mtcars, sd, na.rm = TRUE)
+  all.equal(cout, dfout)
 })
 
 test_that("cas.css", {
-  testthat::skip("Issue 87")
+  cout <- cas.css(i2)
   css1 <- c(102.16833, 28.30693, 464.32540, 86.56993)
-  expect_true(all.equal(cas.css(i2[1:4]), css1, check.names = FALSE,
-                        tolerance = 1.e-4))
-  expect_true(all.equal(cas.css(ct0[1:4]), c(282513.2, 10354.0, 27165.2, 978638.8),
-                        tolerance = 1.e-4, check.names = FALSE))
+  expect_that(cout, is_a("numeric"))
+  expect_true(all.equal(cout, css1, tolerance = 1.e-4, check.names = FALSE))
+  expect_equivalent(names(cout), c("Sepal.Length", "Sepal.Width",
+				   "Petal.Length", "Petal.Width"))
+
+  cout <- cas.css(i2, na.rm = TRUE)
+  css1 <- c(102.16833, 28.30693, 464.32540, 86.56993)
+  expect_that(cout, is_a("numeric"))
+  expect_true(all.equal(cout, css1, check.names = FALSE, tolerance = 1.e-4))
+  expect_equivalent(names(cout), c("Sepal.Length", "Sepal.Width",
+				   "Petal.Length", "Petal.Width"))
+
+  # TODO: Verify correct values
+
+  cout <- cas.css(ct0)
+  css1 <- c(NA, NA, 27165.2, NA)
+  expect_that(cout, is_a("numeric"))
+  #expect_true(all.equal(cout, css1, tolerance = 1.e-4, check.names = FALSE))
+  expect_equivalent(names(cout), c("n1", "n2", "n3", "n4"))
+
+  cout <- cas.css(ct0, na.rm = TRUE)
+  css1.na.rm <- c(282513.2, 10354.0, 27165.2, 978638.8)
+  expect_that(cout, is_a("numeric"))
+  #expect_true(all.equal(cout, css1.na.rm, tolerance = 1.e-4, check.names = FALSE))
+  expect_equivalent(names(cout), c("n1", "n2", "n3", "n4"))
 })
