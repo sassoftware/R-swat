@@ -43,7 +43,7 @@
 #'
 #' @section Run a simple action:
 #' \preformatted{
-#'    results <- cas.run(s, "builtins.serverStatus")
+#'    results <- cas.retrieve(s, "builtins.serverStatus")$results
 #'    results$server
 #'    nodes actions
 #'  1     1      15
@@ -64,7 +64,7 @@
 #'
 #' @section Load a CAS actionSet:
 #' \preformatted{
-#'   cas.run(s, "builtins.loadActionSet", actionSet="regression")
+#'   cas.retrieve(s, "builtins.loadActionSet", actionSet="regression")
 #' }
 #'
 #' @section Useful links:
@@ -1321,6 +1321,10 @@ CAS <- setRefClass(
       # Generate action wrappers for loadActionSet / defineActionSet
       .self$generate_wrappers(actn, ...)
 
+      if (.self$severity > 1) {
+        return(invisible(output))
+      }
+
       return(output)
     },
 
@@ -1566,6 +1570,11 @@ setMethod(
   "cas.retrieve",
   signature(x = "CASTable"),
   function(x, actn, ..., stop.on.error = FALSE) {
+    # TODO: Need reflection information to verify action needs a table= param.
+    args <- list(...)
+    if (is.null(args$table)) {
+      return(x@conn$retrieve(actn, table = x, ..., stop.on.error = stop.on.error))
+    }
     return(x@conn$retrieve(actn, ..., stop.on.error = stop.on.error))
   }
 )

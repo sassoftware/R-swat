@@ -61,15 +61,15 @@ setMethod(
       # Sample rows
       if (length(x@groupby)) { # SRS
         name <- uniqueTableName(x@tname)
-        res <- cas.run(x@conn, "sampling.srs",
-          check_errors = TRUE,
+        res <- cas.retrieve(x@conn, "sampling.srs",
+          stop.on.error = TRUE,
           samppct = eval(download_obs / nrow(x) * 100),
           table = x@tname,
           output = list(casOut = list(
             name = name,
             replace = TRUE
           ), copyvars = list(vars))
-        )
+        )$results
         srs <- CASTable(x@conn, name,
           columns = vars, where = x@where,
           orderby = x@orderby, groupby = x@groupby, gbmode = x@gbmode
@@ -83,15 +83,15 @@ setMethod(
       }
       else { # Stratified
         name <- uniqueTableName(x@tname)
-        res <- cas.run(x@conn, "sampling.srs",
-          check_errors = TRUE,
+        res <- cas.retrieve(x@conn, "sampling.srs",
+          stop.on.error = TRUE,
           samppct = eval(download_obs / nrow(x) * 100),
           table = x@tname,
           output = list(casOut = list(
             name = name,
             replace = TRUE
           ), copyvars = list(vars))
-        )
+        )$results
         srs <- CASTable(x@conn, name,
           columns = vars, where = x@where,
           orderby = x@orderby, groupby = x@groupby, gbmode = x@gbmode

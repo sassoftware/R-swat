@@ -13,68 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-setGeneric(
-  "cas.run",
-  function (x, actn, ..., stop.on.error = FALSE) {
-    standardGeneric("cas.run")
-  }
-)
-
-#' Run a CAS Action by Name
-#'
-#' This function enables you to specify a CAS action
-#' name and run it. This is an alternative to running
-#' an action from the generated function names. An
-#' example of a generated function name is cas.table.tableInfo.
-#'
-#' @param CASorCASTab An instance of a CAS object that represents
-#'  a connection and CAS session, or an instance of a CASTable.
-#' @param actn A \code{character} string that specifies
-#'  the action set and action name to run.
-#' @param stop.on.error Logical indicating that if errors occurred
-#'   when running the action, an error is raised.
-#' @param \dots Parameters that are passed to the CAS action.
-#'
-#' @return List of action results
-#'
-#' @examples
-#' \dontrun{
-#' # display the active caslib for the session
-#' cas.run(conn, "sessionProp.getSessOpt", name = "caslib")
-#'
-#' # display simple summary statistics for an uploaded data frame
-#' mtcarsct <- as.CASTable(conn, mtcars)
-#' cas.run(mtcarsct, "simple.summary")
-#'
-#' # the preceding cas.run function is functionally
-#' # equivalent to the following generated function
-#' cas.simple.summary(mtcarsct)
-#' }
-#'
-#' @export
-setMethod(
-  "cas.run",
-  signature(x = "CAS"),
-  function(x, actn, ..., stop.on.error = FALSE) {
-    return(x$retrieve(actn, ..., stop.on.error = stop.on.error)$results)
-  }
-)
-
-#' @export
-setMethod(
-  "cas.run",
-  signature(x = "CASTable"),
-  function(x, actn, ..., stop.on.error = FALSE) {
-    args <- list(...)
-    # TODO: Need reflection information to verify a table parameter is needed.
-    if (is.null(args$table)) {
-      return(x@conn$retrieve(actn, ..., table = x, stop.on.error = stop.on.error)$results)
-    } else {
-      return(x@conn$retrieve(actn, ..., stop.on.error = stop.on.error)$results)
-    }
-  }
-)
-
 #' Run DATA step action
 #'
 #' @param conn \code{\link{CAS}} connection object.
@@ -122,7 +60,7 @@ setMethod(
   if ("reflection.levels" %in% conn$serverFeatures) {
     args$levels <- 1
   }
-  res <- do.call(cas.run, args)
+  res <- do.call(cas.retrieve, args)$results
   str <- ""
   str2 <- ""
   str3 <- "   args <- list(...)\n"
@@ -152,7 +90,7 @@ setMethod(
   str3 <- paste(str3, "   args = c('CASorCASTab'=substitute(CASorCASTab), args)\n", sep = "")
 
   str1 <- paste("cas.", actn, " <- function(CASorCASTab", str, ", ...) {\n", sep = "")
-  str1 <- paste(str1, str3, "do.call('swat::cas.run', args)\n}\n", sep = "")
+  str1 <- paste(str1, str3, "do.call('swat::cas.retrieve', args)$results\n}\n", sep = "")
 
   return(str1)
 }
@@ -174,8 +112,8 @@ setMethod(
       for (name in acts) {
         if (!as.logical(getOption("cas.gen.function.sig"))) {
           val <- paste("cas.", actionset, ".", name,
-                       " <- function(object = NULL, ...) {swat::cas.run(object, '",
-                       paste(actionset, name, sep = "."), "', ...) } ", sep = "")
+                       " <- function(object = NULL, ...) {swat::cas.retrieve(object, '",
+                       paste(actionset, name, sep = "."), "', ...)$results } ", sep = "")
           defn <- eval(parse(text = val, env))
           environment(defn) <- env
           fname <- paste("cas.", actionset, ".", name, sep = "")
@@ -192,8 +130,8 @@ setMethod(
               message(paste("Error was: ", e))
               message(paste("Defining syntax as function(object, ...) instead. "))
               val <- paste("cas.", actionset, ".", name,
-                           " <- function(object = NULL, ...) {swat::cas.run(object, '",
-                           paste(actionset, name, sep = "."), "', ...) } ", sep = "")
+                           " <- function(object = NULL, ...) {swat::cas.retrieve(object, '",
+                           paste(actionset, name, sep = "."), "', ...)$results } ", sep = "")
               defn <- eval(parse(text = val, env))
               environment(defn) <- env
               fname <- paste("cas.", actionset, ".", name, sep = "")

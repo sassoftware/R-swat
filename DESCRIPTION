@@ -32,6 +32,7 @@ Collate:
     'datetime.R'
     'rswat.R'
     'authinfo.R'
+    'compat.R'
     'rswat_rest.R'
     'swat.R'
     'helper.R'
