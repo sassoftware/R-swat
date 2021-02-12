@@ -141,6 +141,8 @@ ct_cmp["cv3"] <- ct_cmp$n3 + 0
 df_cmp <- as.data.frame(ct_cmp)
 
 titanic <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/course/Kaggle/train.csv")
+titanic$Name <- gsub(" ", "", titanic$Name)
+titanic$Sex <- gsub(" ", "", titanic$Sex)
 t <- as.CASTable(caz, titanic, casOut = list(replace = TRUE))
 
 titanic_csv <- tempfile(pattern = "titanic_", fileext = ".csv")

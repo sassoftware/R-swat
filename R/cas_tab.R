@@ -145,6 +145,12 @@ setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib = "",
   .Object
 })
 
+setGeneric("as.CASTable",
+  function (x, frame, casOut = "") {
+    standardGeneric("as.CASTable")
+  }
+)
+
 #' Upload an Object to a CAS Table
 #'
 #' Uploads an \R data frame to CAS and returns a
@@ -154,7 +160,7 @@ setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib = "",
 #'
 #' @param conn A \code{\link{CAS}} object that represents
 #'   a connection and session in CAS.
-#' @param df A \code{data.frame} object with the data to
+#' @param frame A \code{data.frame} object with the data to
 #'   upload to CAS.
 #' @param casOut An optional \code{character} or list. If
 #'   you specify a string, then the string is used as the
@@ -202,64 +208,41 @@ setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib = "",
 #' }
 #'
 #' @export
-as.CASTable <- function(conn, df, casOut = "") {
-  if (class(conn) != "CAS") {
-    stop("The first parameter must be a CAS object")
-  }
+setMethod(
+  "as.CASTable",
+  signature(x = "CAS"),
+  function(x, frame, casOut = "") {
+    caslib <- ""
 
-  caslib <- ""
-
-  if (nchar(casOut[1]) == 0) {
-    tablename <- deparse(substitute(df))
-    casOut <- list(name = tablename)
-  }
-  else
-  if (typeof(casOut) == "character") {
-    tablename <- casOut
-  } else {
-    if (typeof(casOut) == "list") {
-      if (length(casOut$name)) {
-        tablename <- casOut$name
-      } else {
-        tablename <- deparse(substitute(df))
-        casOut$name <- tablename
+    if (nchar(casOut[1]) == 0) {
+      tablename <- deparse(substitute(frame))
+      casOut <- list(name = tablename)
+    }
+    else if (typeof(casOut) == "character") {
+      tablename <- casOut
+    } else {
+      if (typeof(casOut) == "list") {
+        if (length(casOut$name)) {
+          tablename <- casOut$name
+        } else {
+          tablename <- deparse(substitute(frame))
+          casOut$name <- tablename
+        }
+        if (length(casOut$caslib)) {
+          caslib <- casOut$caslib
+        }
       }
-
-      if (length(casOut$caslib)) {
-        caslib <- casOut$caslib
+      else {
+        stop("casOut parameter must either be a list or single string")
       }
     }
-    else {
-      stop("casOut parameter must either be a list, or just a single string for the table name")
-    }
+
+    return(cas.upload.frame(x, frame, casOut = casOut,
+      "_messagelevel" = as.character(getOption("cas.message.level.ui")),
+      "_apptag" = "UI", stop.on.error = TRUE
+    ))
   }
-
-  tblres <- conn$upload(
-    casOut = casOut, data = df,
-    "_messagelevel" = as.character(getOption("cas.message.level.ui")),
-    "_apptag" = "UI"
-  )
-  if (tblres$disposition$severity > 1) {
-    if (grepl("LOADTABLE_EXISTS", tblres$disposition$debug, fixed = TRUE)) {
-      stop("table with the same name exists; use casOut=list(replace=TRUE) to overwrite")
-    }
-    .check_for_cas_errors(tblres)
-  }
-
-  if (!is.null(tblres$results$tableName)) {
-    tablename <- tblres$results$tableName
-    caslib <- tblres$results$caslib
-  }
-
-  res <- cas.retrieve(conn, "table.columnInfo", table = list(name = tablename, caslib = caslib))
-  if (res$disposition$severity > 1) {
-    .check_for_cas_errors(res)
-  }
-
-  columns <- res$results$ColumnInfo$Column
-
-  new("CASTable", conn, tablename, caslib, columns)
-}
+)
 
 #' Return a CASTable with filtering applied
 #'
@@ -1127,6 +1110,12 @@ setGeneric(
   }
 )
 
+#' Create a server-side view using the CASTable attributes
+#'
+#' @param x \code{CASTable} object.
+#'
+#' @return \code{CASTable} object referencing the view.
+#'
 #' @export
 setMethod(
   "as.view",
@@ -1176,63 +1165,67 @@ is.CASTable <- function(x) {
 #' }
 #'
 #' @export
-as.data.frame.CASTable <- function(x, obs = 32768) {
-  tp <- .gen_table_param(x)
-  fv <- c(tp$vars, tp$computedVars)
-  fv <- fv[fv != ""]
-  if (sum(nchar(x@XcomputedVars))) {
-    for (Xcmp in x@XcomputedVars) {
-      if (!(Xcmp %in% x@computedVars)) {
-        fv <- fv[fv != Xcmp]
+setMethod(
+  "as.data.frame",
+  signature(x = "CASTable"),
+  function(x, obs = 32768, ...) {
+    tp <- .gen_table_param(x)
+    fv <- c(tp$vars, tp$computedVars)
+    fv <- fv[fv != ""]
+    if (sum(nchar(x@XcomputedVars))) {
+      for (Xcmp in x@XcomputedVars) {
+        if (!(Xcmp %in% x@computedVars)) {
+          fv <- fv[fv != Xcmp]
+        }
       }
     }
-  }
 
-  if (length(tp$orderby)) {
-    res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
-                        index = FALSE, from = 1, to = obs, maxRows = 10, sortby = tp$orderby)
-  } else {
-    res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
-                        index = FALSE, from = 1, to = obs, maxRows = 10)
-  }
-
-  fetch <- res$results$Fetch
-
-  name <- attributes(fetch)$table.name
-  label <- attributes(fetch)$table.label
-  title <- attributes(fetch)$table.title
-  attrs <- attributes(fetch)$table.attrs
-  col.labels <- attributes(fetch)$col.labels
-  col.formats <- attributes(fetch)$col.formats
-  col.attrs <- attributes(fetch)$col.attrs
-  col.sizes <- attributes(fetch)$col.sizes
-  col.types <- attributes(fetch)$col.types
-  col.widths <- attributes(fetch)$col.widths
-
-  out <- list()
-  for (i in seq_len(length(res$results))) {
-    if (i == 1) {
-      keyname <- "Fetch"
+    if (length(tp$orderby)) {
+      res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
+                          index = FALSE, from = 1, to = obs, maxRows = 10, sortby = tp$orderby)
     } else {
-      keyname <- paste("Fetch", i - 1, sep = "")
+      res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
+                          index = FALSE, from = 1, to = obs, maxRows = 10)
     }
-    if (is.null(res$results[keyname])) {
-      break
-    }
-    out[[i]] <- res$results[[keyname]]
-  }
 
-  out <- do.call("rbind", out)
-  row.names(out) <- NULL
-  attributes(out)$table.name <- name
-  attributes(out)$table.label <- label
-  attributes(out)$table.title <- title
-  attributes(out)$table.attrs <- attrs
-  attributes(out)$col.labels <- col.labels
-  attributes(out)$col.formats <- col.formats
-  attributes(out)$col.attrs <- col.attrs
-  attributes(out)$col.sizes <- col.sizes
-  attributes(out)$col.types <- col.types
-  attributes(out)$col.widths <- col.widths
-  return(out)
-}
+    fetch <- res$results$Fetch
+
+    name <- attributes(fetch)$table.name
+    label <- attributes(fetch)$table.label
+    title <- attributes(fetch)$table.title
+    attrs <- attributes(fetch)$table.attrs
+    col.labels <- attributes(fetch)$col.labels
+    col.formats <- attributes(fetch)$col.formats
+    col.attrs <- attributes(fetch)$col.attrs
+    col.sizes <- attributes(fetch)$col.sizes
+    col.types <- attributes(fetch)$col.types
+    col.widths <- attributes(fetch)$col.widths
+
+    out <- list()
+    for (i in seq_len(length(res$results))) {
+      if (i == 1) {
+        keyname <- "Fetch"
+      } else {
+        keyname <- paste("Fetch", i - 1, sep = "")
+      }
+      if (is.null(res$results[keyname])) {
+        break
+      }
+      out[[i]] <- res$results[[keyname]]
+    }
+
+    out <- do.call("rbind", out)
+    row.names(out) <- NULL
+    attributes(out)$table.name <- name
+    attributes(out)$table.label <- label
+    attributes(out)$table.title <- title
+    attributes(out)$table.attrs <- attrs
+    attributes(out)$col.labels <- col.labels
+    attributes(out)$col.formats <- col.formats
+    attributes(out)$col.attrs <- col.attrs
+    attributes(out)$col.sizes <- col.sizes
+    attributes(out)$col.types <- col.types
+    attributes(out)$col.widths <- col.widths
+    return(out)
+  }
+)

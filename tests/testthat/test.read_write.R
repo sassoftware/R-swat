@@ -59,7 +59,7 @@ test_that("Read Table files", {
   expect_equivalent(from_df, from_csv)
   expect_error(read.csv.cas(caz, file = "", tablename = "from_csv"))
   expect_error(read.csv.cas(caz, file = "", casOut = list(name = "from_csv")))
-  expect_error(cas.read.csv(caz, file = "", casOut = "from_csv"))
+  expect_warning(expect_error(cas.read.csv(caz, file = "", casOut = "from_csv")))
   expect_error(read.csv.cas(caz))
 
   nastr <- c("NA", "NaN")
@@ -96,17 +96,52 @@ test_that("Generic Read Function", {
   expect_equivalent(from_generic_csv2, from_csv)
 })
 
-# Write CSV files
 test_that("Write CSV files", {
-  cas_write_csv <- file.path(tempdir(), "cas.write.csv")
+  tmp <- tempdir()
+  cas_write_csv <- file.path(tmp, "cas.write.csv")
 
-  # write out the contents of t to a file.
-  cas.write.csv(t, cas_write_csv)
+  # Write out the contents of t to a file.
+  cas.write.csv(t, cas_write_csv, row.names = FALSE)
   expect_true(file.exists(cas_write_csv))
 
-  # read in the csv file and compare it to the standard
-  # This is currently not working as expected.
-  # > expect_output_file(cat(readLines(cas.write.csv)), titanic_csv)
+  # Read in the csv file and compare it to the standard
+  cout <- read.csv(cas_write_csv)
+  cout <- cout[order(cout$PassengerId), ]
+  t2 <- titanic[order(titanic$PassengerId), ]
+  expect_equivalent(cout, t2)
+
+  # Test default filename
+  # TODO: This may need a more reliable way to setwd back to cwd
+  #       if the test throws an error.
+  cwd <- getwd()
+  setwd(tmp)
+  cas.write.csv(t, row.names = FALSE)
+  expect_true(file.exists(paste(t@tname, ".csv", sep = "")))
+  setwd(cwd)
+})
+
+test_that("Write CSV2 files", {
+  tmp <- tempdir()
+  cas_write_csv <- file.path(tmp, "cas.write.csv2")
+
+  # Write out the contents of t to a file.
+  cas.write.csv2(t, cas_write_csv, row.names = FALSE)
+  expect_true(file.exists(cas_write_csv))
+
+  # Read in the csv file and compare it to the standard
+  cout <- read.csv2(cas_write_csv, header = TRUE, row.names = NULL)
+  cout <- cout[order(cout$PassengerId), ]
+  t2 <- titanic[order(titanic$PassengerId), ]
+  expect_equivalent(cout, t2)
+
+  # Test default filename
+  # TODO: This may need a more reliable way to setwd back to cwd
+  #       if the test throws an error.
+  cwd <- getwd()
+  setwd(tmp)
+  cas.write.csv(t, row.names = FALSE)
+  expect_true(file.exists(paste(t@tname, ".csv", sep = "")))
+  setwd(cwd)
 })
 
 # Download an in-memory table from the CAS server

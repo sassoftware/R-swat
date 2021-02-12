@@ -176,6 +176,7 @@
           "\nError message(s) found in CAS action results:",
           deparse(sys.call(-1)),
           msgs,
+          result$disposition$status,
           sep = "\n"
         )
       )
@@ -190,6 +191,7 @@
           "\nError message(s) found in CAS action results:",
           deparse(sys.call(-1)),
           msgs,
+          result$disposition$status,
           sep = "\n"
         )
       )

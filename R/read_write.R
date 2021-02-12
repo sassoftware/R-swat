@@ -13,277 +13,132 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+# Many of these functions are here for backwards compatibility.
+# You can use the builtin R write.* functions on CASTables themselves.
+# In those cases, the CASTable is cast to a data.frame which automatically
+# downloads the data from the server to write.
 
-#' Write a CAS Table to a CSV File
+#' Construct a filename based on the CAS table name
 #'
-#' This function downloads an in-memory table from the
-#' CAS server and saves it as a CSV file that is accesible
-#' to \R (the client). This function is a convenience
-#' wrapper for the \R \code{write.csv} function.
+#' @param x    CASTable object
+#' @param file Input date file name
+#' @param ext  Output file extension
 #'
-#' This function saves the file on the \R client. As an
-#' alternative, you can use the \code{cas.table.save}
-#' generated function to save a server-side CSV file.
+#' @return character
 #'
-#' @param castable The instance of the CASTable to save as
-#'   as a CSV file.
-#' @param file An \code{character} string that
-#'   specifies the filename for the CSV file. If you do not
-#'   specify the file, then the in-memory table name is used
-#'   with a .csv suffix. This value is passed to \code{write.csv}.
-#' @param quote An optional \code{logical} value or numeric
-#'   vector. This value is passed to \code{write.csv}.
-#' @param eol An optional \code{character} string that is used as the
-#'   end-of-line character or characters. This value is passed to
-#'   \code{write.csv}.
-#' @param na An optional \code{character} string to represent
-#'   missing values. This value is passed to \code{write.csv}.
-#' @param row.names An optional \code{logical} value or a
-#'   \code{character} vector of row names. This value is passed to
-#'   \code{write.csv}.
-#' @param fileEncoding An optional \code{character} string that
-#'   specifies the encoding to use for writing the CSV file. This
-#'   value is passed to \code{write.csv}.
-#'
-#' @family functions for saving in-memory data
-#' @export
-#' @rawRd % Copyright SAS Institute
-#' @examples
-#' \dontrun{
-#' # upload a SAS data set to an in-memory table
-#' gold_medals <- cas.read.sas7bdat(s, "/path/to/gold_medals.sas7bdat")
-#'
-#' # download the in-memory table as a CSV file
-#' cas.write.csv(gold_medals, "~/gold_medals.csv")
-#' }
-cas.write.csv <- function(castable, file = "", quote = TRUE, eol = "\n", na = "NA",
-                          row.names = TRUE, fileEncoding = "") {
+#' @keywords internal
+.output_file <- function(x, file, ext) {
   if (nchar(file) == 0) {
-    file <- paste(castable@tname, ".csv", sep = "")
+    return(paste(x@tname, ext, sep = ""))
   }
-  write.csv(
-    as.data.frame(castable),
-    file = file,
-    quote = quote,
-    eol = eol,
-    na = na,
-    row.names = row.names,
-    fileEncoding = fileEncoding
-  )
+  return(file)
 }
 
-#' Write a CAS Table to a CSV File
+#' Construct a casOut parameter based on the given parameters
 #'
-#' This function is identical to \code{\link{cas.write.csv}}
-#' except that it wraps the \R \code{write.csv2}  function.
-#' The \code{write.csv2} function uses a comma
-#' for the decimal separator and a semicolon for the field
-#' delimiter.
+#' @param out List containing given casOut parameter
+#' @param file Input data file name
 #'
-#' @param castable The instance of the CASTable to save as
-#'   as a CSV file.
-#' @param file An \code{character} string that
-#'   specifies the filename for the CSV file. If you do not
-#'   specify the file, then the in-memory table name is used
-#'   with a .csv suffix. This value is passed to \code{write.csv}.
-#' @param quote An optional \code{logical} value or numeric
-#'   vector. This value is passed to \code{write.csv}.
-#' @param eol An optional \code{character} string that is used as the
-#'   end-of-line character or characters. This value is passed to
-#'   \code{write.csv}.
-#' @param na An optional \code{character} string to represent
-#'   missing values. This value is passed to \code{write.csv}.
-#' @param row.names An optional \code{logical} value or a
-#'   \code{character} vector of row names. This value is passed to
-#'   \code{write.csv}.
-#' @param fileEncoding An optional \code{character} string that
-#'   specifies the encoding to use for writing the CSV file. This
-#'   value is passed to \code{write.csv}.
+#' @return List contaning new casOut parameter
 #'
-#' @export
-#' @rawRd % Copyright SAS Institute
-cas.write.csv2 <- function(castable, file = "", quote = TRUE, eol = "\n", na = "NA",
-                           row.names = TRUE, fileEncoding = "") {
-  if (nchar(file) == 0) {
-    file <- paste(castable@tname, ".csv", sep = "")
+#' @keywords internal
+.casout <- function(out, file) {
+  out <- c(out)
+  if (is.character(out)) {
+    out <- list(name = out, replace = FALSE)
   }
-  write.csv2(
-    as.data.frame(castable),
-    file = file,
-    quote = quote,
-    eol = eol,
-    na = na,
-    row.names = row.names,
-    fileEncoding = fileEncoding
-  )
+  else if (is.null(out)) {
+      out <- list(replace = FALSE)
+  }
+  if (is.null(out$name) || nchar(out$name) == 0) {
+    out$name <- gsub("\\.\\w+$", "", (basename(file)))
+  }
+  return(out)
 }
 
-#' Write a CAS Table to a Microsoft Excel Workbook
-#'
-#' This function downloads an in-memory table from the
-#' CAS server and saves it as an XLSX file that is accesible
-#' to \R (the client). This function is a convenience
-#' wrapper for the \R \code{write.xslx} function.
-#'
-#' @param castable The instance of the CASTable to save as
-#'   as a CSV file.
-#' @param file An \code{character} string that
-#'   specifies the filename for the XLSX file. If you do not
-#'   specify the file, then the in-memory table name is used
-#'   with an .xslx suffix. This value is passed to \code{write.xlsx}.
-#' @param sheetName An optional \code{character} string that
-#'   specifies the sheet name in the workbook. This value is
-#'   passed to \code{write.xlsx}.
-#' @param col.names An optional \code{logical} value that specifies
-#'   whether column names are included in the workbook. This value
-#'   is passed to \code{write.xlsx}.
-#' @param row.names An optional \code{logical} value that specifies
-#'   whether row names are included in the workbook. This value
-#'   is passed to \code{write.xlsx}.
-#' @param append An optional \code{logical} value. This value
-#'   is passed to \code{write.xlsx}.
-#' @param showNA An optional \code{logical} value. This value
-#'   is passed to \code{write.xlsx}.
-#'
-#' @family functions for saving in-memory data
-#' @export
-#' @rawRd % Copyright SAS Institute
-#' @examples
-#' \dontrun{
-#' cas.write.xlsx(myCasTable, file = "/path/to/data_out.xlsx")
-#' }
-cas.write.xlsx <- function(castable, file = "", sheetName = "Sheet1", col.names = TRUE,
-                           row.names = TRUE, append = FALSE, showNA = TRUE) {
-  if (!requireNamespace("xlsx", quietly = TRUE)) {
-    stop("xlsx is needed for this function to work. Please install it.",
-      call. = FALSE
-    )
+setGeneric("cas.write.csv",
+  function(x, file = "", ...) {
+    standardGeneric("cas.write.csv")
   }
-  if (nchar(file) == 0) {
-    file <- paste(castable@tname, ".xlsx", sep = "")
-  }
-  write.xlsx(
-    as.data.frame(castable),
-    file = file,
-    sheetName = sheetName,
-    col.names = col.names,
-    row.names = row.names,
-    append = append,
-    showNA = showNA
-  )
-}
+)
 
-#' Write a CAS Table to RDS
-#'
-#' This function downloads an in-memory table from the
-#' CAS server and saves it as an RDS file that is accessible
-#' to \R (the client). This function is a convenience
-#' wrapper for the \R \code{saveRDS} function.
-#'
-#' @param castable The instance of the CASTable to save as
-#'   as an RDS file.
-#' @param file An \code{character} string that
-#'   specifies the filename for the RDS file. If you do not
-#'   specify the file, then the in-memory table name is used
-#'   with an .rds suffix. This value is passed to \code{saveRDS}.
-#' @param ascii An optional \code{logical} value. When set to
-#'   TRUE or NA, then an ASCII representation is written.
-#'   Otherwise, a binary is written.  This value is passed to
-#'   \code{saveRDS}.
-#' @param version An optional \code{numeric} value. This value
-#'   is passed to \code{saveRDS}.
-#' @param compress An optional \code{logical} value. When set
-#'   to one of TRUE, "gzip", "bzip2", or "xz", then compression is
-#'   used. TRUE performs gzip. This value is passed to \code{saveRDS}.
-#' @param refhook An optional value that is passed to
-#'   \code{saveRDS}.
-#'
-#' @family functions for saving in-memory data
 #' @export
-#' @rawRd % Copyright SAS Institute
-#' @examples
-#' \dontrun{
-#' cas.saveRDS(myCasTable, file = "/path/to/data_out.rds")
-#' }
-#'
-cas.saveRDS <- function(castable, file = "", ascii = FALSE, version = NULL,
-                        compress = TRUE, refhook = NULL) {
-  if (nchar(file) == 0) {
-    file <- paste(castable@tname, ".rds", sep = "")
+setMethod(
+  "cas.write.csv",
+  signature(x = "CASTable"),
+  function(x, file = "", ...) {
+    write.csv(as.data.frame(x), file = .output_file(x, file, ".csv"), ...)
   }
-  saveRDS(as.data.frame(castable),
-    file = file,
-    ascii = ascii,
-    version = version,
-    compress = compress,
-    refhook = refhook
-  )
-}
+)
 
-#' Write a CAS Table to a Table
-#'
-#' This function downloads an in-memory table from the
-#' CAS server and saves it as a file that is accesible
-#' to \R (the client). This function is a convenience
-#' wrapper for the \R \code{write.table} function.
-#'
-#' @param castable The instance of the CASTable to save as
-#'   as a file.
-#' @param file An \code{character} string that
-#'   specifies the filename for the file. If you do not
-#'   specify the file, then the table is printed to the
-#'   terminal.
-#' @param append An optional \code{logical} value. This value
-#'   is passed to \code{write.table}.
-#' @param quote An optional \code{logical} value or numeric
-#'   vector. This value is passed to \code{write.table}.
-#' @param sep An optional \code{character} that is used to separate
-#'   values in the file. This value is passed to \code{write.table}.
-#' @param eol An optional \code{character} string that is used as the
-#'   end-of-line character or characters. This value is passed to
-#'   \code{write.table}.
-#' @param na An optional \code{character} string to represent
-#'   missing values. This value is passed to \code{write.table}.
-#' @param dec An optional \code{character} to represent the decimal
-#'   separator. This value is passed to \code{write.table}.
-#' @param row.names An optional \code{logical} value or a
-#'   \code{character} vector of row names. This value is passed to
-#'   \code{write.table}.
-#' @param col.names An optional \code{logical} value or a
-#'   \code{character} vector of column names. This value is passed
-#'   to \code{write.table}.
-#' @param qmethod An optional \code{chracter} string that describes
-#'   how to write embedded quotation marks. This value is passed
-#'   to \code{write.table}.
-#' @param fileEncoding An optional \code{character} string that
-#'   specifies the encoding to use for writing the file. This
-#'   value is passed to \code{write.table}.
-#'
-#' @family functions for saving in-memory data
+setGeneric("cas.write.csv2",
+  function(x, file = "", ...) {
+    standardGeneric("cas.write.csv2")
+  }
+)
+
 #' @export
-#' @rawRd % Copyright SAS Institute
-#' @examples
-#' \dontrun{
-#' cas.write.table(myCasTable, file = "/path/to/data_out.txt", na = "")
-#' }
-cas.write.table <- function(castable, file = "", append = FALSE, quote = TRUE, sep = " ",
-                            eol = "\n", na = "NA", dec = ".", row.names = TRUE,
-                            col.names = TRUE, qmethod = c("escape", "double"),
-                            fileEncoding = "") {
-  write.table(as.data.frame(castable),
-    file = file,
-    append = append,
-    quote = quote,
-    sep = sep,
-    eol = eol,
-    na = na,
-    dec = dec,
-    row.names = row.names,
-    col.names = col.names,
-    qmethod = qmethod,
-    fileEncoding = fileEncoding
-  )
-}
+setMethod(
+  "cas.write.csv2",
+  signature(x = "CASTable"),
+  function(x, file = "", ...) {
+    write.csv2(as.data.frame(x), file = .output_file(x, file, ".csv"), ...)
+  }
+)
+
+setGeneric("cas.write.xlsx",
+  function(x, file = "", ...) {
+    standardGeneric("cas.write.xlsx")
+  }
+)
+
+#' @export
+setMethod(
+  "cas.write.xlsx",
+  signature(x = "CASTable"),
+  function(x, file = "", ...) {
+    if (!requireNamespace("xlsx", quietly = TRUE)) {
+      stop("xlsx package is needed for this function to work.", call. = FALSE)
+    }
+    write.xlsx(as.data.frame(x), file = .output_file(x, file, ".xlsx"), ...)
+  }
+)
+
+setGeneric("cas.saveRDS",
+  function(x, file = "", ...) {
+    standardGeneric("cas.saveRDS")
+  }
+)
+
+#' @export
+setMethod(
+  "cas.saveRDS",
+  signature(x = "CASTable"),
+  function(x, file = "", ...) {
+    saveRDS(as.data.frame(x), file = .output_file(x, file, ".rds"), ...)
+  }
+)
+
+setGeneric("cas.write.table",
+  function(x, file = "", ...) {
+    standardGeneric("cas.write.table")
+  }
+)
+
+#' @export
+setMethod(
+  "cas.write.table",
+  signature(x = "CASTable"),
+  function(x, file = "", ...) {
+    write.table(as.data.frame(x), file = .output_file(x, file, ".tbl"), ...)
+  }
+)
+
+setGeneric("cas.read.csv",
+  function(x, file, ..., casOut = NULL) {
+    standardGeneric("cas.read.csv")
+  }
+)
 
 #' Read a CSV File and Upload to a CAS Table
 #'
@@ -293,26 +148,12 @@ cas.write.table <- function(castable, file = "", append = FALSE, quote = TRUE, s
 #' client, it is uploaded to an in-memory table in
 #' CAS (the server).
 #'
-#' @param conn An instance of a CAS object that represents
+#' @param x An instance of a CAS object that represents
 #'  a connection and CAS session.
 #' @param file An \code{character} string that specifies
 #'   the filename or connection for the data to read.
-#' @param header An optional \code{logical} that specifies
-#'   whether the first line of the file contains variable
-#'   names.
-#' @param sep A \code{character} that specifies the field
-#'   delimiter. This value is passed to \code{read.csv}.
-#' @param quote A \code{character} string that specifies
-#'   the characters that enclose character data type
-#'   variables. This value is passed to \code{read.csv}.
-#' @param dec An optional \code{character} to represent the decimal
-#'   separator. This value is passed to \code{read.csv}.
-#' @param fill An optional \code{logical} value. When set to
-#'   TRUE, blank fields are implicitly added for rows that have
-#'   unequal length. This value is passed to \code{read.csv}.
-#' @param comment.char An optional \code{character} that
-#'   specifies the character to interpret as the beginning of a
-#'   comment. This value is passed to \code{read.csv}.
+#' @param \dots Optional parameters that are passed to
+#'   \code{read.csv}.
 #' @param casOut An optional \code{character} or list. If
 #'   you specify a string, then the string is used as the
 #'   in-memory table name. A list can be used to specify
@@ -343,13 +184,9 @@ cas.write.table <- function(castable, file = "", append = FALSE, quote = TRUE, s
 #'       blocks. This parameter applies to distributed servers
 #'       only. The default value is 1.}
 #'    }
-#' @param \dots Optional parameters that are passed to
-#'   \code{read.csv}.
 #'
 #' @return \code{\link{CASTable}}
-#' @family functions for loading in-memory data
-#' @export
-#' @rawRd % Copyright SAS Institute
+#'
 #' @examples
 #' \dontrun{
 #' # Upload a CSV, the in-memory table is named HEART
@@ -362,33 +199,21 @@ cas.write.table <- function(castable, file = "", append = FALSE, quote = TRUE, s
 #'   casOut = list(name = "heartct", replace = TRUE)
 #' )
 #' }
-cas.read.csv <- function(conn, file, header = TRUE, sep = ",", quote = "\"",
-                         dec = ".", fill = TRUE, comment.char = "",
-                         casOut = list(name = "", replace = FALSE),
-                         ...) {
-  if (nchar(file) == 0) {
-    stop("You must provide a valid file name")
+#'
+#' @export
+setMethod(
+  "cas.read.csv",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    return(as.CASTable(x, read.csv(file, ...), casOut = .casout(casOut, file)))
   }
-  df <-
-    read.csv(
-      file = file,
-      header = header,
-      sep = sep,
-      quote = quote,
-      dec = dec,
-      fill = fill,
-      comment.char = comment.char,
-      ...
-    )
-  if (is.character(casOut)) {
-    cn <- casOut
-    casOut <- list(name = cn, replace = FALSE)
+)
+
+setGeneric("cas.read.xlsx",
+  function(x, file, ..., casOut = "") {
+    standardGeneric("cas.read.xlsx")
   }
-  if (is.null(casOut$name) || nchar(casOut$name) == 0) {
-    casOut$name <- tools::file_path_sans_ext(basename(file))
-  }
-  return(as.CASTable(conn, df, casOut = casOut))
-}
+)
 
 #' Read an XLSX File and Upload to a CAS Table
 #'
@@ -398,46 +223,12 @@ cas.read.csv <- function(conn, file, header = TRUE, sep = ",", quote = "\"",
 #' client, it is uploaded to an in-memory table in
 #' CAS (the server).
 #'
-#' @param conn An instance of a CAS object that represents
+#' @param x An instance of a CAS object that represents
 #'  a connection and CAS session.
 #' @param file An \code{character} string that
 #'   specifies the filename for the XLSX file.
 #'   This value is passed to \code{read.xslx}.
-#' @param sheetIndex An optional \code{numeric} that specifies
-#'   the sheet in the workbook. This value is passed to
-#'   \code{read.xlsx}.
-#' @param sheetName An optional \code{character} string that
-#'   specifies the sheet name in the workbook. This value is
-#'   passed to \code{read.xlsx}.
-#' @param rowIndex An optional \code{numeric} vector that
-#'   specifies the rows to read from the workbook. By default,
-#'   all rows are read. This value is passed to \code{read.xlsx}.
-#' @param startRow An optional \code{numeric} that specifies
-#'   the first row of the workbook to read. This value is
-#'   ignored of rowIndex is specified. This value is passed to
-#'   \code{read.xlsx}.
-#' @param endRow An optional \code{numeric} that specifies the
-#'   last row of the workbook to read. This value is ignored if
-#'   rowIndex is specified. This value is passed to \code{read.xlsx}.
-#' @param colIndex An optional \code{numeric} vector that specifies
-#'   the variables to read from the workbook. By default,
-#'   all variables are read. This value is passed to \code{read.xlsx}.
-#' @param as.data.frame An optional \code{logical} value that
-#'   specifies whether the data should be coerced into a data frame.
-#'   This value is passed to \code{read.xlsx}.
-#' @param header An optional \code{logical} that specifies
-#'   whether the first line of the file contains variable
-#'   names.
-#' @param colClasses An optional \code{character} vector that
-#'   specifies the classes for the columns. This value is passed
-#'   to \code{read.xlsx}.
-#' @param keepFormulas An optional \code{logical} value that specifies
-#'   whether Excel formulas are included as text or if they are
-#'   evaluated and the result is read as data. This value is passed
-#'   to \code{read.xlsx}.
-#' @param encoding An optional \code{character} string that specifies
-#'   the encoding for character data. This value is passed to
-#'   \code{read.xlsx}.
+#' @param \dots Parameters sent to the \code{read.xlsx} function.
 #' @param casOut An optional \code{character} or list. If
 #'   you specify a string, then the string is used as the
 #'   in-memory table name. A list can be used to specify
@@ -470,9 +261,7 @@ cas.read.csv <- function(conn, file, header = TRUE, sep = ",", quote = "\"",
 #'    }
 #'
 #' @return \code{\link{CASTable}}
-#' @family functions for loading in-memory data
-#' @export
-#' @rawRd % Copyright SAS Institute
+#'
 #' @examples
 #' \dontrun{
 #' myCasTable <- cas.read.xlsx(s,
@@ -481,43 +270,24 @@ cas.read.csv <- function(conn, file, header = TRUE, sep = ",", quote = "\"",
 #'   casOut = list(name = "mycastable", replace = TRUE)
 #' )
 #' }
-cas.read.xlsx <- function(conn, file, sheetIndex = 1, sheetName = NULL, rowIndex = NULL,
-                          startRow = NULL, endRow = NULL, colIndex = NULL,
-                          as.data.frame = TRUE, header = TRUE, colClasses = NA,
-                          keepFormulas = FALSE, encoding = "unknown",
-                          casOut = list(name = "", replace = FALSE)) {
-  if (nchar(file) == 0) {
-    stop("You must provide a valid file name")
+#'
+#' @export
+setMethod(
+  "cas.read.xlsx",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    if (!requireNamespace("xlsx", quietly = TRUE)) {
+      stop("xlsx package is needed for this function to work.", call. = FALSE)
+    }
+    return(as.CASTable(x, read.xlsx(file, ...), casOut = .casout(casOut, file)))
   }
-  if (is.character(casOut)) {
-    cn <- casOut
-    casOut <- list(name = cn, replace = FALSE)
-  }
-  if (is.null(casOut$name) || nchar(casOut$name) == 0) {
-    casOut$name <- tools::file_path_sans_ext(basename(file))
-  }
-  if (!requireNamespace("xlsx", quietly = TRUE)) {
-    stop("xlsx is needed for this function to work. Please install it.",
-      call. = FALSE
-    )
-  }
-  df <- read.xlsx(
-    file = file,
-    sheetIndex = sheetIndex,
-    sheetName = sheetName,
-    rowIndex = rowIndex,
-    startRow = startRow,
-    endRow = endRow,
-    colIndex = colIndex,
-    as.data.frame = as.data.frame,
-    header = header,
-    colClasses = colClasses,
-    keepFormulas = keepFormulas,
-    encoding = encoding
-  )
+)
 
-  return(as.CASTable(conn, df, casOut = casOut))
-}
+setGeneric("cas.readRDS",
+  function(x, file, ..., casOut = "") {
+    standardGeneric("cas.readRDS")
+  }
+)
 
 #' Read an RDS File and Upload to a CAS Table
 #'
@@ -527,13 +297,12 @@ cas.read.xlsx <- function(conn, file, sheetIndex = 1, sheetName = NULL, rowIndex
 #' client, it is uploaded to an in-memory table in
 #' CAS (the server).
 #'
-#' @param conn An instance of a CAS object that represents
+#' @param x An instance of a CAS object that represents
 #'  a connection and CAS session.
 #' @param file An \code{character} string that
 #'   specifies the filename for the RDS file.
 #'   This value is passed to \code{readRDS}.
-#' @param refhook An optional value that is passed to
-#'   \code{readRDS}.
+#' @param \dots Parameters sent to the \code{readRDS} function.
 #' @param casOut An optional \code{character} or list. If
 #'   you specify a string, then the string is used as the
 #'   in-memory table name. A list can be used to specify
@@ -566,9 +335,7 @@ cas.read.xlsx <- function(conn, file, sheetIndex = 1, sheetName = NULL, rowIndex
 #'    }
 #'
 #' @return \code{\link{CASTable}}
-#' @family functions for loading in-memory data
-#' @export
-#' @rawRd % Copyright SAS Institute
+#'
 #' @examples
 #' \dontrun{
 #' myCasTable <- cas.readRDS(s,
@@ -576,18 +343,21 @@ cas.read.xlsx <- function(conn, file, sheetIndex = 1, sheetName = NULL, rowIndex
 #'   casOut = list(name = "mycastable")
 #' )
 #' }
-cas.readRDS <- function(conn, file, refhook = NULL, casOut = list(name = "", replace = FALSE)) {
-  if (nchar(file) == 0) {
-    stop("You must provide a valid file name")
+#'
+#' @export
+setMethod(
+  "cas.readRDS",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    return(as.CASTable(x, readRDS(file, ...), casOut = .casout(casOut, file)))
   }
+)
 
-  df <- readRDS(file = file, refhook = refhook)
-
-  if (is.null(casOut$name) || nchar(casOut$name) == 0) {
-    casOut$name <- tools::file_path_sans_ext(basename(file))
+setGeneric("cas.read.table",
+  function(x, file, ..., casOut = "") {
+    standardGeneric("cas.read.table")
   }
-  return(as.CASTable(conn, df, casOut = casOut))
-}
+)
 
 #' Read a File and Upload to a CAS Table
 #'
@@ -597,83 +367,11 @@ cas.readRDS <- function(conn, file, refhook = NULL, casOut = list(name = "", rep
 #' client, it is uploaded to an in-memory table in
 #' CAS (the server).
 #'
-#' @param conn An instance of a CAS object that represents
+#' @param x An instance of a CAS object that represents
 #'  a connection and CAS session.
 #' @param file An \code{character} string that
 #'   specifies the filename. This value is passed to \code{read.table}.
-#' @param header An optional \code{logical} that specifies
-#'   whether the first line of the file contains variable
-#'   names.
-#' @param sep An optional \code{character} that is used to specify
-#'   the field delimiter for the file. This value is passed to
-#'   \code{write.table}.
-#' @param quote An optional \code{character} string that specifies
-#'   the characters that enclose character data. The value is
-#'   passed to \code{read.table}.
-#' @param dec An optional \code{character} that specifies the decimal
-#'   separator. This value is passed to \code{read.table}.
-#' @param numerals An optional \code{character} string that specifies
-#'   how to interpret numbers that can lose precision due to the
-#'   conversion from text to double precision. This value is passed
-#'   to \code{read.table}.
-#' @param row.names An optional \code{character} vector of row
-#'   names. This value is passed to \code{read.table}.
-#' @param col.names An optional \code{character} vector of names
-#'   for the variables. The default is to use "V" followed by the
-#'   column number. This value is passed to \code{read.table}.
-#' @param as.is An optional vector of \code{logical}, \code{numeric},
-#'   or \code{character} indices that specify the columns that are not
-#'   converted to factors. This value is passed to \code{read.table}.
-#' @param na.strings An optional \code{character} vector that specifies
-#'   the characters to interpret as NA. This value is passed to
-#'   \code{read.table}.
-#' @param colClasses An optional \code{character} vector that
-#'   specifies the classes for the columns. This value is passed
-#'   to \code{read.table}.
-#' @param nrows An optional \code{numeric} that specifies the maximum
-#'   number of rows to read. This value is passed to \code{read.table}.
-#' @param skip An optional \code{numeric} that specifies the number of
-#'   lines to skip in the file before reading data. This value is
-#'   passed to \code{read.table}.
-#' @param check.names An optional \code{logical} that specifies
-#'   whether variable names from the file are valid names. This value
-#'   is passed to \code{read.table}.
-#' @param fill An optional \code{logical} value. When set to
-#'   TRUE, blank fields are implicitly added for rows that have
-#'   unequal length. This value is passed to \code{read.table}.
-#' @param strip.white An optional \code{logical} that specifies
-#'   whether white space characters are stripped from character data
-#'   that are not enclosed with quotation marks. This value is
-#'   ignored unless sep is specified. This value is passed to
-#'   \code{read.table}.
-#' @param blank.lines.skip An optional \code{logical} that specifies
-#'   whether blank lines in the file are ignored. This value is
-#'   passed to \code{read.table}.
-#' @param comment.char An optional \code{character} that
-#'   specifies the character to interpret as the beginning of a
-#'   comment. This value is passed to \code{read.table}.
-#' @param allowEscapes An optional \code{logical} that specifies
-#'   whether C-style escape characters such as \code{\\n} are
-#'   interpreted or are read verbatim. This value is passed to
-#'   \code{read.table}.
-#' @param flush An optional \code{logical} that specifies whether
-#'   input that follows the last field to read is flushed. Setting
-#'   this argument to TRUE enables adding comments to the end of
-#'   data lines. This value is passed to \code{read.table}.
-#' @param stringsAsFactors An optional \code{logical} that specifies
-#'   whether character vectors are converted to factors. This argument
-#'   is overridden by as.is and colClasses. This value is passed to
-#'   \code{read.table}.
-#' @param fileEncoding An optional \code{character} string that
-#'   specifies the encoding to use for reading the file. This
-#'   value is passed to \code{read.table}.
-#' @param encoding An optional \code{character} string that specifies
-#'   the encoding for character data. This value is passed to
-#'   \code{read.table}.
-#' @param text An optional \code{character} string. This value is
-#'   passed to \code{read.table}.
-#' @param skipNul An optional \code{logical} that is passed to
-#'   \code{read.table}.
+#' @param \dots Parameters sent to the \code{read.table} function.
 #' @param casOut An optional \code{character} or list. If
 #'   you specify a string, then the string is used as the
 #'   in-memory table name. A list can be used to specify
@@ -706,9 +404,7 @@ cas.readRDS <- function(conn, file, refhook = NULL, casOut = list(name = "", rep
 #'    }
 #'
 #' @return \code{\link{CASTable}}
-#' @family functions for loading in-memory data
-#' @export
-#' @rawRd % Copyright SAS Institute
+#'
 #' @examples
 #' \dontrun{
 #' myCasTable <- cas.read.table(s, "/path/to/data.tsv",
@@ -716,41 +412,21 @@ cas.readRDS <- function(conn, file, refhook = NULL, casOut = list(name = "", rep
 #'   sep = "\\t", casOut = list(name = "mycastable")
 #' )
 #' }
-cas.read.table <- function(conn, file, header = FALSE, sep = "", quote = "\"'", dec = ".",
-                           numerals = c("allow.loss", "warn.loss", "no.loss"), row.names,
-                           col.names, as.is = !stringsAsFactors, na.strings = "NA",
-                           colClasses = NA, nrows = -1, skip = 0, check.names = TRUE,
-                           fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = TRUE,
-                           comment.char = "#", allowEscapes = FALSE, flush = FALSE,
-                           stringsAsFactors = default.stringsAsFactors(), fileEncoding = "",
-                           encoding = "unknown", text, skipNul = FALSE,
-                           casOut = list(name = "", replace = FALSE)) {
-  if (nchar(file) == 0) {
-    stop("You must provide a valid file name")
+#'
+#' @export
+setMethod(
+  "cas.read.table",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    return(as.CASTable(x, read.table(file, ...), casOut = .casout(casOut, file)))
   }
+)
 
-  df <- read.table(file,
-    header = header, sep = sep, quote = quote,
-    dec = dec, numerals = numerals,
-    row.names = row.names, col.names = col.names, as.is = as.is,
-    na.strings = na.strings, colClasses = colClasses, nrows = nrows,
-    skip = skip, check.names = check.names, fill = fill,
-    strip.white = strip.white, blank.lines.skip = blank.lines.skip,
-    comment.char = comment.char,
-    allowEscapes = allowEscapes, flush = flush,
-    stringsAsFactors = stringsAsFactors,
-    fileEncoding = fileEncoding, encoding = encoding, text = text, skipNul = skipNul
-  )
-
-  if (is.character(casOut)) {
-    cn <- casOut
-    casOut <- list(name = cn, replace = FALSE)
+setGeneric("cas.read.sas7bdat",
+  function(x, file, ..., casOut = "") {
+    standardGeneric("cas.read.sas7bdat")
   }
-  if (is.null(casOut$name) || nchar(casOut$name) == 0) {
-    casOut$name <- tools::file_path_sans_ext(basename(file))
-  }
-  return(as.CASTable(conn, df, casOut = casOut))
-}
+)
 
 #' Upload a SAS Data Set to a CAS Table
 #'
@@ -759,10 +435,11 @@ cas.read.table <- function(conn, file, header = FALSE, sep = "", quote = "\"'", 
 #' server imports the data and \R returns a CASTable
 #' object to reference the in-memory table in CAS.
 #'
-#' @param conn An instance of a CAS object that represents
+#' @param x An instance of a CAS object that represents
 #'   a connection and CAS session.
 #' @param file An \code{character} string that specifies
 #'   the SAS data set (.sas7bdat file).
+#' @param \dots Parameters sent to the \code{table.upload} action.
 #' @param casOut An optional \code{character} or list. If
 #'   you specify a string, then the string is used as the
 #'   in-memory table name. A list can be used to specify
@@ -795,34 +472,27 @@ cas.read.table <- function(conn, file, header = FALSE, sep = "", quote = "\"'", 
 #'    }
 #'
 #' @return \code{\link{CASTable}}
-#' @family functions for loading in-memory data
-#' @export
-#' @rawRd % Copyright SAS Institute
+#'
 #' @examples
 #' \dontrun{
 #' gold_medals <- cas.read.sas7bdat(s, "/path/to/gold_medals.sas7bdat")
 #' }
-cas.read.sas7bdat <- function(conn, file, casOut = list(name = "", replace = FALSE)) {
-  if (nchar(file) == 0) {
-    stop("You must provide a valid file name")
+#'
+#' @export
+setMethod(
+  "cas.read.sas7bdat",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    res <- x$upload(file, ..., casout = .casout(casOut, file), stop.on.error = TRUE)
+    return(CASTable(x, res$results$tableName, caslib = res$results$caslib))
   }
-  if (is.character(casOut)) {
-    cn <- casOut
-    casOut <- list(name = cn, replace = FALSE)
-  }
-  if (is.null(casOut$name) || nchar(casOut$name) == 0) {
-    casOut$name <- tools::file_path_sans_ext(basename(file))
-  }
+)
 
-  res <- conn$upload(file, casout = casOut)
-  .check_for_cas_errors(res, stop.on.error = FALSE)
-  if (!is.null(res$results$tableName)) {
-    return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
+setGeneric("cas.read.jmp",
+  function(x, file, ..., casOut = "") {
+    standardGeneric("cas.read.jmp")
   }
-  else {
-    return(CASTable(conn, casOut$name, caslib = casOut$caslib))
-  }
-}
+)
 
 #' Upload a JMP File to a CAS Table
 #'
@@ -831,10 +501,11 @@ cas.read.sas7bdat <- function(conn, file, casOut = list(name = "", replace = FAL
 #' server imports the data and \R returns a CASTable
 #' object to reference the in-memory table in CAS.
 #'
-#' @param conn An instance of a CAS object that represents
+#' @param x An instance of a CAS object that represents
 #'   a connection and CAS session.
 #' @param file An \code{character} string that specifies
 #'   the JMP file.
+#' @param \dots Parameters sent to the \code{table.upload} action.
 #' @param casOut An optional \code{character} or list. If
 #'   you specify a string, then the string is used as the
 #'   in-memory table name. A list can be used to specify
@@ -867,35 +538,20 @@ cas.read.sas7bdat <- function(conn, file, casOut = list(name = "", replace = FAL
 #'    }
 #'
 #' @return \code{\link{CASTable}}
-#' @family functions for loading in-memory data
-#' @export
-#' @rawRd % Copyright SAS Institute
+#'
 #' @examples
 #' \dontrun{
 #' spring_example <- cas.read.jmp(s, "/path/to/Spring\\ Example.jmp",
-#'   casOut = list(name = "spring_example")
-#' )
+#'                                casOut = list(name = "spring_example"))
 #' }
-cas.read.jmp <- function(conn, file, casOut = NULL) {
-  if (nchar(file) == 0) {
-    stop("You must provide a valid file name")
+#'
+#' @export
+setMethod(
+  "cas.read.jmp",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    res <- x$upload(file, ..., casout = .casout(casOut, file), stop.on.error = TRUE)
+    return(CASTable(x, res$results$tableName, caslib = res$results$caslib))
   }
-  if (is.character(casOut)) {
-    cn <- casOut
-    casOut <- list(name = cn, replace = FALSE)
-  }
+)
 
-  tablename <- tools::file_path_sans_ext(basename(file))
-  if (is.null(casOut)) {
-    casOut <- list(name = tablename)
-  }
-
-  res <- conn$upload(file, casout = casOut)
-  .check_for_cas_errors(res, stop.on.error = FALSE)
-  if (!is.null(res$results$tableName)) {
-    return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
-  }
-  else {
-    return(CASTable(conn, casOut$name, caslib = casOut$caslib))
-  }
-}

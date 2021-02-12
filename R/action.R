@@ -13,6 +13,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+setGeneric(
+  "cas.run",
+  function (x, actn, ..., stop.on.error = FALSE) {
+    standardGeneric("cas.run")
+  }
+)
+
 #' Run a CAS Action by Name
 #'
 #' This function enables you to specify a CAS action
@@ -24,7 +31,7 @@
 #'  a connection and CAS session, or an instance of a CASTable.
 #' @param actn A \code{character} string that specifies
 #'  the action set and action name to run.
-#' @param check_errors Logical indicating that if errors occurred
+#' @param stop.on.error Logical indicating that if errors occurred
 #'   when running the action, an error is raised.
 #' @param \dots Parameters that are passed to the CAS action.
 #'
@@ -45,50 +52,28 @@
 #' }
 #'
 #' @export
-cas.run <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
-  if (is.null(CASorCASTab) || (is.character(CASorCASTab) && nchar(CASorCASTab) == 0)) {
+setMethod(
+  "cas.run",
+  signature(x = "CAS"),
+  function(x, actn, ..., stop.on.error = FALSE) {
+    return(x$retrieve(actn, ..., stop.on.error = stop.on.error)$results)
+  }
+)
+
+#' @export
+setMethod(
+  "cas.run",
+  signature(x = "CASTable"),
+  function(x, actn, ..., stop.on.error = FALSE) {
     args <- list(...)
-    if (!is.null(args[["table"]]) && class(args[["table"]]) == "CASTable") {
-      CASorCASTab <- args[["table"]]@conn
+    # TODO: Need reflection information to verify a table parameter is needed.
+    if (is.null(args$table)) {
+      return(x@conn$retrieve(actn, ..., table = x, stop.on.error = stop.on.error)$results)
+    } else {
+      return(x@conn$retrieve(actn, ..., stop.on.error = stop.on.error)$results)
     }
   }
-  if (class(CASorCASTab) == "CASTable") {
-    tp <- .gen_table_param(CASorCASTab)
-    conn <- CASorCASTab@conn
-    pms <- list("conn" = conn, "actn" = actn, "table" = tp, ...)
-    res <- do.call("cas.retrieve", pms)
-  }
-  else {
-    conn <- CASorCASTab
-    if (is.null(CASorCASTab) || (is.character(CASorCASTab) && nchar(CASorCASTab) == 0)) {
-      stop("No CAS connection was specified for the action")
-    }
-    if (actn == "builtins.loadActionSet") {
-      stopifnot(class(conn) == "CAS")
-      actionset <- list(...)[[1]]
-      res <- cas.retrieve(conn, "builtins.loadActionSet", actionSet = actionset)
-      .gen_functions(conn, actionset)
-      .check_for_cas_errors(res)
-    }
-    else if (actn == "builtins.defineActionSet") {
-      stopifnot(class(conn) == "CAS")
-      actionset <- list(...)$name
-      res <- cas.retrieve(conn, "builtins.defineActionSet", ...)
-      .gen_functions(conn, actionset)
-      .check_for_cas_errors(res)
-    }
-    else {
-      pms <- list("conn" = conn, "actn" = actn, ...)
-      res <- do.call("cas.retrieve", pms)
-    }
-  }
-
-  if (check_errors) {
-    .check_for_cas_errors(res)
-  }
-
-  return(as.list(res$results))
-}
+)
 
 #' Run DATA step action
 #'
@@ -100,8 +85,7 @@ cas.run <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
 #' @keywords internal
 #'
 .run_sas_code <- function(conn, code = "") {
-  res <- cas.retrieve(conn, "dataStep.runCode", code = code)
-  .check_for_cas_errors(res)
+  res <- cas.retrieve(conn, "dataStep.runCode", code = code, stop.on.error = TRUE)
   return(res$results)
 }
 
@@ -125,51 +109,8 @@ cas.run <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
 #' @keywords internal
 #'
 .list_action_sets <- function(conn) {
-  stopifnot(class(conn) == "CAS")
-  res <- cas.retrieve(conn, "builtins.actionSetInfo", all = "FALSE")
-  .check_for_cas_errors(res)
+  res <- cas.retrieve(conn, "builtins.actionSetInfo", all = "FALSE", stop.on.error = TRUE)
   return(as.list(res$results$setinfo))
-}
-
-#' Generate function wrappers from actionset reflection information
-#'
-#' @keywords internal
-#'
-.gen_functions2 <- function(conn, actionset) {
-  args <- list(quote(conn), "builtins.reflect", actionSet = actionset, showLabels = FALSE)
-  if ("reflection.levels" %in% conn$serverFeatures) {
-    args$levels <- 1
-  }
-  res <- do.call(swat::cas.run, args)
-  env <- globalenv()
-  if (length(res[[1]]) > 0) {
-    for (i in seq_len(length(res[[1]]$actions))) {
-      name <- res[[1]]$actions[[i]]$name
-      if (as.logical(getOption("cas.gen.function.sig"))) {
-        str <- ""
-        str2 <- ""
-        for (parms in res[[1]]$actions[[i]]$params) {
-          str <- paste(str, ", `", parms$name, "`=NULL", sep = "")
-          str2 <- paste(str2, ", `", parms$name, "`=`", parms$name, "`", sep = "")
-        }
-        fname <- paste("cas.", actionset, ".", name, sep = "")
-        str1 <- paste(fname, " <- function(CASorCASTab", str, sep = "")
-        val <- paste(str1, ", ...) {\n  swat::cas.run(CASorCASTab=NULL, '", actionset,
-                     ".", name, "'", str2, ", ...)\n} ", sep = "")
-        defn <- eval(parse(text = val, env))
-        environment(defn) <- env
-        setGeneric(name = fname, def = defn, package = "swat", where = env)
-      }
-      else {
-        fname <- paste("cas.", actionset, ".", name, sep = "")
-        val <- paste(fname, " <- function(object, ...) {\n  swat::cas.run(object=NULL, '",
-                     paste(actionset, name, sep = "."), "', ...)\n} ", sep = "")
-        defn <- eval(parse(text = val, env))
-        environment(defn) <- env
-        setGeneric(name = fname, def = defn, package = "swat", where = env)
-      }
-    }
-  }
 }
 
 #' Get reflection signature of action
@@ -177,11 +118,11 @@ cas.run <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
 #' @keywords internal
 #'
 .gen_sig <- function(conn, actn) {
-  args <- list(quote(conn), "builtins.reflect", check_errors = TRUE, action = actn, showLabels = FALSE)
+  args <- list(quote(conn), "builtins.reflect", stop.on.error = TRUE, action = actn, showLabels = FALSE)
   if ("reflection.levels" %in% conn$serverFeatures) {
     args$levels <- 1
   }
-  res <- do.call(swat::cas.run, args)
+  res <- do.call(cas.run, args)
   str <- ""
   str2 <- ""
   str3 <- "   args <- list(...)\n"
@@ -233,7 +174,7 @@ cas.run <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
       for (name in acts) {
         if (!as.logical(getOption("cas.gen.function.sig"))) {
           val <- paste("cas.", actionset, ".", name,
-                       " <- function(object=NULL, ...) {swat::cas.run(object, '",
+                       " <- function(object = NULL, ...) {swat::cas.run(object, '",
                        paste(actionset, name, sep = "."), "', ...) } ", sep = "")
           defn <- eval(parse(text = val, env))
           environment(defn) <- env
@@ -251,7 +192,7 @@ cas.run <- function(CASorCASTab = "", actn, check_errors = FALSE, ...) {
               message(paste("Error was: ", e))
               message(paste("Defining syntax as function(object, ...) instead. "))
               val <- paste("cas.", actionset, ".", name,
-                           " <- function(object=NULL, ...) {swat::cas.run(object, '",
+                           " <- function(object = NULL, ...) {swat::cas.run(object, '",
                            paste(actionset, name, sep = "."), "', ...) } ", sep = "")
               defn <- eval(parse(text = val, env))
               environment(defn) <- env

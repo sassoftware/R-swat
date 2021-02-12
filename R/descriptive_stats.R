@@ -17,7 +17,7 @@
 # CAS descriptive statistics ------------------------
 
 #' @keywords internal
-.summary_stat <- function(object, stat, na.rm = FALSE, numeric.only = FALSE) {
+.summary_stat <- function(x, stat, na.rm = FALSE, numeric.only = FALSE) {
   UseMethod(".summary_stat")
 }
 
@@ -529,6 +529,12 @@ setMethod(
   }
 )
 
+setGeneric("cas.count",
+  function(x) {
+    standardGeneric("cas.count")
+  }
+)
+
 #' Count of Nonmissing Values
 #'
 #' Returns the number of nonmissing values in the input
@@ -549,14 +555,21 @@ setMethod(
 #' cas.count(ct[1:4])
 #' cas.count(ct$n2)
 #' }
-cas.count <- function(object, na.rm = FALSE) {
-  UseMethod("cas.count")
-}
-
+#'
 #' @export
-cas.count.CASTable <- function(x) {
-  return(.summary_stat(x, "n"))
-}
+setMethod(
+  "cas.count",
+  signature(x = "CASTable"),
+  function(x) {
+    return(.summary_stat(x, "n"))
+  }
+)
+
+setGeneric("cas.max",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.max")
+  }
+)
 
 #' Maximum Values
 #'
@@ -579,14 +592,21 @@ cas.count.CASTable <- function(x) {
 #' cas.max(ct[1:4])
 #' cas.max(ct$n2)
 #' }
-cas.max <- function(object, na.rm = FALSE) {
-  UseMethod("cas.max")
-}
-
+#'
 #' @export
-cas.max.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "max", na.rm = na.rm))
-}
+setMethod(
+  "cas.max",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "max", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.mean",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.mean")
+  }
+)
 
 #' Average Values
 #'
@@ -609,14 +629,21 @@ cas.max.CASTable <- function(x, na.rm = FALSE) {
 #' cas.mean(ct[1:4])
 #' cas.mean(ct$n2)
 #' }
-cas.mean <- function(object, na.rm = FALSE) {
-  UseMethod("cas.mean")
-}
-
+#'
 #' @export
-cas.mean.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "mean", na.rm = na.rm))
-}
+setMethod(
+  "cas.mean",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "mean", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.median",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.median")
+  }
+)
 
 #' Median Values
 #'
@@ -639,14 +666,21 @@ cas.mean.CASTable <- function(x, na.rm = FALSE) {
 #' cas.median(ct[1:4])
 #' cas.median(ct$n2)
 #' }
-cas.median <- function(object, na.rm = FALSE) {
-  UseMethod("cas.median")
-}
-
+#'
 #' @export
-cas.median.CASTable <- function(x, na.rm = FALSE) {
-  return(unlist(cas.quantile(x, q = 50, na.rm = na.rm)[1, ]))
-}
+setMethod(
+  "cas.median",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(unlist(cas.quantile(x, q = 50, na.rm = na.rm)[1, ]))
+  }
+)
+
+setGeneric("cas.min",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.min")
+  }
+)
 
 #' Minimum Values
 #'
@@ -669,14 +703,21 @@ cas.median.CASTable <- function(x, na.rm = FALSE) {
 #' cas.min(ct[1:4])
 #' cas.min(ct$n2)
 #' }
-cas.min <- function(object, na.rm = FALSE) {
-  UseMethod("cas.min")
-}
-
+#'
 #' @export
-cas.min.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "min", na.rm = na.rm))
-}
+setMethod(
+  "cas.min",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "min", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.mode",
+  function(x, max.tie = 25, na.rm = FALSE) {
+    standardGeneric("cas.mode")
+  }
+)
 
 #' Mode Value
 #'
@@ -696,42 +737,49 @@ cas.min.CASTable <- function(x, na.rm = FALSE) {
 #' cas.mode(ct[1:4])
 #' cas.mode(ct$n2)
 #' }
-cas.mode <- function(object, max.tie = 25, na.rm = FALSE) {
-  UseMethod("cas.mode")
-}
-
+#'
 #' @export
-cas.mode.CASTable <- function(x, max.tie = 25, na.rm = FALSE) {
-  nvars <- .numeric_var_list(x)
-  res <- cas.retrieve(x@conn, "simple.topk", stop.on.error = TRUE,
-                      order = "freq", includeMisc = FALSE,
-                      table = x, topK = 1, bottomK = 0, raw = TRUE,
-                      maxtie = max.tie - 1, includemissing = !na.rm)
+setMethod(
+  "cas.mode",
+  signature(x = "CASTable"),
+  function(x, max.tie = 25, na.rm = FALSE) {
+    nvars <- .numeric_var_list(x)
+    res <- cas.retrieve(x@conn, "simple.topk", stop.on.error = TRUE,
+                        order = "freq", includeMisc = FALSE,
+                        table = x, topK = 1, bottomK = 0, raw = TRUE,
+                        maxtie = max.tie - 1, includemissing = !na.rm)
 
-  if (!na.rm) {
-    nmiss <- cas.nmiss(x)
-    nmiss <- names(nmiss[nmiss > 0])
+    if (!na.rm) {
+      nmiss <- cas.nmiss(x)
+      nmiss <- names(nmiss[nmiss > 0])
+    }
+
+    res <- res$results$Topk
+    cols <- lapply(unique(res$Column), function(x) {
+      col <- subset(res, Column == x)
+      if (!na.rm && x %in% nmiss) {
+        col <- NA
+      }
+      else {
+        col <- col[[ifelse(x %in% nvars, "NumVar", "CharVar")]]
+      }
+      return(col)
+    })
+
+    maxl <- max(sapply(cols, length))
+    df <- data.frame(lapply(cols, function(x) {
+      c(x, rep(ifelse(class(x) == "character", "", NA), maxl - length(x)))
+    }))
+    names(df) <- unique(res$Column)
+    return(df)
   }
+)
 
-  res <- res$results$Topk
-  cols <- lapply(unique(res$Column), function(x) {
-    col <- subset(res, Column == x)
-    if (!na.rm && x %in% nmiss) {
-      col <- NA
-    }
-    else {
-      col <- col[[ifelse(x %in% nvars, "NumVar", "CharVar")]]
-    }
-    return(col)
-  })
-
-  maxl <- max(sapply(cols, length))
-  df <- data.frame(lapply(cols, function(x) {
-    c(x, rep(ifelse(class(x) == "character", "", NA), maxl - length(x)))
-  }))
-  names(df) <- unique(res$Column)
-  return(df)
-}
+setGeneric("cas.quantile",
+  function(x, q = seq(0, 100, 25), na.rm = FALSE) {
+    standardGeneric("cas.quantile")
+  }
+)
 
 #' Quantile and Percentile Values
 #'
@@ -754,45 +802,72 @@ cas.mode.CASTable <- function(x, max.tie = 25, na.rm = FALSE) {
 #' cas.quantile(ct[1:4], q = 50)
 #' cas.quantile(ct$n2, q = c(10, 25, 50, 75, 90))
 #' }
-cas.quantile <- function(object, q = c(0, 25, 50, 75, 100), na.rm = FALSE) {
-  UseMethod("cas.quantile")
-}
-
+#' 
 #' @export
-cas.quantile.CASTable <- function(x, q = c(0, 25, 50, 75, 100), na.rm = FALSE) {
-  res <- cas.retrieve(x@conn, "percentile.percentile", stop.on.error = TRUE,
-                      table = x, pctldef = 3, values = as.list(q))
-  res <- res$results$Percentile
-  cols <- list()
-  colnames <- c()
-  nmiss <- NULL
-  if (!na.rm) {
-    nmiss <- cas.nmiss(x)
-    nmiss <- nmiss[names(nmiss) %in% res$Variable]
-  }
-  for (item in q) {
-    values <- res[res$Pctl == item, ]$Value
-    # check for missing values and set value to NA
+setMethod(
+  "cas.quantile",
+  signature(x = "CASTable"),
+  function(x, q = seq(0, 100, 25), na.rm = FALSE) {
+    res <- cas.retrieve(x@conn, "percentile.percentile", stop.on.error = TRUE,
+                        table = x, pctldef = 3, values = as.list(q))
+    res <- res$results$Percentile
+    cols <- list()
+    colnames <- c()
+    nmiss <- NULL
     if (!na.rm) {
-      values <- replace(values, nmiss > 0, NA)
+      nmiss <- cas.nmiss(x)
+      nmiss <- nmiss[names(nmiss) %in% res$Variable]
     }
-    cols[[paste(item)]] <- values
-    colnames <- c(colnames, paste(item, "%", sep = ""))
+    for (item in q) {
+      values <- res[res$Pctl == item, ]$Value
+      # check for missing values and set value to NA
+      if (!na.rm) {
+        values <- replace(values, nmiss > 0, NA)
+      }
+      cols[[paste(item)]] <- values
+      colnames <- c(colnames, paste(item, "%", sep = ""))
+    }
+    cols[["row.names"]] <- res[res$Pctl == q[1], ]$Variable
+    res <- do.call("data.frame", cols)
+    names(res) <- colnames
+    return(t(res))
   }
-  cols[["row.names"]] <- res[res$Pctl == q[1], ]$Variable
-  res <- do.call("data.frame", cols)
-  names(res) <- colnames
-  return(t(res))
-}
+)
 
+#' Quantile and Percentile Values
+#'
+#' @param x      \code{\link{CASTable}} object.
+#' @param probs  Numeric vector of probabilities with values in [0,1]. 
+#' @param na.rm  Should missing values be omitted from the calculations?
+#' @param \ldots Additional arguments. Currently ignored.
+#'
+#' @return Numeric
+#'
+#' @seealso \code{cas.quantile}
+#'
+#' @examples
+#' \dontrun{
+#' quantile(ct1[2])
+#' quantile(ct1$x1, probs = c(10, 90))
+#' }
+#'
 #' @export
-quantile.CASTable <- function(x, probs = seq(0, 1, 0.25), na.rm = FALSE,
-                              names = TRUE, type = 7, ...) {
-  if (length(names(x)) > 1) {
-    stop("quantile can only be computed on a single table column")
+setMethod(
+  "quantile",
+  signature(x = "CASTable"),
+  function(x, probs = seq(0, 1, 0.25), na.rm = FALSE, names = TRUE, type = 7, ...) {
+    if (length(names(x)) > 1) {
+      stop("quantile can only be computed on a single table column")
+    }
+    return(unlist(t(cas.quantile(x, q = probs * 100, na.rm = na.rm))[1, ]))
   }
-  return(unlist(t(cas.quantile(x, q = probs * 100, na.rm = na.rm))[1, ]))
-}
+)
+
+setGeneric("cas.sum",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.sum")
+  }
+)
 
 #' Column Sums
 #'
@@ -815,19 +890,48 @@ quantile.CASTable <- function(x, probs = seq(0, 1, 0.25), na.rm = FALSE,
 #' cas.sum(ct[1:4])
 #' cas.sum(ct$n2)
 #' }
-cas.sum <- function(object, na.rm = FALSE) {
-  UseMethod("cas.sum")
-}
-
+#'
 #' @export
-cas.sum.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "sum", na.rm = na.rm))
-}
+setMethod(
+  "cas.sum",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "sum", na.rm = na.rm))
+  }
+)
 
+#' Sum of All Values
+#'
+#' @param x      \code{\link{CASTable}} object.
+#' @param na.rm  Should missing values be omitted from the calculations?
+#' @param \ldots Additional arguments. Currently ignored.
+#'
+#' @return Numeric
+#'
+#' @seealso \code{cas.sum}
+#'
 #' @export
-sum.CASTable <- function(x, na.rm = FALSE) {
-  return(sum(cas.sum(x, na.rm = na.rm)))
-}
+#'
+#' @examples
+#' \dontrun{
+#' sum(ct1)
+#' sum(ct1$x1)
+#' }
+#'
+#' @export
+setMethod(
+  "sum",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(sum(cas.sum(x, na.rm = na.rm)))
+  }
+)
+
+setGeneric("cas.sd",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.sd")
+  }
+)
 
 #' Standard Deviation
 #'
@@ -848,14 +952,21 @@ sum.CASTable <- function(x, na.rm = FALSE) {
 #' cas.sd(ct[1:4])
 #' cas.sd(ct$n2)
 #' }
-cas.sd <- function(object, na.rm = FALSE) {
-  UseMethod("cas.sd")
-}
-
+#' 
 #' @export
-cas.sd.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "std", na.rm = na.rm))
-}
+setMethod(
+  "cas.sd",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "std", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.var",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.var")
+  }
+)
 
 #' Variance
 #'
@@ -876,14 +987,21 @@ cas.sd.CASTable <- function(x, na.rm = FALSE) {
 #' cas.var(ct[1:4])
 #' cas.var(ct$n2)
 #' }
-cas.var <- function(object, na.rm = FALSE) {
-  UseMethod("cas.var")
-}
-
+#'
 #' @export
-cas.var.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "var", na.rm = na.rm))
-}
+setMethod(
+  "cas.var",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "var", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.nmiss",
+  function(x) {
+    standardGeneric("cas.nmiss")
+  }
+)
 
 #' Number of Missing Values
 #'
@@ -906,14 +1024,21 @@ cas.var.CASTable <- function(x, na.rm = FALSE) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.nmiss <- function(object, na.rm = FALSE) {
-  UseMethod("cas.nmiss")
-}
-
+#'
 #' @export
-cas.nmiss.CASTable <- function(x) {
-  return(.summary_stat(x, "nmiss"))
-}
+setMethod(
+  "cas.nmiss",
+  signature(x = "CASTable"),
+  function(x) {
+    return(.summary_stat(x, "nmiss"))
+  }
+)
+
+setGeneric("cas.stderr",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.stderr")
+  }
+)
 
 #' Standard Error
 #'
@@ -927,22 +1052,27 @@ cas.nmiss.CASTable <- function(x) {
 #'
 #' @return Named numeric vector
 #'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' x <- cas.stderr(irisct)
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.stderr <- function(object, na.rm = FALSE) {
-  UseMethod("cas.stderr")
-}
-
+#'
 #' @export
-cas.stderr.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "std", na.rm = na.rm))
-}
+setMethod(
+  "cas.stderr",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "std", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.uss",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.uss")
+  }
+)
 
 #' Uncorrected Sum of Squares
 #'
@@ -964,14 +1094,21 @@ cas.stderr.CASTable <- function(x, na.rm = FALSE) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.uss <- function(object, na.rm = FALSE) {
-  UseMethod("cas.uss")
-}
-
+#'
 #' @export
-cas.uss.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "uss", na.rm = na.rm))
-}
+setMethod(
+  "cas.uss",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "uss", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.css",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.css")
+  }
+)
 
 #' Corrected Sum of Squares
 #'
@@ -993,14 +1130,21 @@ cas.uss.CASTable <- function(x, na.rm = FALSE) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.css <- function(object, na.rm = FALSE) {
-  UseMethod("cas.css")
-}
-
+#'
 #' @export
-cas.css.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "css", na.rm = na.rm))
-}
+setMethod(
+  "cas.css",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "css", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.cv",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.cv")
+  }
+)
 
 #' Coefficient of Variation
 #'
@@ -1022,14 +1166,21 @@ cas.css.CASTable <- function(x, na.rm = FALSE) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.cv <- function(object, na.rm = FALSE) {
-  UseMethod("cas.cv")
-}
-
+#'
 #' @export
-cas.cv.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "cv", na.rm = na.rm))
-}
+setMethod(
+  "cas.cv",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "cv", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.tvalue",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.tvalue")
+  }
+)
 
 #' T-Statistics for Hypothesis Testing
 #'
@@ -1051,14 +1202,21 @@ cas.cv.CASTable <- function(x, na.rm = FALSE) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.tvalue <- function(object, na.rm = FALSE) {
-  UseMethod("cas.tvalue")
-}
-
+#'
 #' @export
-cas.tvalue.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "t", na.rm = na.rm))
-}
+setMethod(
+  "cas.tvalue",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "t", na.rm = na.rm))
+  }
+)
+
+setGeneric("cas.probt",
+  function(x, na.rm = FALSE) {
+    standardGeneric("cas.probt")
+  }
+)
 
 #' P-Value of the T-Statistics
 #'
@@ -1080,14 +1238,15 @@ cas.tvalue.CASTable <- function(x, na.rm = FALSE) {
 #' x["Sepal.Length"]
 #' x[1:2]
 #' }
-cas.probt <- function(object, na.rm = FALSE) {
-  UseMethod("cas.probt")
-}
-
+#'
 #' @export
-cas.probt.CASTable <- function(x, na.rm = FALSE) {
-  return(.summary_stat(x, "probt", na.rm = na.rm))
-}
+setMethod(
+  "cas.probt",
+  signature(x = "CASTable"),
+  function(x, na.rm = FALSE) {
+    return(.summary_stat(x, "probt", na.rm = na.rm))
+  }
+)
 
 #' Summary Statistics
 #'

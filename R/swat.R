@@ -1233,7 +1233,7 @@ CAS <- setRefClass(
       }
     },
 
-    retrieve = function(actn, ...) {
+    retrieve = function(actn, ..., stop.on.error = FALSE) {
       # Invoke a CAS action and return the results. The \\code{actn} parameter
       # is a string containing the name of the action. All other arguments
       # are passed to the CAS action. 
@@ -1258,6 +1258,9 @@ CAS <- setRefClass(
       datamsghandler <- NULL
       if (!is.null(args$datamsghandler)) {
         datamsghandler <- args$datamsghandler
+      }
+      if (is.null(args$`_messagelevel`)) {
+        args$`_messagelevel` <- as.character(getOption("cas.message.level"))
       }
       args[["actn"]] <- actn
       repeat {
@@ -1311,13 +1314,17 @@ CAS <- setRefClass(
       .self$messages <- output[["messages"]]
       .self$events <- output[["events"]]
 
+      if (stop.on.error) {
+        .check_for_cas_errors(output)
+      }
+
       # Generate action wrappers for loadActionSet / defineActionSet
       .self$generate_wrappers(actn, ...)
 
       return(output)
     },
 
-    upload = function(data, ...) {
+    upload = function(data, stop.on.error = FALSE, ...) {
       # Upload a \code{file} or \code{data.frame} to a CAS table. The
       # \code{data} argument must be either a string containing a path
       # to a file or URL, or a \code{data.frame}. The remaining arguments
@@ -1415,9 +1422,20 @@ CAS <- setRefClass(
       }
       output[["messages"]] <- msgs
       output[["results"]] <- results
+
+      if (stop.on.error) {
+        .check_for_cas_errors(output)
+      }
+
       return(output)
     }
   )
+)
+
+setGeneric("cas.invoke",
+  function(x, actn, ...) {
+    standardGeneric("cas.invoke")
+  }
 )
 
 #' Invoke an action on the CAS server and return immediately
@@ -1431,26 +1449,52 @@ CAS <- setRefClass(
 #' (e.g., \code{cas.table.columninfo()}, \code{cas.simple.summary()},
 #' and so on) are used to make action calls.
 #'
-#' @param conn   CAS connection or CASTable object.
+#' @param x      \code{CAS} connection object.
 #' @param actn   String containing action name.
 #' @param \ldots Action parameters.
 #'
 #' @return CAS connection object
 #'
 #' @export
-cas.invoke <- function(conn, actn, ...) {
-  UseMethod("cas.invoke")
-}
+setMethod(
+  "cas.invoke",
+  signature(x = "CAS"),
+  function(x, actn, ...) {
+    return(invisible(x$invoke(actn, ...)))
+  }
+)
 
+#' Invoke an action on the CAS server and return immediately
+#'
+#' The \code{actn} parameter is a string containing the action
+#' name. All other arguments are passed to the CAS action.
+#'
+#' This method is only called in special circumstances where you want
+#' to run an action in the background and retrieve the responses
+#' manually. Typically, the generated action wrappers 
+#' (e.g., \code{cas.table.columninfo()}, \code{cas.simple.summary()},
+#' and so on) are used to make action calls.
+#'
+#' @param x      \code{CASTable} object.
+#' @param actn   String containing action name.
+#' @param \ldots Action parameters.
+#'
+#' @return CAS connection object
+#'
 #' @export
-cas.invoke.CAS <- function(conn, actn, ...) {
-  return(invisible(conn$invoke(actn, ...)))
-}
+setMethod(
+  "cas.invoke",
+  signature(x = "CASTable"),
+  function(x, actn, ...) {
+    return(invisible(cas.invoke(x@conn, actn, ...)))
+  }
+)
 
-#' @export
-cas.invoke.CASTable <- function(conn, actn, ...) {
-  return(invisible(cas.invoke(conn@conn, actn, ...)))
-}
+setGeneric("cas.retrieve",
+  function(x, actn, ..., stop.on.error = FALSE) {
+    standardGeneric("cas.retrieve")
+  }
+)
 
 #' Invoke a CAS action and return the results
 #'
@@ -1474,69 +1518,118 @@ cas.invoke.CASTable <- function(conn, actn, ...) {
 #' \code{cas.simple.summary()}, and so on) call this method behind
 #' the scenes and return the \code{results} field.
 #'
-#' @param conn   CAS connection or CASTable object.
+#' @param x      \code{CAS} connection object.
 #' @param actn   String containing action name.
 #' @param \ldots Action parameters.
 #'
 #' @return 
 #'
 #' @export
-cas.retrieve <- function(conn, actn, stop.on.error = FALSE, ...) {
-  UseMethod("cas.retrieve")
-}
-
-#' @export
-cas.retrieve.CAS <- function(conn, actn, stop.on.error = FALSE, ...) {
-  args <- list(...)
-  if (is.null(args$`_messagelevel`)) {
-    args$`_messagelevel` <- as.character(getOption("cas.message.level"))
+setMethod(
+  "cas.retrieve",
+  signature(x = "CAS"),
+  function(x, actn, ..., stop.on.error = FALSE) {
+    return(x$retrieve(actn, ..., stop.on.error = stop.on.error))
   }
-  args$actn <- actn
-  res <- do.call(conn$retrieve, args)
-  if (stop.on.error) {
-    .check_for_cas_errors(res)
-  }
-  return(res)
-}
+)
 
+#' Invoke a CAS action and return the results
+#'
+#' The \code{actn} parameter is a string containing the name of
+#' the action. All other arguments are passed to the CAS action. 
+#'
+#' The results are returned in a list with the following fields:
+#'
+#' \describe{
+#'   \item{\code{results}}{The results of the CAS action.}
+#'   \item{\code{messages}}{Any message printed by the action.}
+#'   \item{\code{performance}}{Performance metrics.}
+#'   \item{\code{disposition}}{Information about errors or warning produced
+#'     during the action run.}
+#'   \item{\code{events}}{Events posted by the server; this typically
+#'     corresponds to things like caslibs and tables being updated.}
+#' }
+#'
+#' This method is not typically called directly (although it can be).
+#' The generated action wrappers (e.g., \code{cas.table.columnInfo()},
+#' \code{cas.simple.summary()}, and so on) call this method behind
+#' the scenes and return the \code{results} field.
+#'
+#' @param x      \code{CASTable} object.
+#' @param actn   String containing action name.
+#' @param \ldots Action parameters.
+#'
+#' @return 
+#'
 #' @export
-cas.retrieve.CASTable <- function(conn, actn, stop.on.error = FALSE, ...) {
-  return(cas.retrieve(conn@conn, actn, stop.on.error = stop.on.error, ...))
-}
+setMethod(
+  "cas.retrieve",
+  signature(x = "CASTable"),
+  function(x, actn, ..., stop.on.error = FALSE) {
+    return(x@conn$retrieve(actn, ..., stop.on.error = stop.on.error))
+  }
+)
+
+setGeneric("cas.copy",
+  function(x) {
+    standardGeneric("cas.copy")
+  }
+)
 
 #' Return a copy of the CAS connection object
 #'
 #' The new connection will use all of the same settings as the original,
 #' but it will be attached to a new session.
 #'
-#' @param conn CAS connection or CASTable object.
+#' @param x \code{CAS} connection object.
 #'
-#' @return CAS connection object
+#' @return \code{CAS} connection object
 #'
 #' @export
-cas.copy <- function(conn) {
-  UseMethod("cas.copy")
-}
+setMethod(
+  "cas.copy",
+  signature(x = "CAS"),
+  function(x) {
+    return(x$copy())
+  }
+)
 
+#' Return a copy of the CASTable object
+#'
+#' A new \code{CASTable} object will be created that references the
+#' same table in the server as the original \code{CASTable} object.
+#'
+#' Note that this does *not* create a new table on the server.
+#'
+#' @param x \code{CASTable} object.
+#'
+#' @return \code{CASTable} object
+#'
 #' @export
-cas.copy.CAS <- function(conn) {
-  return(conn$copy())
-}
+#' @export
+setMethod(
+  "cas.copy",
+  signature(x = "CASTable"),
+  function(x) {
+    tbl <- CASTable(x@conn, x@tname, caslib = c(x@caslib),
+                    columns = c(x@names),
+                    where = c(x@where), orderby = c(x@orderby),
+                    groupby = c(x@groupby), gbmode = c(x@gbmode),
+                    computedOnDemand = x@computedOnDemand,
+                    computedVars = c(x@computedVars),
+                    computedVarsProgram = c(x@computedVarsProgram))
+    tbl@XcomputedVarsProgram <- c(x@XcomputedVarsProgram)
+    tbl@XcomputedVars <- c(x@XcomputedVars)
+    tbl@compcomp <- x@compcomp
+    return(tbl)
+  }
+)
 
-#' @export
-cas.copy.CASTable <- function(conn) {
-  tbl <- CASTable(conn@conn, conn@tname, caslib = c(conn@caslib),
-                  columns = c(conn@names),
-                  where = c(conn@where), orderby = c(conn@orderby),
-                  groupby = c(conn@groupby), gbmode = c(conn@gbmode),
-                  computedOnDemand = conn@computedOnDemand,
-                  computedVars = c(conn@computedVars),
-                  computedVarsProgram = c(conn@computedVarsProgram))
-  tbl@XcomputedVarsProgram <- c(conn@XcomputedVarsProgram)
-  tbl@XcomputedVars <- c(conn@XcomputedVars)
-  tbl@compcomp <- conn@compcomp
-  return(tbl)
-}
+setGeneric("cas.fork",
+  function(x, num = 2) {
+    standardGeneric("cas.fork")
+  }
+)
 
 #' Return a vector of \code{num} CAS connection objects
 #'
@@ -1549,9 +1642,13 @@ cas.copy.CASTable <- function(conn) {
 #' @return Vector of CAS connection objects
 #'
 #' @export
-cas.fork.CAS <- function(conn, num = 2) {
-  return(conn$fork(num))
-}
+setMethod(
+  "cas.fork",
+  signature(x = "CAS"),
+  function(x, num = 2) {
+    return(x$fork(num))
+  }
+)
 
 #' Event watcher for multiple CAS connections
 #'
@@ -2485,21 +2582,31 @@ rbind.bygroups <- function(res) {
   return(tables)
 }
 
+setGeneric("cas.close",
+  function(x, close.session = FALSE) {
+    standardGeneric("cas.close")
+  }
+)
+
 #' Close a CAS connection while leaving the session alive
 #'
-#' @param conn The \code{\link{CAS}} connection object
-#' @param close_session Should the session be terminated in addition to 
+#' @param x The \code{\link{CAS}} connection object
+#' @param close.session Should the session be terminated in addition to 
 #'                      closing the connection?
 #'
 #' @seealso \code{\link{cas.terminate}}
 #'
 #' @export
-cas.close.CAS <- function(conn, close_session = FALSE) {
-  if (close_session) {
-      conn$retrieve("session.endsession", `_messagelevel` = "error")
+setMethod(
+  "cas.close",
+  signature(x = "CAS"),
+  function(x, close.session = FALSE) {
+    if (close.session) {
+      x$retrieve("session.endsession", `_messagelevel` = "error")
+    }
+    return(invisible(x$close()))
   }
-  return(invisible(conn$close()))
-}
+)
 
 #' End a CAS session and close the connection
 #'
@@ -2509,13 +2616,19 @@ cas.close.CAS <- function(conn, close_session = FALSE) {
 #'
 #' @export
 cas.terminate.CAS <- function(conn) {
-  return(invisible(cas.close(conn, close_session = TRUE)))
+  return(invisible(cas.close(conn, close.session = TRUE)))
 }
+
+setGeneric("cas.upload",
+  function(x, object, ...) {
+    standardGeneric("cas.upload")
+  }
+)
 
 #' Upload a data.frame or file to a CAS table
 #'
-#' @param conn The \code{\link{CAS}} connection object
-#' @param frame The data.frame, filename, or URL to upload.
+#' @param x The \code{\link{CAS}} connection object
+#' @param object The data.frame, filename, or URL to upload.
 #' @param \dots Optional parameters that are passed to the table.loadtable action.
 #'
 #' @return List containing fields \code{results}, \code{messages}, \code{disposition},
@@ -2525,13 +2638,23 @@ cas.terminate.CAS <- function(conn) {
 #' @seealso \code{\link{cas.upload.frame}}, \code{\link{cas.upload.file}}
 #'
 #' @export
-cas.upload.CAS <- function(conn, frame, ...) {
-  return(conn$upload(frame, ...))
-}
+setMethod(
+  "cas.upload",
+  signature(x = "CAS"),
+  function(x, object, ...) {
+    return(x$upload(object, ...))
+  }
+)
+
+setGeneric("cas.upload.frame",
+  function(x, frame, ...) {
+    standardGeneric("cas.upload.frame")
+  }
+)
 
 #' Upload a data.frame to a CAS table
 #'
-#' @param conn The \code{\link{CAS}} connection object
+#' @param x The \code{\link{CAS}} connection object
 #' @param frame The \code{data.frame} to upload
 #' @param \dots Optional parameters that are passed to the table.loadtable action.
 #'
@@ -2541,15 +2664,25 @@ cas.upload.CAS <- function(conn, frame, ...) {
 #' @seealso \code{\link{cas.upload.file}}
 #'
 #' @export
-cas.upload.frame.CAS <- function(conn, frame, ...) {
-  res <- conn$upload(frame, ...)
-  return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
-}
+setMethod(
+  "cas.upload.frame",
+  signature(x = "CAS"),
+  function(x, frame, ...) {
+    res <- x$upload(frame, ...)
+    return(CASTable(x, res$results$tableName, caslib = res$results$caslib))
+  }
+)
+
+setGeneric("cas.upload.file",
+  function(x, file, ...) {
+    standardGeneric("cas.upload.file")
+  }
+)
 
 #' Upload a data file to a CAS table
 #'
-#' @param conn The \code{\link{CAS}} connection object
-#' @param path The filename to upload
+#' @param x The \code{\link{CAS}} connection object
+#' @param file The filename to upload
 #' @param \dots Optional parameters that are passed to the table.loadtable action.
 #'
 #' @return \code{\link{CASTable}} object which references a new CAS table
@@ -2558,18 +2691,32 @@ cas.upload.frame.CAS <- function(conn, frame, ...) {
 #' @seealso \code{\link{cas.upload.frame}}
 #'
 #' @export
-cas.upload.file.CAS <- function(conn, path, ...) {
-  res <- conn$upload(path, ...)
-  return(CASTable(conn, res$results$tableName, caslib = res$results$caslib))
-}
+setMethod(
+  "cas.upload.file",
+  signature(x = "CAS"),
+  function(x, file, ...) {
+    res <- x$upload(file, ...)
+    return(CASTable(x, res$results$tableName, caslib = res$results$caslib))
+  }
+)
+
+setGeneric("cas.help",
+  function(x, actn) {
+    standardGeneric("cas.help")
+  }
+)
 
 #' Display help for a given action
 #'
-#' @param conn The \code{\link{CAS}} connection object
-#' @param x    The action name to display help for.
+#' @param x The \code{\link{CAS}} connection object
+#' @param actn The action name to display help for.
 #'
 #' @export
-cas.help.CAS <- function(conn, x) {
-  invisible(sapply(cas.retrieve(conn, 'builtins.help', action=x)$messages,
-                   function(y) { cat(gsub('^.*?: ', '', y, perl=TRUE)); cat("\n") }))
-}
+setMethod(
+  "cas.help",
+  signature(x = "CAS"),
+  function(x, actn) {
+    invisible(sapply(cas.retrieve(x, "builtins.help", action=actn)$messages,
+                     function(y) { cat(gsub("^.*?: ", '', y, perl=TRUE)); cat("\n") }))
+  }
+)
