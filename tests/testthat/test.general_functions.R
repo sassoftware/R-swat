@@ -24,7 +24,7 @@ test_that("Load ActionSet and List ActionSet Functions", {
   cas.retrieve(caz, "builtins.loadactionset", actionset = "simple")
   expect_true("simple" %in% swat:::.list_action_sets(caz)$actionset)
 
-  p <- swat:::.list_action_params(caz, actn = "summary", display = FALSE)
+  p <- swat:::.list_action_params(caz, action = "summary", display = FALSE)
   expect_true(length(p) > 15)
   expect_equivalent(p[[1]]$name, "table")
   expect_equivalent(p[[1]]$parmType, "value_list")

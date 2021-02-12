@@ -15,15 +15,14 @@
 
 #' Run DATA step action
 #'
-#' @param conn \code{\link{CAS}} connection object.
+#' @param x \code{\link{CAS}} connection object.
 #' @param code DATA step code.
 #'
 #' @return datastep.runCode action results
 #'
 #' @keywords internal
-#'
-.run_sas_code <- function(conn, code = "") {
-  res <- cas.retrieve(conn, "dataStep.runCode", code = code, stop.on.error = TRUE)
+.run_sas_code <- function(x, code = "") {
+  res <- cas.retrieve(x, "dataStep.runCode", code = code, stop.on.error = TRUE)
   return(res$results)
 }
 
@@ -34,7 +33,7 @@
 #' to indicate if the action set is already available for use
 #' or must be loaded before it can be used.
 #'
-#' @param conn An instance of a CAS object that represents
+#' @param x An instance of a CAS object that represents
 #'  a connection and CAS session.
 #'
 #' @return List of actionset information
@@ -46,8 +45,8 @@
 #'
 #' @keywords internal
 #'
-.list_action_sets <- function(conn) {
-  res <- cas.retrieve(conn, "builtins.actionSetInfo", all = "FALSE", stop.on.error = TRUE)
+.list_action_sets <- function(x) {
+  res <- cas.retrieve(x, "builtins.actionSetInfo", all = "FALSE", stop.on.error = TRUE)
   return(as.list(res$results$setinfo))
 }
 
@@ -55,9 +54,9 @@
 #'
 #' @keywords internal
 #'
-.gen_sig <- function(conn, actn) {
-  args <- list(quote(conn), "builtins.reflect", stop.on.error = TRUE, action = actn, showLabels = FALSE)
-  if ("reflection.levels" %in% conn$serverFeatures) {
+.gen_sig <- function(x, action) {
+  args <- list(quote(x), "builtins.reflect", stop.on.error = TRUE, action = action, showLabels = FALSE)
+  if ("reflection.levels" %in% x$serverFeatures) {
     args$levels <- 1
   }
   res <- do.call(cas.retrieve, args)$results
@@ -86,10 +85,10 @@
                   parms$name, "'=substitute(`", parms$name, "`), args)\n", sep = "")
   }
 
-  str3 <- paste(str3, "   args = c('actn'='", actn, "', args)\n", sep = "")
+  str3 <- paste(str3, "   args = c('action'='", action, "', args)\n", sep = "")
   str3 <- paste(str3, "   args = c('CASorCASTab'=substitute(CASorCASTab), args)\n", sep = "")
 
-  str1 <- paste("cas.", actn, " <- function(CASorCASTab", str, ", ...) {\n", sep = "")
+  str1 <- paste("cas.", action, " <- function(CASorCASTab", str, ", ...) {\n", sep = "")
   str1 <- paste(str1, str3, "do.call('swat::cas.retrieve', args)$results\n}\n", sep = "")
 
   return(str1)
@@ -99,13 +98,13 @@
 #'
 #' @keywords internal
 #'
-.gen_functions <- function(conn, actionset) {
-  res <- cas.retrieve(conn, "builtins.actionSetInfo", "extensions" = actionset)
+.gen_functions <- function(x, actionset) {
+  res <- cas.retrieve(x, "builtins.actionSetInfo", "extensions" = actionset)
   if (toupper(res$results$setinfo$actionset[1]) != toupper(actionset)) {
     message(paste("ActionSet ", actionset, " not found"))
   } else {
     actionset <- res$results$setinfo$actionset[1]
-    res <- cas.retrieve(conn, "builtins.listActions", "actionSet" = actionset)
+    res <- cas.retrieve(x, "builtins.listActions", "actionSet" = actionset)
     if (length(res$results) > 0) {
       acts <- as.data.frame(res$results)[, 1]
       env <- globalenv()
@@ -119,7 +118,7 @@
           fname <- paste("cas.", actionset, ".", name, sep = "")
           setGeneric(name = fname, def = defn, package = "swat", where = env)
         } else {
-          val <- .gen_sig(conn, paste(actionset, name, sep = "."))
+          val <- .gen_sig(x, paste(actionset, name, sep = "."))
           tryCatch({
               defn <- eval(parse(text = val, env))
               environment(defn) <- env
@@ -148,9 +147,9 @@
 #' This function displays the parameters for the specified
 #' CAS action.
 #'
-#' @param conn An instance of a CAS object that represents
+#' @param x An instance of a CAS object that represents
 #'   a connection and CAS session.
-#' @param actn A \code{string} value that specifies
+#' @param action A \code{string} value that specifies
 #'   the action name. You can specify the following forms:
 #'   \itemize{
 #'     \item \emph{action-set.action-name}
@@ -167,10 +166,10 @@
 #' @examples
 #' \dontrun{
 #' # specify the action set and action name
-#' .list_action_params(conn, actn = "simple.summary")
+#' .list_action_params(x, action = "simple.summary")
 #'
 #' # fetch is in the table action set
-#' .list_action_params(s, actn = "fetch")
+#' .list_action_params(s, action = "fetch")
 #'
 #' # specify the generated function name
 #' .list_action_params(s, cas.regression.logistic)
@@ -178,20 +177,20 @@
 #'
 #' @keywords internal
 #'
-.list_action_params <- function(conn, actn, display = TRUE) {
-  if (typeof(actn) == "closure") {
-    actn <- toString(substitute(actn))
+.list_action_params <- function(x, action, display = TRUE) {
+  if (typeof(action) == "closure") {
+    action <- toString(substitute(action))
   }
-  if (startsWith(actn, "cas.")) {
-    actn <- substr(actn, 5, nchar(actn))
+  if (startsWith(action, "cas.")) {
+    action <- substr(action, 5, nchar(action))
   }
-  args <- list("builtins.reflect", action = actn, showLabels = FALSE)
-  if ("reflection.levels" %in% conn$serverFeatures) {
+  args <- list("builtins.reflect", action = action, showLabels = FALSE)
+  if ("reflection.levels" %in% x$serverFeatures) {
     args$levels <- 1
   }
-  res <- do.call(conn$retrieve, args)
+  res <- do.call(x$retrieve, args)
   .check_for_cas_errors(res)
-  str <- paste("cas.", actn, "(", sep = "")
+  str <- paste("cas.", action, "(", sep = "")
   plist <- list()
   i <- 1
   sep <- ""

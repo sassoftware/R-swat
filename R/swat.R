@@ -1184,8 +1184,8 @@ CAS <- setRefClass(
       return(output)
     },
 
-    invoke = function(actn, ...) {
-      # Invoke an action on the CAS server and return. The \\code{actn}
+    invoke = function(.action, ...) {
+      # Invoke an action on the CAS server and return. The \\code{.action}
       # parameter is a string containing the action name. All other arguments
       # are passed to the CAS action.
 
@@ -1196,7 +1196,7 @@ CAS <- setRefClass(
       # and so on) are used to make action calls.
       args <- list(...)
       if (class(.self$sw_connection) == "REST_CASConnection") {
-        sw_connection$invoke(actn, args)
+        sw_connection$invoke(.action, args)
       } else {
         if (grepl("nil", capture.output(slot(sw_connection, "ref")))) {
           stop("The connection object is invalid.  Please create a new connection.")
@@ -1205,17 +1205,17 @@ CAS <- setRefClass(
                                        as.logical(getOption("cas.trace.actions")))
         sw_connection$setBooleanOption("trace_ui_actions",
                                        as.logical(getOption("cas.trace.ui.actions")))
-        sw_connection$invoke(actn, .r2cas(.self$soptions, .self$sw_error, args))
+        sw_connection$invoke(.action, .r2cas(.self$soptions, .self$sw_error, args))
       }
       return(.self)
     },
 
-    generate_wrappers = function(actn, ...) {
+    generate_wrappers = function(.action, ...) {
       # Generate functions on loadactionset.
       args <- list(...)
       if (as.logical(getOption("cas.gen.function.sig"))) {
-        if (lowerCase(actn) == "builtins.loadactionset" ||
-          lowerCase(actn) == "loadactionset") {
+        if (lowerCase(.action) == "builtins.loadactionset" ||
+          lowerCase(.action) == "loadactionset") {
           if (!is.null(args$actionSet)) {
             res <- .gen_functions(.self, args$actionSet)
             .check_for_cas_errors(res)
@@ -1223,8 +1223,8 @@ CAS <- setRefClass(
             res <- .gen_functions(.self, args$actionset)
             .check_for_cas_errors(res)
           }
-        } else if (lowerCase(actn) == "builtins.defineactionset" ||
-                   lowerCase(actn) == "defineactionset") {
+        } else if (lowerCase(.action) == "builtins.defineactionset" ||
+                   lowerCase(.action) == "defineactionset") {
           if (!is.null(args$name)) {
             res <- .gen_functions(.self, args$name)
             .check_for_cas_errors(res)
@@ -1233,8 +1233,8 @@ CAS <- setRefClass(
       }
     },
 
-    retrieve = function(actn, ..., stop.on.error = FALSE) {
-      # Invoke a CAS action and return the results. The \\code{actn} parameter
+    retrieve = function(.action, ..., stop.on.error = FALSE) {
+      # Invoke a CAS action and return the results. The \\code{.action} parameter
       # is a string containing the name of the action. All other arguments
       # are passed to the CAS action. 
       #
@@ -1262,7 +1262,7 @@ CAS <- setRefClass(
       if (is.null(args$`_messagelevel`)) {
         args$`_messagelevel` <- as.character(getOption("cas.message.level"))
       }
-      args[["actn"]] <- actn
+      args[[".action"]] <- .action
       repeat {
         do.call(.self$invoke, args)
         output <- list()
@@ -1319,7 +1319,7 @@ CAS <- setRefClass(
       }
 
       # Generate action wrappers for loadActionSet / defineActionSet
-      .self$generate_wrappers(actn, ...)
+      .self$generate_wrappers(.action, ...)
 
       if (.self$severity > 1) {
         return(invisible(output))
@@ -1437,14 +1437,14 @@ CAS <- setRefClass(
 )
 
 setGeneric("cas.invoke",
-  function(x, actn, ...) {
+  function(.x, .action, ...) {
     standardGeneric("cas.invoke")
   }
 )
 
 #' Invoke an action on the CAS server and return immediately
 #'
-#' The \code{actn} parameter is a string containing the action
+#' The \code{.action} parameter is a string containing the action
 #' name. All other arguments are passed to the CAS action.
 #'
 #' This method is only called in special circumstances where you want
@@ -1453,8 +1453,8 @@ setGeneric("cas.invoke",
 #' (e.g., \code{cas.table.columninfo()}, \code{cas.simple.summary()},
 #' and so on) are used to make action calls.
 #'
-#' @param x      \code{CAS} connection object.
-#' @param actn   String containing action name.
+#' @param .x      \code{CAS} connection object.
+#' @param .action   String containing action name.
 #' @param \ldots Action parameters.
 #'
 #' @return CAS connection object
@@ -1462,15 +1462,15 @@ setGeneric("cas.invoke",
 #' @export
 setMethod(
   "cas.invoke",
-  signature(x = "CAS"),
-  function(x, actn, ...) {
-    return(invisible(x$invoke(actn, ...)))
+  signature(.x = "CAS"),
+  function(.x, .action, ...) {
+    return(invisible(.x$invoke(.action, ...)))
   }
 )
 
 #' Invoke an action on the CAS server and return immediately
 #'
-#' The \code{actn} parameter is a string containing the action
+#' The \code{.action} parameter is a string containing the action
 #' name. All other arguments are passed to the CAS action.
 #'
 #' This method is only called in special circumstances where you want
@@ -1479,8 +1479,8 @@ setMethod(
 #' (e.g., \code{cas.table.columninfo()}, \code{cas.simple.summary()},
 #' and so on) are used to make action calls.
 #'
-#' @param x      \code{CASTable} object.
-#' @param actn   String containing action name.
+#' @param .x      \code{CASTable} object.
+#' @param .action   String containing action name.
 #' @param \ldots Action parameters.
 #'
 #' @return CAS connection object
@@ -1488,21 +1488,21 @@ setMethod(
 #' @export
 setMethod(
   "cas.invoke",
-  signature(x = "CASTable"),
-  function(x, actn, ...) {
-    return(invisible(cas.invoke(x@conn, actn, ...)))
+  signature(.x = "CASTable"),
+  function(.x, .action, ...) {
+    return(invisible(cas.invoke(.x@conn, .action, ...)))
   }
 )
 
 setGeneric("cas.retrieve",
-  function(x, actn, ..., stop.on.error = FALSE) {
+  function(.x, .action, ..., stop.on.error = FALSE) {
     standardGeneric("cas.retrieve")
   }
 )
 
 #' Invoke a CAS action and return the results
 #'
-#' The \code{actn} parameter is a string containing the name of
+#' The \code{.action} parameter is a string containing the name of
 #' the action. All other arguments are passed to the CAS action. 
 #'
 #' The results are returned in a list with the following fields:
@@ -1522,8 +1522,8 @@ setGeneric("cas.retrieve",
 #' \code{cas.simple.summary()}, and so on) call this method behind
 #' the scenes and return the \code{results} field.
 #'
-#' @param x      \code{CAS} connection object.
-#' @param actn   String containing action name.
+#' @param .x      \code{CAS} connection object.
+#' @param .action   String containing action name.
 #' @param \ldots Action parameters.
 #'
 #' @return 
@@ -1531,15 +1531,15 @@ setGeneric("cas.retrieve",
 #' @export
 setMethod(
   "cas.retrieve",
-  signature(x = "CAS"),
-  function(x, actn, ..., stop.on.error = FALSE) {
-    return(x$retrieve(actn, ..., stop.on.error = stop.on.error))
+  signature(.x = "CAS"),
+  function(.x, .action, ..., stop.on.error = FALSE) {
+    return(.x$retrieve(.action, ..., stop.on.error = stop.on.error))
   }
 )
 
 #' Invoke a CAS action and return the results
 #'
-#' The \code{actn} parameter is a string containing the name of
+#' The \code{.action} parameter is a string containing the name of
 #' the action. All other arguments are passed to the CAS action. 
 #'
 #' The results are returned in a list with the following fields:
@@ -1559,8 +1559,8 @@ setMethod(
 #' \code{cas.simple.summary()}, and so on) call this method behind
 #' the scenes and return the \code{results} field.
 #'
-#' @param x      \code{CASTable} object.
-#' @param actn   String containing action name.
+#' @param .x      \code{CASTable} object.
+#' @param .action   String containing action name.
 #' @param \ldots Action parameters.
 #'
 #' @return 
@@ -1568,14 +1568,14 @@ setMethod(
 #' @export
 setMethod(
   "cas.retrieve",
-  signature(x = "CASTable"),
-  function(x, actn, ..., stop.on.error = FALSE) {
+  signature(.x = "CASTable"),
+  function(.x, .action, ..., stop.on.error = FALSE) {
     # TODO: Need reflection information to verify action needs a table= param.
     args <- list(...)
     if (is.null(args$table)) {
-      return(x@conn$retrieve(actn, table = x, ..., stop.on.error = stop.on.error))
+      return(.x@conn$retrieve(.action, table = .x, ..., stop.on.error = stop.on.error))
     }
-    return(x@conn$retrieve(actn, ..., stop.on.error = stop.on.error))
+    return(.x@conn$retrieve(.action, ..., stop.on.error = stop.on.error))
   }
 )
 
@@ -2629,15 +2629,15 @@ cas.terminate.CAS <- function(conn) {
 }
 
 setGeneric("cas.upload",
-  function(x, object, ...) {
+  function(.x, .object, ...) {
     standardGeneric("cas.upload")
   }
 )
 
 #' Upload a data.frame or file to a CAS table
 #'
-#' @param x The \code{\link{CAS}} connection object
-#' @param object The data.frame, filename, or URL to upload.
+#' @param .x The \code{\link{CAS}} connection object
+#' @param .object The data.frame, filename, or URL to upload.
 #' @param \dots Optional parameters that are passed to the table.loadtable action.
 #'
 #' @return List containing fields \code{results}, \code{messages}, \code{disposition},
@@ -2649,22 +2649,22 @@ setGeneric("cas.upload",
 #' @export
 setMethod(
   "cas.upload",
-  signature(x = "CAS"),
-  function(x, object, ...) {
-    return(x$upload(object, ...))
+  signature(.x = "CAS"),
+  function(.x, .object, ...) {
+    return(.x$upload(.object, ...))
   }
 )
 
 setGeneric("cas.upload.frame",
-  function(x, frame, ...) {
+  function(.x, .frame, ...) {
     standardGeneric("cas.upload.frame")
   }
 )
 
 #' Upload a data.frame to a CAS table
 #'
-#' @param x The \code{\link{CAS}} connection object
-#' @param frame The \code{data.frame} to upload
+#' @param .x The \code{\link{CAS}} connection object
+#' @param .frame The \code{data.frame} to upload
 #' @param \dots Optional parameters that are passed to the table.loadtable action.
 #'
 #' @return \code{\link{CASTable}} object which references a new CAS table
@@ -2675,15 +2675,15 @@ setGeneric("cas.upload.frame",
 #' @export
 setMethod(
   "cas.upload.frame",
-  signature(x = "CAS"),
-  function(x, frame, ...) {
-    res <- x$upload(frame, ...)
-    return(CASTable(x, res$results$tableName, caslib = res$results$caslib))
+  signature(.x = "CAS"),
+  function(.x, .frame, ...) {
+    res <- .x$upload(.frame, ...)
+    return(CASTable(.x, res$results$tableName, caslib = res$results$caslib))
   }
 )
 
 setGeneric("cas.upload.file",
-  function(x, file, ...) {
+  function(.x, .file, ...) {
     standardGeneric("cas.upload.file")
   }
 )
@@ -2702,30 +2702,30 @@ setGeneric("cas.upload.file",
 #' @export
 setMethod(
   "cas.upload.file",
-  signature(x = "CAS"),
-  function(x, file, ...) {
-    res <- x$upload(file, ...)
-    return(CASTable(x, res$results$tableName, caslib = res$results$caslib))
+  signature(.x = "CAS"),
+  function(.x, .file, ...) {
+    res <- .x$upload(.file, ...)
+    return(CASTable(.x, res$results$tableName, caslib = res$results$caslib))
   }
 )
 
 setGeneric("cas.help",
-  function(x, actn) {
+  function(.x, .action) {
     standardGeneric("cas.help")
   }
 )
 
 #' Display help for a given action
 #'
-#' @param x The \code{\link{CAS}} connection object
-#' @param actn The action name to display help for.
+#' @param .x The \code{\link{CAS}} connection object
+#' @param .action The action name to display help for.
 #'
 #' @export
 setMethod(
   "cas.help",
-  signature(x = "CAS"),
-  function(x, actn) {
-    invisible(sapply(cas.retrieve(x, "builtins.help", action=actn)$messages,
+  signature(.x = "CAS"),
+  function(.x, .action) {
+    invisible(sapply(cas.retrieve(.x, "builtins.help", action=.action)$messages,
                      function(y) { cat(gsub("^.*?: ", '', y, perl=TRUE)); cat("\n") }))
   }
 )

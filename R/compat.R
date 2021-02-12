@@ -14,15 +14,15 @@
 #  limitations under the License.
 
 
-runAction <- function(cas.conn, action.name, ..., stop.on.error = TRUE) {
-  return(cas.retrieve(cas.conn, action.name, ..., stop.on.error = stop.on.error))$results
+runAction <- function(.x, .action, ..., stop.on.error = TRUE) {
+  return(cas.retrieve(.x, .action, ..., stop.on.error = stop.on.error))$results
 }
 
 loadActionSet <- function(cas.conn, action.set) {
   return(cas.retrieve(cas.conn, action.set))
 }
 
-listActionParms <- function(cas.conn, action.name) {
+listActionParms <- function(cas.conn, .action) {
   return(NULL)
 }
 
