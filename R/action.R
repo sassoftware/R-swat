@@ -254,7 +254,7 @@ gen.functions2 <-  function(cas, actionSet) {
         else
            {
            fname = paste("cas.", actionSet, ".", name, sep="")
-           val   = paste(fname, " <- function(object, ...) {swat::runAction(object=NULL, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
+           val   = paste(fname, " <- function(CASorCASTab, ...) {swat::runAction(CASorCASTab=NULL, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
            defn  = eval(parse(text=val, env))
            environment(defn) <- env
            setGeneric(name=fname, def=defn, package='swat', where=env)
@@ -332,7 +332,7 @@ gen.functions <-  function(cas, actionSet) {
            #message(paste("for action", Sys.time()))
            if (!as.logical(getOption('cas.gen.function.sig')))
               {
-              val = paste("cas.", actionSet, ".", name, " <- function(object=NULL, ...) {swat::runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
+              val = paste("cas.", actionSet, ".", name, " <- function(CASorCASTab=NULL, ...) {swat::runAction(CASorCASTab, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
               defn = eval(parse(text=val, env))
               environment(defn) <- env
               fname = paste("cas.", actionSet, ".", name, sep="")
@@ -354,8 +354,8 @@ gen.functions <-  function(cas, actionSet) {
                  {
                  message(paste("Action ", actionSet, ".", name, " Had invalid syntax: \n", val, sep=""))
                  message(paste("Error was: ", e))
-                 message('Defining syntax as function(object, ...) instead. Use listActionParms() to see the actual paramters for this function')
-                 val = paste("cas.", actionSet, ".", name, " <- function(object=NULL, ...) {swat::runAction(object, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
+                 message('Defining syntax as function(CASorCASTab, ...) instead. Use listActionParms() to see the actual paramters for this function')
+                 val = paste("cas.", actionSet, ".", name, " <- function(CASorCASTab=NULL, ...) {swat::runAction(CASorCASTab, '", paste(actionSet, name, sep="."),  "', ...) } ", sep="")
                  defn = eval(parse(text=val, env))
                  environment(defn) <- env
                  fname = paste("cas.", actionSet, ".", name, sep="")
