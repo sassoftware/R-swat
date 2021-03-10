@@ -920,10 +920,8 @@ setMethod(
   signature(x = "CASTable"),
   function(x) {
     tp <- .gen_table_param(x)
-    if (length(x@orderby)) {
-      tp$orderby <- NULL
-      tp <- tp[tp != ""]
-    }
+    tp$orderby <- NULL
+    tp$groupby <- NULL
     res <- cas.retrieve(x@conn, "simple.numRows", table = tp)
     as.integer(res$results$numrows)
   }
@@ -1145,6 +1143,113 @@ is.CASTable <- function(x) {
   return(class(x) == "CASTable")
 }
 
+#' @export
+as.data.frame.CASTable <- function(x, max.rows = getOption("cas.max.download.rows"),
+                                   sample = FALSE, sample.seed = 0, ...) {
+  drop <- FALSE
+  nrows <- nrow(x)
+
+  if (nrows > max.rows && sample) {
+    tp <- .gen_table_param(x)
+    tp$computedOnDemand <- NULL
+    tp$computedVars <- NULL
+    tp$computedVarsProgram <- NULL
+    tp$XcomputedVars <- NULL
+    tp$XcomputedVarsProgram <- NULL
+    name <- .unique_table_name(x@tname)
+    vars <- x@names
+    tp$vars <- NULL
+
+    if (!is.null(x@groupby) && length(x@groupby) > 0) {
+      cat("Using sampling (stratified) to reduce downloaded rows to", max.rows)
+      action.name <- "sampling.stratified"
+    }
+    else {
+      cat("Using sampling (SRS) to reduce downloaded rows to", max.rows)
+      action.name <- "sampling.srs"
+    }
+
+    cas.retrieve(x@conn, action.name, stop.on.error = TRUE, seed = sample.seed,
+                 samppct = (max.rows / nrow(x) * 100), table = tp,
+                 output = list(casOut = list(name = name, replace = TRUE),
+                               copyVars = vars))$results
+
+    drop <- TRUE
+
+    y <- CASTable(x@conn, name, where = x@where, orderby = x@orderby,
+                  groupby = x@groupby, gbmode = x@gbmode, computedVars = x@computedVars,
+                  computedVarsProgram = x@computedVarsProgram,
+                  computedOnDemand = x@computedOnDemand)
+    y@XcomputedVars <- x@XcomputedVars
+    y@XcomputedVarsProgram <- x@XcomputedVarsProgram
+
+    x <- y
+  }
+
+  tp <- .gen_table_param(x)
+  fv <- c(tp$vars, tp$computedVars)
+  fv <- fv[fv != ""]
+  if (sum(nchar(x@XcomputedVars))) {
+    for (Xcmp in x@XcomputedVars) {
+      if (!(Xcmp %in% x@computedVars)) {
+        fv <- fv[fv != Xcmp]
+      }
+    }
+  }
+
+  if (length(tp$orderby)) {
+    res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv, sastypes = FALSE,
+                        index = FALSE, from = 1, to = max.rows, maxRows = 10, sortby = tp$orderby)
+  } else {
+    res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv, sastypes = FALSE,
+                        index = FALSE, from = 1, to = max.rows, maxRows = 10)
+  }
+
+  if (drop) {
+    drop.table(x)
+  }
+
+  fetch <- res$results$Fetch
+
+  name <- attributes(fetch)$table.name
+  label <- attributes(fetch)$table.label
+  title <- attributes(fetch)$table.title
+  attrs <- attributes(fetch)$table.attrs
+  col.labels <- attributes(fetch)$col.labels
+  col.formats <- attributes(fetch)$col.formats
+  col.attrs <- attributes(fetch)$col.attrs
+  col.sizes <- attributes(fetch)$col.sizes
+  col.types <- attributes(fetch)$col.types
+  col.widths <- attributes(fetch)$col.widths
+
+  out <- list()
+  for (i in seq_len(length(res$results))) {
+    if (i == 1) {
+      keyname <- "Fetch"
+    } else {
+      keyname <- paste("Fetch", i - 1, sep = "")
+    }
+    if (is.null(res$results[keyname])) {
+      break
+    }
+    out[[i]] <- res$results[[keyname]]
+  }
+
+  out <- do.call("rbind", out)
+  row.names(out) <- NULL
+  attributes(out)$table.name <- name
+  attributes(out)$table.label <- label
+  attributes(out)$table.title <- title
+  attributes(out)$table.attrs <- attrs
+  attributes(out)$col.labels <- col.labels
+  attributes(out)$col.formats <- col.formats
+  attributes(out)$col.attrs <- col.attrs
+  attributes(out)$col.sizes <- col.sizes
+  attributes(out)$col.types <- col.types
+  attributes(out)$col.widths <- col.widths
+  return(out)
+}
+
 #' Convert a CAS Table to a Data Frame (Download)
 #'
 #' Downloads the in-memory table that is referenced by
@@ -1168,64 +1273,5 @@ is.CASTable <- function(x) {
 setMethod(
   "as.data.frame",
   signature(x = "CASTable"),
-  function(x, obs = 32768, ...) {
-    tp <- .gen_table_param(x)
-    fv <- c(tp$vars, tp$computedVars)
-    fv <- fv[fv != ""]
-    if (sum(nchar(x@XcomputedVars))) {
-      for (Xcmp in x@XcomputedVars) {
-        if (!(Xcmp %in% x@computedVars)) {
-          fv <- fv[fv != Xcmp]
-        }
-      }
-    }
-
-    if (length(tp$orderby)) {
-      res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
-                          index = FALSE, from = 1, to = obs, maxRows = 10, sortby = tp$orderby)
-    } else {
-      res <- cas.retrieve(x@conn, "table.fetch", table = tp, fetchVars = fv,
-                          index = FALSE, from = 1, to = obs, maxRows = 10)
-    }
-
-    fetch <- res$results$Fetch
-
-    name <- attributes(fetch)$table.name
-    label <- attributes(fetch)$table.label
-    title <- attributes(fetch)$table.title
-    attrs <- attributes(fetch)$table.attrs
-    col.labels <- attributes(fetch)$col.labels
-    col.formats <- attributes(fetch)$col.formats
-    col.attrs <- attributes(fetch)$col.attrs
-    col.sizes <- attributes(fetch)$col.sizes
-    col.types <- attributes(fetch)$col.types
-    col.widths <- attributes(fetch)$col.widths
-
-    out <- list()
-    for (i in seq_len(length(res$results))) {
-      if (i == 1) {
-        keyname <- "Fetch"
-      } else {
-        keyname <- paste("Fetch", i - 1, sep = "")
-      }
-      if (is.null(res$results[keyname])) {
-        break
-      }
-      out[[i]] <- res$results[[keyname]]
-    }
-
-    out <- do.call("rbind", out)
-    row.names(out) <- NULL
-    attributes(out)$table.name <- name
-    attributes(out)$table.label <- label
-    attributes(out)$table.title <- title
-    attributes(out)$table.attrs <- attrs
-    attributes(out)$col.labels <- col.labels
-    attributes(out)$col.formats <- col.formats
-    attributes(out)$col.attrs <- col.attrs
-    attributes(out)$col.sizes <- col.sizes
-    attributes(out)$col.types <- col.types
-    attributes(out)$col.widths <- col.widths
-    return(out)
-  }
+  as.data.frame.CASTable
 )

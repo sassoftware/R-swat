@@ -4,13 +4,15 @@
 \alias{median,CASTable-method}
 \title{Median Values}
 \usage{
-\S4method{median}{CASTable}(x)
+\S4method{median}{CASTable}(x, na.rm = FALSE)
 }
 \arguments{
 \item{x}{\code{\link{CASTable}} object.}
+
+\item{na.rm}{Should missing values be omitted from the calculations?}
 }
 \value{
-scalar
+Named numeric vector
 }
 \description{
 Median Values
@@ -24,4 +26,3 @@ median(ct1[1:4])
 \seealso{
 \code{cas.median}
 }
-% Copyright SAS Institute

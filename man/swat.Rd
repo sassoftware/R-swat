@@ -14,8 +14,6 @@ actions.
         connection to the CAS server and CAS session.
   \item The \code{\link{CASTable}} class provides an interface to the
         in-memory tables.
-  \item The \code{\link{casDataFrame}} class provides an interface
-        to the results for most actions.
 }
 }
 \details{
@@ -39,7 +37,7 @@ The responses and results of the actions are returned as \R objects.
 \section{Run a simple action}{
 
 \preformatted{
-   results <- runAction(s, "builtins.serverStatus")
+   results <- cas.retrieve(s, "builtins.serverStatus")$results
    results$server
    nodes actions
  1     1      15
@@ -57,14 +55,14 @@ You can also run an action using the generated \R function:
 \section{Upload a data.frame to a CASTable}{
 
 \preformatted{
-  irisct <- as.casTable(s, iris)
+  irisct <- as.CASTable(s, iris)
 }
 }
 
 \section{Load a CAS actionSet}{
 
 \preformatted{
-  runAction(s, "builtins.loadActionSet", actionSet="regression")
+  cas.retrieve(s, "builtins.loadActionSet", actionSet="regression")
 }
 }
 

@@ -113,7 +113,7 @@
 #'
 #' @keywords internal
 #'
-.combine_reports <- function(...) {
+.combine_reports <- function(...) { # nocov start
   args <- list(...)
   if (length(args) < 1) {
     stop("no coverage reports given")
@@ -128,7 +128,7 @@
     }
   }
   return(out)
-}
+} # nocov end
 
 #' Combine multiple coverage report files into one
 #'
@@ -136,7 +136,7 @@
 #'
 #' @keywords internal
 #'
-.combine_coverage_files <- function(..., file = 'coverage.rds', ignore.missing = TRUE) {
+.combine_coverage_files <- function(..., file = 'coverage.rds', ignore.missing = TRUE) { # nocov start
   files <- list(...)
   reports <- list()
   for ( f in files ) {
@@ -148,7 +148,7 @@
     reports[[length(reports)+1]] <- readRDS(f)
   }
   saveRDS(do.call(".combine_reports", reports), file = file)
-} 
+} # nocov end
 
 #' Check if CAS submission had errors
 #'

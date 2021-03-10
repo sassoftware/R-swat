@@ -15,7 +15,7 @@ See the help for base::unique.}
 \item{\dots}{Arguments that are passed to method arguments.}
 }
 \value{
-A \code{\link{casDataFrame}} object.
+A data.frame object.
 }
 \description{
 Extracts distinct values from columns in a \code{\link{CASTable}}.

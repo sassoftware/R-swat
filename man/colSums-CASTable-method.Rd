@@ -16,7 +16,7 @@
 \item{\ldots}{Additional parameters. Currently ignored.}
 }
 \value{
-vector
+Named numeric vector
 }
 \description{
 Column Sums
@@ -30,4 +30,3 @@ colSums(ct$X1)
 \seealso{
 \code{cas.sum}
 }
-% Copyright SAS Institute

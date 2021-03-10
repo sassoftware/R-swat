@@ -4,13 +4,15 @@
 \alias{colMeans,CASTable-method}
 \title{Column Means}
 \usage{
-\S4method{colMeans}{CASTable}(x)
+\S4method{colMeans}{CASTable}(x, na.rm = FALSE)
 }
 \arguments{
 \item{x}{\code{\link{CASTable}} object.}
+
+\item{na.rm}{Should missing values be omitted from the calculations?}
 }
 \value{
-vector
+Named numeric vector
 }
 \description{
 Column Means
@@ -24,4 +26,3 @@ colMeans(ct$X1)
 \seealso{
 \code{cas.mean}
 }
-% Copyright SAS Institute

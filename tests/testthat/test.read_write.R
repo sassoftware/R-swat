@@ -20,6 +20,7 @@ options(cas.print.messages = FALSE)
 
 context("test.read_write.R")
 
+
 verify_xlsx_pkg <- function() {
   tryCatch({
       library(xlsx)
@@ -28,10 +29,6 @@ verify_xlsx_pkg <- function() {
       testthat::skip("The xlsx package can not be loaded.")
     }
   )
-}
-
-test.data <- function(data) {
-  return(file.path(find.package('swat')[[1]], 'tests', 'data', data))
 }
 
 # Read CSV files
@@ -68,7 +65,6 @@ test_that("Read Table files", {
   expect_equivalent(as.CASTable(caz, import_df0_skipnul, casOut = list(replace = TRUE)), import_df0_skipnul_cas)
 })
 
-
 # Read Excel Files
 test_that("Read xlsx files", {
   verify_xlsx_pkg()
@@ -77,23 +73,37 @@ test_that("Read xlsx files", {
 
   from_xlsx <- cas.read.xlsx(caz, file = excel_test_xlsx, sheetName = "Sheet1")
   expect_that(from_xlsx, is_a("CASTable"))
+
+  cout <- as.data.frame(from_xlsx)
+  dfout <- read.xlsx(excel_test_xlsx, sheetName = "Sheet1")
+  expect_equivalent(cout, dfout)
 })
 
 # Generic Read Function
 test_that("Generic Read Function", {
+  dfout <- read.csv(file = titanic_csv, header = TRUE)
   from_csv <- cas.read.csv(caz, file = titanic_csv,
                            casOut = list(name = "from_csv", replace = TRUE),
                            header = TRUE)
   from_generic_csv <- cas.read.table(caz, file = titanic_csv,
                                      casOut = list(name = "from_generic_csv", replace = TRUE),
                                      header = TRUE, sep = ",")
+  expect_that(from_csv, is_a("CASTable"))
+  expect_that(from_generic_csv, is_a("CASTable"))
   expect_equivalent(from_generic_csv, from_csv)
+  expect_equivalent(.sorted_df(from_csv, "PassengerId"),
+                    .sorted_df(dfout, "PassengerId"))
+  expect_equivalent(.sorted_df(from_generic_csv, "PassengerId"),
+                    .sorted_df(dfout, "PassengerId"))
 
   # test for issue 2
+  dfout <- read.table(file = titanic_csv, header = TRUE, sep = ",")
   from_generic_csv2 <- cas.read.table(caz, file = titanic_csv,
                                       casOut = "from_generic_csv2",
                                       header = TRUE, sep = ",")
-  expect_equivalent(from_generic_csv2, from_csv)
+  expect_that(from_generic_csv2, is_a("CASTable"))
+  expect_equivalent(.sorted_df(from_generic_csv2, "PassengerId"),
+                    .sorted_df(dfout, "PassengerId"))
 })
 
 test_that("Write CSV files", {
@@ -106,9 +116,8 @@ test_that("Write CSV files", {
 
   # Read in the csv file and compare it to the standard
   cout <- read.csv(cas_write_csv)
-  cout <- cout[order(cout$PassengerId), ]
-  t2 <- titanic[order(titanic$PassengerId), ]
-  expect_equivalent(cout, t2)
+  expect_equivalent(.sorted_df(cout, "PassengerId"),
+                    .sorted_df(titanic, "PassengerId"))
 
   # Test default filename
   # TODO: This may need a more reliable way to setwd back to cwd
@@ -130,9 +139,8 @@ test_that("Write CSV2 files", {
 
   # Read in the csv file and compare it to the standard
   cout <- read.csv2(cas_write_csv, header = TRUE, row.names = NULL)
-  cout <- cout[order(cout$PassengerId), ]
-  t2 <- titanic[order(titanic$PassengerId), ]
-  expect_equivalent(cout, t2)
+  expect_equivalent(.sorted_df(cout, "PassengerId"),
+                    .sorted_df(titanic, "PassengerId"))
 
   # Test default filename
   # TODO: This may need a more reliable way to setwd back to cwd
@@ -147,9 +155,17 @@ test_that("Write CSV2 files", {
 # Download an in-memory table from the CAS server
 test_that("Test that an in-memory can be downloaded and used within R", {
   cas_write_txt <- file.path(tempdir(), "cas.write.txt")
-
   cas.write.table(ct, cas_write_txt)
   expect_true(file.exists(cas_write_txt))
+  expect_equivalent(.sorted_df(read.table(cas_write_txt), "n1"), .sorted_df(ct, "n1"))
+
+  # NOTE: write.table doesn't just use as.data.frame to convert the input
+  #       parameter to a data.frame. The method that they use doesn't work with
+  #       CASTable's as.data.frame method.
+  # cas_write2_txt <- file.path(tempdir(), "cas.write2.txt")
+  # write.table(ct, cas_write2_txt)
+  # expect_true(file.exists(cas_write2_txt))
+  # expect_equivalent(.sorted_df(read.table(cas_write2_txt), "n1"), .sorted_df(ct, "n1"))
 })
 
 # Read sas7bdat files
@@ -160,10 +176,27 @@ test_that("Read sas7bdat files", {
   t2 <- cas.read.sas7bdat(caz, census2_sas7bdat, casOut = list(name = "t2", replace = TRUE))
   expect_equivalent(t1, t2)
   expect_that(t2, is_a("CASTable"))
+  expect_equivalent(names(t1), 
+                    c("community_area", "per_capita_income", "hardship_index",
+                      "percent_aged_under_18_or_over_64", "percent_of_housing_crowded",
+                      "percent_aged_25_without_high_sch", "percent_aged_16_unemployed",
+                      "percent_households_below_poverty"))
+  expect_equivalent(nrow(t1), 78)
+  expect_equivalent(.sorted_df(t1, "community_area"),
+                    .sorted_df(t2, "community_area"))
 
   # test for issue 2
   st3 <- cas.read.sas7bdat(caz, census2_sas7bdat, casOut = "st3")
   expect_equivalent(t1, st3)
+  expect_that(st3, is_a("CASTable"))
+  expect_equivalent(names(st3), 
+                    c("community_area", "per_capita_income", "hardship_index",
+                      "percent_aged_under_18_or_over_64", "percent_of_housing_crowded",
+                      "percent_aged_25_without_high_sch", "percent_aged_16_unemployed",
+                      "percent_households_below_poverty"))
+  expect_equivalent(nrow(st3), 78)
+  expect_equivalent(.sorted_df(t1, "community_area"),
+                    .sorted_df(st3, "community_area"))
 })
 
 

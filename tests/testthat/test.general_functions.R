@@ -18,7 +18,7 @@ library(swat)
 options(cas.print.messages = FALSE)
 
 
-context("general_functions")
+context("test.general_functions")
 
 test_that("Load ActionSet and List ActionSet Functions", {
   cas.retrieve(caz, "builtins.loadactionset", actionset = "simple")

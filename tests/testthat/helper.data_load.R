@@ -72,6 +72,24 @@ message(cat("NOTE: Using HOSTNAME=", HOSTNAME, " PORT=", PORT, " PROTOCOL=", PRO
 # Create CAS connection
 caz <- swat::CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol = PROTOCOL)
 
+.sorted_df <- function(x, by, decreasing = FALSE) {
+  if (class(x) == "CASTable") {
+    x <- as.data.frame(x)
+  }
+  args <- list()
+  for (i in 1:length(by)) {
+    args[[length(args)+1]] <- x[[by[[i]]]]
+  }
+  args[["decreasing"]] <- decreasing
+  x <- x[do.call(order, args), ]
+  rownames(x) <- seq(length = nrow(x))
+  return(x)
+}
+
+test.data <- function(data) {
+  return(file.path(find.package('swat')[[1]], 'tests', 'data', data))
+}
+
 #
 # Create test data
 #

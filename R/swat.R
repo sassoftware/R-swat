@@ -88,14 +88,14 @@
 #' @rawRd % Copyright SAS Institute
 "_PACKAGE"
 
-.onAttach <- function(lib, pkg) {
+.onAttach <- function(lib, pkg) { # nocov start
   packageStartupMessage("SWAT ",
     utils::packageDescription("swat", field = "Version"),
     appendLF = TRUE
   )
-}
+} # nocov end
 
-.onLoad <- function(lib, pkg) {
+.onLoad <- function(lib, pkg) { # nocov start
   if (is.null(getOption("cas.trace.actions"))) {
     options(cas.trace.actions = FALSE)
   }
@@ -185,11 +185,11 @@
             sep = "\n")
     )
   }
-}
+} # nocov end
 
-.onUnload <- function(lib) {
+.onUnload <- function(lib) { # nocov start
   try(library.dynam.unload("rswat", lib), silent = FALSE)
-}
+} # nocov end
 
 #' Determine if binary communication with a CAS server is possible
 #'
@@ -399,7 +399,7 @@ CASDataMsgHandler <- setRefClass(
       vars <<- list()
       finished <<- FALSE
       cnames <- names(data)
-      ctypes <- lapply(data, class)
+      ctypes <- lapply(data, function(x) class(x)[[1]])
 
       for (i in seq_len(length(ctypes))) {
         if (ctypes[[i]] == "integer") {
@@ -438,8 +438,7 @@ CASDataMsgHandler <- setRefClass(
           )
           reclen <<- reclen + 4
         }
-        else if (length(ctypes[[i]]) == 2 &&
-          (ctypes[[i]][[1]] == "POSIXct" || ctypes[[i]][[1]] == "POSIXlt")) {
+        else if (ctypes[[i]] == "POSIXct" || ctypes[[i]] == "POSIXlt") {
           vars[[i]] <<- list(
             name = cnames[[i]], rtype = "numeric", format = "DATETIME",
             formattedlength = 20,
@@ -480,7 +479,7 @@ CASDataMsgHandler <- setRefClass(
       corresponds to a column in the buffer.
 
       "
-      for (col in 1:ncols) {
+      for (col in seq_len(ncols)) {
         if (tolower(vars[[col]][["type"]]) == "varchar") {
           sw_databuffer$setString(
             row - 1, vars[[col]][["offset"]],
@@ -504,7 +503,7 @@ CASDataMsgHandler <- setRefClass(
           .error_check(sw_databuffer)
         }
         else if (tolower(vars[[col]][["type"]]) == "date") {
-          sw_databuffer$setInt32(row - 1, vars[[col]][["offset"]], rDate2cas(values[[col]]))
+          sw_databuffer$setInt32(row - 1, vars[[col]][["offset"]], Date.as.CASd(values[[col]]))
           .error_check(sw_databuffer)
         }
         else if (tolower(vars[[col]][["type"]]) == "datetime" ||
@@ -1014,13 +1013,10 @@ CAS <- setRefClass(
         sw_error <<- REST_CASError(soptions)
         cas_connection_class <- REST_CASConnection
       }
-      else if (!.binary_enabled()) {
-        message(paste("NOTE: The extension module for using the CAS binary protocol can not be located.",
-          "      Only the CAS REST interface may be used.",
-          sep = "\n"
-        ))
-        stop()
-      }
+      else if (!.binary_enabled()) { # nocov start
+        stop(paste("The extension module for the CAS binary protocol can not be located;",
+                   "only the CAS REST interface may be used.", sep = " "))
+      } # nocov end
       else {
         sw_error <<- SW_CASError(soptions)
         cas_connection_class <- SW_CASConnection
@@ -1213,9 +1209,9 @@ CAS <- setRefClass(
     generate_wrappers = function(.action, ...) {
       # Generate functions on loadactionset.
       args <- list(...)
-      if (as.logical(getOption("cas.gen.function.sig"))) {
-        if (lowerCase(.action) == "builtins.loadactionset" ||
-          lowerCase(.action) == "loadactionset") {
+      if (as.logical(getOption("cas.gen.function"))) {
+        if (tolower(.action) == "builtins.loadactionset" ||
+            tolower(.action) == "loadactionset") {
           if (!is.null(args$actionSet)) {
             res <- .gen_functions(.self, args$actionSet)
             .check_for_cas_errors(res)
@@ -1223,8 +1219,8 @@ CAS <- setRefClass(
             res <- .gen_functions(.self, args$actionset)
             .check_for_cas_errors(res)
           }
-        } else if (lowerCase(.action) == "builtins.defineactionset" ||
-                   lowerCase(.action) == "defineactionset") {
+        } else if (tolower(.action) == "builtins.defineactionset" ||
+                   tolower(.action) == "defineactionset") {
           if (!is.null(args$name)) {
             res <- .gen_functions(.self, args$name)
             .check_for_cas_errors(res)
@@ -1369,8 +1365,6 @@ CAS <- setRefClass(
         name <- basename(tmp)
         write.csv(data, file = tmp, row.names = FALSE, na = "", fileEncoding = "UTF-8")
       }
-
-      if (is.null(args)) args <- list()
 
       if (!("casout" %in% names(args)) && !("casOut" %in% names(args))) {
         args[["casout"]] <- name
@@ -1533,7 +1527,11 @@ setMethod(
   "cas.retrieve",
   signature(.x = "CAS"),
   function(.x, .action, ..., stop.on.error = FALSE) {
-    return(.x$retrieve(.action, ..., stop.on.error = stop.on.error))
+    res <- .x$retrieve(.action, ..., stop.on.error = stop.on.error)
+    if (res$disposition$severity > 1) {
+      return(invisible(res))
+    }
+    return(res)
   }
 )
 
@@ -1573,9 +1571,14 @@ setMethod(
     # TODO: Need reflection information to verify action needs a table= param.
     args <- list(...)
     if (is.null(args$table)) {
-      return(.x@conn$retrieve(.action, table = .x, ..., stop.on.error = stop.on.error))
+      res <- .x@conn$retrieve(.action, table = .x, ..., stop.on.error = stop.on.error)
+    } else {
+      res <- .x@conn$retrieve(.action, ..., stop.on.error = stop.on.error)
     }
-    return(.x@conn$retrieve(.action, ..., stop.on.error = stop.on.error))
+    if (res$disposition$severity > 1) {
+      return(invisible(res))
+    }
+    return(res)
   }
 )
 
@@ -2027,7 +2030,7 @@ getnext <- function(...) {
       for (col in 0:(n_cols - 1)) {
         col_labels <- c(col_labels, .no_null_string(sw_table$getColumnLabel(col)))
         .error_check(sw_table)
-        col_formats <- c(col_labels, .no_null_string(sw_table$getColumnFormat(col)))
+        col_formats <- c(col_formats, .no_null_string(sw_table$getColumnFormat(col)))
         .error_check(sw_table)
         col_widths <- c(col_widths, sw_table$getColumnWidth(col))
         .error_check(sw_table)
@@ -2219,7 +2222,7 @@ getnext <- function(...) {
             }
             column <- c(column, set_missing(out, int32_missval))
           }
-          table <- add_column(table, name, column)
+          table <- add_column(table, name, as.integer(column))
         }
         else if (t == "int32-array") {
           for (elem in 0:(len - 1)) {
@@ -2232,7 +2235,7 @@ getnext <- function(...) {
               }
               column <- c(column, set_missing(out, int32_missval))
             }
-            table <- add_column(table, paste(name, elem + 1, sep = ""), column)
+            table <- add_column(table, paste(name, elem + 1, sep = ""), as.integer(column))
           }
         }
         else if (t == "int64") {
@@ -2309,43 +2312,43 @@ getnext <- function(...) {
           table <- add_column(table, name, column)
         }
         else if (t == "datetime") {
-          column <- list()
+          column <- c()
           for (row in 0:(n_rows - 1)) {
             value <- set_missing(sw_table$getDatetimeValueAsString(row, col), int64_missval)
             .error_check(sw_table)
             if (is.na(value)) {
-              column[[length(column) + 1]] <- value
+              column <- c(column, value)
             } else {
-              column[[length(column) + 1]] <- CASdt.as.POSIXct(value)
+              column <- c(column, CASdt.as.POSIXct(value))
             }
           }
-          table <- add_column(table, name, column)
+          table <- add_column(table, name, as.POSIXct(column, origin = "1970-01-01"))
         }
         else if (t == "date") {
-          column <- list()
+          column <- c()
           for (row in 0:(n_rows - 1)) {
             value <- set_missing(sw_table$getDateValue(row, col), int32_missval)
             .error_check(sw_table)
             if (is.na(value)) {
-              column[[length(column) + 1]] <- value
+              column <- c(column, value)
             } else {
-              column[[length(column) + 1]] <- CASd.as.Date(value)
+              column <- c(column, CASd.as.Date(value))
             }
           }
-          table <- add_column(table, name, column)
+          table <- add_column(table, name, as.Date(column, origin = "1970-01-01"))
         }
         else if (t == "time") {
-          column <- list()
+          column <- c()
           for (row in 0:(n_rows - 1)) {
             value <- set_missing(sw_table$getTimeValueAsString(row, col), int64_missval)
             .error_check(sw_table)
             if (is.na(value)) {
-              column[[length(column) + 1]] <- value
+              column <- c(column, value)
             } else {
-              column[[length(column) + 1]] <- CASt.as.POSIXct(value)
+              column <- c(column, CASt.as.POSIXct(value))
             }
           }
-          table <- add_column(table, name, column)
+          table <- add_column(table, name, as.POSIXct(column, origin = "1970-01-01"))
         }
         else if (t == "binary") {
           for (row in 0:(n_rows - 1)) {
@@ -2558,37 +2561,6 @@ getnext <- function(...) {
     }
   }
   return(output)
-}
-
-#' Combine data.frames belonging to the same By Group set into one data.frame
-#'
-#' @param res List containing CAS action results.
-#'
-#' @return List of By Group sets with a single data.frame in each field.
-#' 
-#' @export
-rbind.bygroups <- function(res) {
-  if (is.null(res[["ByGroupInfo"]]) && is.null(res[["ByGroupSet1.ByGroupInfo"]])) {
-    return(res)
-  }
-
-  tables <- list()
-
-  for (name in names(res)) {
-    if (grepl("^(ByGroupSet\\d+\\.)?ByGroup\\d+\\.", name, perl = TRUE)) {
-      tblname <- gsub("^(ByGroupSet\\d+\\.)?ByGroup\\d+\\.", "\\1", name, perl = TRUE)
-      if (is.null(tables[[tblname]])) {
-        tables[[tblname]] <- list()
-      }
-      tables[[tblname]][[length(tables[[tblname]]) + 1]] <- res[[name]]@df
-    }
-  }
-
-  for (name in names(tables)) {
-    tables[[name]] <- do.call(rbind, tables[[name]])
-  }
-
-  return(tables)
 }
 
 setGeneric("cas.close",

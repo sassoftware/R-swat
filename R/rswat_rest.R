@@ -32,6 +32,7 @@
     return(FALSE)
   }
 
+  print(params)
   message(paste("[", action_name, "]", sep = ""))
   .trace_list(params)
   message("")
@@ -60,21 +61,25 @@
     if (class(value) == "list") {
       .trace_list(value, prefix = .paste_prefix(prefix, name))
     }
-    else if ( class(value) == 'raw' ) {
-       message(paste('   ', .paste_prefix(prefix, name), ' = binary-object (blob)', sep=''))
+    else if (class(value) == "raw") {
+       message(paste("   ", .paste_prefix(prefix, name), " = binary-object (blob)", sep = ""))
     }
-    else if ( length(value) > 1 ) {
-      for ( i in 1:length(value) ) {
-        if ( class(value[i]) == 'list' || length(value[i]) > 1 ) {
+    else if (class(value) == "CASTable") {
+      .trace_list(.gen_table_param(value))
+    }
+    else if (length(value) > 1) {
+      for (i in 1:length(value)) {
+        if (class(value[i]) == "list" || length(value[i]) > 1) {
           .trace_list( value[i], prefix=.paste_prefix(prefix, name) )
         } else {
-          message(paste('   ', .paste_prefix(prefix, name), '[', i, '] = ', 
-                        value[[i]], ' (', class(value), ')', sep=''))  
+          message(paste("   ", .paste_prefix(prefix, name), "[", i, "] = ", 
+                        value[[i]], " (", gsub("character", "string", class(value)),
+                        ")", sep = ""))  
         }
       }
     } else {
       message(paste("   ", .paste_prefix(prefix, name), " = ",
-        value, " (", class(value), ")",
+        value, " (", gsub("character", "string", class(value)), ")",
         sep = ""
       ))
     }
@@ -961,13 +966,13 @@ REST_CASConnection <- setRefClass(
         authinfo <- strsplit(authinfo, "\\}\\{", perl = TRUE)[[1]]
         authinfo <- gsub("^{", "", authinfo, perl = TRUE)
         authinfo <- gsub("}$", "", authinfo, perl = TRUE)
-        authinfo <- query_authinfo(
+        authinfo <- .query_authinfo(
           host = current_hostname_, user = username,
           protocol = current_port_, filepath = authinfo
         )
       }
       else if (password == "") {
-        authinfo <- query_authinfo(current_hostname_, username = username, protocol = current_port_)
+        authinfo <- .query_authinfo(current_hostname_, username = username, protocol = current_port_)
       }
 
       if (is.null(authinfo)) {

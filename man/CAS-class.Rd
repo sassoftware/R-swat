@@ -73,4 +73,3 @@ s <- CAS("cloud.example.com", 8777, protocol = "auto", username = "sasdemo", pas
 }
 
 }
-% Copyright SAS Institute

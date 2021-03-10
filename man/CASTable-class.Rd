@@ -90,5 +90,5 @@ expression to use for computing each of the computed variables.}
 }}
 
 \seealso{
-\code{as.casTable}, \code{defCasTable}
+\code{as.CASTable}
 }

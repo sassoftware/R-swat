@@ -4,13 +4,15 @@
 \alias{min,CASTable-method}
 \title{Minimum Value}
 \usage{
-\S4method{min}{CASTable}(x)
+\S4method{min}{CASTable}(x, na.rm = FALSE)
 }
 \arguments{
 \item{x}{\code{\link{CASTable}} object.}
+
+\item{na.rm}{Should missing values be omitted from the calculations?}
 }
 \value{
-scalar
+Numeric
 }
 \description{
 Minimum Value
@@ -24,4 +26,3 @@ min(ct1[1:2])
 \seealso{
 \code{cas.min}
 }
-% Copyright SAS Institute

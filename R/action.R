@@ -60,38 +60,35 @@
     args$levels <- 1
   }
   res <- do.call(cas.retrieve, args)$results
-  str <- ""
-  str2 <- ""
-  str3 <- "   args <- list(...)\n"
+
+  sig <- ""
+  body <- "  args <- list(...)\n"
+  body <- paste(body, "  args[['.x']] <- .x\n", sep = "")
+  body <- paste(body, "  args[['.action']] <- '", action, "'\n", sep = "")
+
   for (parms in res[[1]]$actions[[1]]$params) {
     if (!is.null(parms$isRequired)) {
-      str <- paste(str, ", `", parms$name, "`", sep = "")
-      str2 <- paste(str2, ", `", parms$name, "`=`", parms$name, "`", sep = "")
+      sig <- paste(sig, ", `", parms$name, "`", sep = "")
     } else if (!is.null(parms$default)) {
       if (parms$parmType == "string") {
-        s1 <- if (parms$default == "") " " else parms$default
-        s1 <- if (s1 == "\\") "\\\\" else parms$default
-        str <- paste(str, ", `", parms$name, '`="', s1, '"', sep = "")
+        default <- if (parms$default == "") " " else parms$default
+        default <- gsub("\\", "\\\\", parms$default, fixed = TRUE)
+        sig <- paste(sig, ", `", parms$name, '` = "', default, '"', sep = "")
       }
       else {
-        str <- paste(str, ", `", parms$name, "`=", parms$default, sep = "")
+        sig <- paste(sig, ", `", parms$name, "` = ", parms$default, sep = "")
       }
-
-      str2 <- paste(str2, ", `", parms$name, "`=`", parms$name, "`", sep = "")
     } else {
-      str <- paste(str, ", `", parms$name, "`=NULL", sep = "")
+      sig <- paste(sig, ", `", parms$name, "` = NULL", sep = "")
     }
-    str3 <- paste(str3, "   if( ! missing(`", parms$name, "`)) args = c('",
-                  parms$name, "'=substitute(`", parms$name, "`), args)\n", sep = "")
+    body <- paste(body, "  if (!missing(`", parms$name, "`)) ",
+                        "args[['", parms$name, "']] <- ", parms$name, "\n", sep = "")
   }
 
-  str3 <- paste(str3, "   args = c('action'='", action, "', args)\n", sep = "")
-  str3 <- paste(str3, "   args = c('CASorCASTab'=substitute(CASorCASTab), args)\n", sep = "")
+  out <- paste("cas.", action, " <- function(.x", sig, ", ...) {\n", sep = "")
+  out <- paste(out, body, "  return(do.call(swat::cas.retrieve, args)$results)\n}\n", sep = "")
 
-  str1 <- paste("cas.", action, " <- function(CASorCASTab", str, ", ...) {\n", sep = "")
-  str1 <- paste(str1, str3, "do.call('swat::cas.retrieve', args)$results\n}\n", sep = "")
-
-  return(str1)
+  return(out)
 }
 
 #' Generate action function wrappers using actionset reflection information
@@ -111,35 +108,19 @@
       for (name in acts) {
         if (!as.logical(getOption("cas.gen.function.sig"))) {
           val <- paste("cas.", actionset, ".", name,
-                       " <- function(object = NULL, ...) {swat::cas.retrieve(object, '",
-                       paste(actionset, name, sep = "."), "', ...)$results } ", sep = "")
-          defn <- eval(parse(text = val, env))
-          environment(defn) <- env
-          fname <- paste("cas.", actionset, ".", name, sep = "")
-          setGeneric(name = fname, def = defn, package = "swat", where = env)
+                       " <- function(.x = NULL, ...) {\n  swat::cas.retrieve(.x, .action = '",
+                       paste(actionset, name, sep = "."), "', ...)$results\n} ", sep = "")
         } else {
           val <- .gen_sig(x, paste(actionset, name, sep = "."))
-          tryCatch({
-              defn <- eval(parse(text = val, env))
-              environment(defn) <- env
-              fname <- paste("cas.", actionset, ".", name, sep = "")
-              setGeneric(name = fname, def = defn, package = "swat", where = env)
-          }, error = function(e) {
-              message(paste("Action ", actionset, ".", name, " Had invalid syntax: \n", val, sep = ""))
-              message(paste("Error was: ", e))
-              message(paste("Defining syntax as function(object, ...) instead. "))
-              val <- paste("cas.", actionset, ".", name,
-                           " <- function(object = NULL, ...) {swat::cas.retrieve(object, '",
-                           paste(actionset, name, sep = "."), "', ...)$results } ", sep = "")
-              defn <- eval(parse(text = val, env))
-              environment(defn) <- env
-              fname <- paste("cas.", actionset, ".", name, sep = "")
-              setGeneric(name = fname, def = defn, package = "swat", where = env)
-          })
         }
+        defn <- eval(parse(text = val, env))
+        environment(defn) <- env
+        fname <- paste("cas.", actionset, ".", name, sep = "")
+        setGeneric(name = fname, def = defn, package = "swat", where = env)
       }
     }
   }
+  return(res)
 }
 
 #' List CAS action parameters by name

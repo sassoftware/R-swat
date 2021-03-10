@@ -14,7 +14,10 @@
 #  limitations under the License.
 
 
-query_authinfo <- function(hostname, username = NULL, protocol = NULL, filepath = NULL) {
+#' Retrieve information from authinfo file
+#'
+#' @keywords internal
+.query_authinfo <- function(hostname, username = NULL, protocol = NULL, filepath = NULL) {
   hosts <- list()
   host <- NULL
   skipnext <- FALSE
@@ -85,7 +88,11 @@ query_authinfo <- function(hostname, username = NULL, protocol = NULL, filepath 
       p <- 443
     }
     else {
-      p <- as.integer(p)
+      q <- as.integer(p)
+      if (is.na(q)) {
+        stop(paste("Could not convert protocol to numeric:", p))
+      }
+      return(q)
     }
     return(p)
   }

@@ -22,7 +22,7 @@ the following strings \code{"everything"}, \code{"all.obs"},
 the \code{cor()} function.}
 }
 \value{
-matrix
+Matrix
 }
 \description{
 Unlike the \code{cor} function for data frames,
@@ -38,4 +38,3 @@ cor(i2[c("col1", "col2", "col3")])
 cor(i2$col1, i2$col2)
 }
 }
-% Copyright SAS Institute

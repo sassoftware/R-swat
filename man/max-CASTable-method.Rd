@@ -2,18 +2,20 @@
 % Please edit documentation in R/descriptive_stats.R
 \name{max,CASTable-method}
 \alias{max,CASTable-method}
-\title{Maximum Values}
+\title{Maximum Values (numeric)}
 \usage{
-\S4method{max}{CASTable}(x)
+\S4method{max}{CASTable}(x, na.rm = FALSE)
 }
 \arguments{
 \item{x}{\code{\link{CASTable}} object.}
+
+\item{na.rm}{Should missing values be omitted from the calculations?}
 }
 \value{
-scalar
+Numeric
 }
 \description{
-Maximum Values
+This method only computes the maximum of numeric values.
 }
 \examples{
 \dontrun{
@@ -24,4 +26,3 @@ max(ct1[1:2])
 \seealso{
 \code{cas.max}
 }
-% Copyright SAS Institute

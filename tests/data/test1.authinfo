@@ -1,0 +1,28 @@
+machine cas-server-1.org login user-1 password pwd-user-1
+machine cas-server-2.org protocol 5500 login user-2 password pwd-user-2
+
+# Alternate ordering
+machine cas-server-2.org
+  password pwd-user-2.1
+  login user-2.1
+  protocol 5501
+
+# Alternate keywords
+host cas-server-2.org port 5502 user user-2.2 password pwd-user-2.2
+
+# Make sure comments work
+machine cas-server-3.org protocol http login user-3 password pwd-user-3
+
+# And alternate whitespace
+machine cas-server-3.org
+  protocol https
+  login user-3.1
+  password pwd-user-3.1
+
+# Bad keyword
+machine cas-server-4.org prot 11111 login user-4 password pwd-user-4
+
+# Password with whitespace
+machine cas-server-5.org login user-5 password "pwd user 5"
+
+default user default-user password default-user-pwd

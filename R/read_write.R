@@ -57,7 +57,7 @@
 }
 
 setGeneric("cas.write.csv",
-  function(x, file = "", ...) {
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
     standardGeneric("cas.write.csv")
   }
 )
@@ -66,13 +66,13 @@ setGeneric("cas.write.csv",
 setMethod(
   "cas.write.csv",
   signature(x = "CASTable"),
-  function(x, file = "", ...) {
-    write.csv(as.data.frame(x), file = .output_file(x, file, ".csv"), ...)
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
+    write.csv(as.data.frame(x, obs = obs), file = .output_file(x, file, ".csv"), ...)
   }
 )
 
 setGeneric("cas.write.csv2",
-  function(x, file = "", ...) {
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
     standardGeneric("cas.write.csv2")
   }
 )
@@ -81,13 +81,13 @@ setGeneric("cas.write.csv2",
 setMethod(
   "cas.write.csv2",
   signature(x = "CASTable"),
-  function(x, file = "", ...) {
-    write.csv2(as.data.frame(x), file = .output_file(x, file, ".csv"), ...)
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
+    write.csv2(as.data.frame(x, obs = obs), file = .output_file(x, file, ".csv"), ...)
   }
 )
 
 setGeneric("cas.write.xlsx",
-  function(x, file = "", ...) {
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
     standardGeneric("cas.write.xlsx")
   }
 )
@@ -96,16 +96,16 @@ setGeneric("cas.write.xlsx",
 setMethod(
   "cas.write.xlsx",
   signature(x = "CASTable"),
-  function(x, file = "", ...) {
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
     if (!requireNamespace("xlsx", quietly = TRUE)) {
       stop("xlsx package is needed for this function to work.", call. = FALSE)
     }
-    write.xlsx(as.data.frame(x), file = .output_file(x, file, ".xlsx"), ...)
+    write.xlsx(as.data.frame(x, obs = obs), file = .output_file(x, file, ".xlsx"), ...)
   }
 )
 
 setGeneric("cas.saveRDS",
-  function(x, file = "", ...) {
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
     standardGeneric("cas.saveRDS")
   }
 )
@@ -114,13 +114,13 @@ setGeneric("cas.saveRDS",
 setMethod(
   "cas.saveRDS",
   signature(x = "CASTable"),
-  function(x, file = "", ...) {
-    saveRDS(as.data.frame(x), file = .output_file(x, file, ".rds"), ...)
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
+    saveRDS(as.data.frame(x, obs = obs), file = .output_file(x, file, ".rds"), ...)
   }
 )
 
 setGeneric("cas.write.table",
-  function(x, file = "", ...) {
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
     standardGeneric("cas.write.table")
   }
 )
@@ -129,8 +129,8 @@ setGeneric("cas.write.table",
 setMethod(
   "cas.write.table",
   signature(x = "CASTable"),
-  function(x, file = "", ...) {
-    write.table(as.data.frame(x), file = .output_file(x, file, ".tbl"), ...)
+  function(x, file = "", obs = getOption("cas.max.download.rows"), ...) {
+    write.table(as.data.frame(x, obs = obs), file = .output_file(x, file, ".tbl"), ...)
   }
 )
 

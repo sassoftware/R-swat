@@ -2,21 +2,22 @@
 % Please edit documentation in R/descriptive_stats.R
 \name{mean,CASTable-method}
 \alias{mean,CASTable-method}
-\title{Mean Value for a Single Column}
+\title{Mean Value}
 \usage{
-\S4method{mean}{CASTable}(x, ...)
+\S4method{mean}{CASTable}(x, na.rm = FALSE, ...)
 }
 \arguments{
 \item{x}{\code{\link{CASTable}} object.}
 
+\item{na.rm}{Should missing values be omitted from the calculations?}
+
 \item{\ldots}{Additional arguments. Currently ignored.}
 }
 \value{
-scalar
+Numeric
 }
 \description{
-Returns the mean value for the specified column in
-the input table.
+Mean Value
 }
 \examples{
 \dontrun{
@@ -27,4 +28,3 @@ mean(ct1[2])
 \seealso{
 \code{cas.mean}
 }
-% Copyright SAS Institute

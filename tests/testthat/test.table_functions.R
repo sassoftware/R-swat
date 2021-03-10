@@ -18,7 +18,7 @@ library(swat)
 options(cas.print.messages = FALSE)
 
 
-context("test table_functions.R")
+context("test.table_functions.R")
 
 test_that("unique", {
   # Confirming the overwritten function still works.

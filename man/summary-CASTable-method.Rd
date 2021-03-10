@@ -4,7 +4,13 @@
 \alias{summary,CASTable-method}
 \title{Summary Statistics}
 \usage{
-\S4method{summary}{CASTable}(object, maxsum = 7, digits = max(3, getOption("digits") - 3), ...)
+\S4method{summary}{CASTable}(
+  object,
+  maxsum = 7,
+  digits = max(3, getOption("digits") - 3),
+  factor.threshold = 10,
+  ...
+)
 }
 \arguments{
 \item{object}{\code{\link{CASTable}} object.}
@@ -13,6 +19,10 @@
 for factors.}
 
 \item{digits}{Integer used for number formatting.}
+
+\item{factor.threshold}{Integer indicating the maximum number of
+distinct character values a variable can have before it is no
+longer considered a factor.}
 
 \item{\ldots}{Additional arguments. Currently ignored.}
 }
@@ -28,4 +38,3 @@ summary(ct1)
 summary(ct1[1:4])
 }
 }
-% Copyright SAS Institute

@@ -18,7 +18,7 @@ library(swat)
 options(cas.print.messages = FALSE)
 
 
-context("test.CAStab.R")
+context("test.cas_tab.R")
 
 
 test_that("delete column", {
@@ -270,15 +270,43 @@ test_that("as.castable and drop", {
 test_that("as.data.frame, and rownames", {
   df_cmpct <- as.CASTable(caz, df_cmp, casOut = list(name = "df_cmpct", replace = TRUE))
   df_cmp_rdf <- as.data.frame(df_cmpct)
-  df_cmp_cdf2 <- as.data.frame(df_cmpct, obs = 3)
+  df_cmp_cdf2 <- as.data.frame(df_cmpct, max.rows = 3)
   df_cmp_rdf2 <- df_cmp_rdf[1:3, ]
   rnms <- rownames(df_cmp_rdf)
   rnms2 <- rownames(df_cmp_cdf2)
 
-  # as.data.frame w/ obs= option
-  expect_equivalent(as.data.frame(df_cmpct, obs = 3), df_cmp_rdf[1:3, ])
+  # as.data.frame w/ max.rows= option
+  expect_equivalent(as.data.frame(df_cmpct, max.rows = 3), df_cmp_rdf[1:3, ])
 
   # testing that rownames (which just numbers the rows) matches the nrows
   expect_equivalent(as.numeric(tail(rnms, n = 1)), nrow(df_cmp_rdf))
   expect_equivalent(as.numeric(tail(rnms2, n = 1)), nrow(df_cmp_rdf2))
+})
+
+test_that("as.data.frame sampling", {
+  # SRS
+  out2 <- as.data.frame(t, sample = TRUE, max.rows = 50)
+  expect_equivalent(nrow(out2), 50)
+
+  out3 <- as.data.frame(t, sample = TRUE, max.rows = 50)
+  expect_equivalent(nrow(out3), 50)
+
+  expect_equivalent(names(titanic), names(out2))
+  expect_equivalent(names(out2), names(out3))
+  expect_false(isTRUE(all.equal(out2$PassengerId, out3$PassengerId)))
+
+  # Stratified
+  t2 <- cas.copy(t)
+  t2@groupby <- "Sex"
+
+  out2 <- as.data.frame(t2, sample = TRUE, max.rows = 50)
+  expect_equivalent(nrow(out2), 50)
+
+  out3 <- as.data.frame(t2, sample = TRUE, max.rows = 50)
+  expect_equivalent(nrow(out3), 50)
+
+  expect_equivalent(names(titanic), names(out2))
+  expect_equivalent(names(out2), names(out3))
+  expect_false(isTRUE(all.equal(out2$PassengerId, out3$PassengerId)))
+
 })

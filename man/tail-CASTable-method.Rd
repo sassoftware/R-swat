@@ -13,7 +13,7 @@
 rows to return.}
 }
 \value{
-A \code{\link{casDataFrame}} object with the last n rows.
+A data.frame object with the last n rows.
 }
 \description{
 Returns the last part of an in-memory table that is referenced

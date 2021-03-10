@@ -18,7 +18,7 @@ library(swat)
 options(cas.print.messages = FALSE)
 
 
-context("compvars_where.R")
+context("test.compvars_where.R")
 
 test_that("Row indexing on character values, ==", {
   r <- df0_[df0_["s0"] == "dd", 1:5]

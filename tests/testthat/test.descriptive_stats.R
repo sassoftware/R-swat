@@ -22,7 +22,7 @@ options(cas.print.messages = FALSE)
   return(names(x)[sapply(names(x), function(y) !(class(x[, y]) %in% c("character", "factor")))])
 }
 
-context("descriptive_stats.R")
+context("test.descriptive_stats.R")
 
 # Overloaded functions
 test_that("Table Meta Functions", {

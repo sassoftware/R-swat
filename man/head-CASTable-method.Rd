@@ -13,7 +13,7 @@
 rows to return.}
 }
 \value{
-A \code{\link{casDataFrame}} object with the first n rows.
+A data.frame object with the first n rows.
 }
 \description{
 Returns the first part of an in-memory table that is referenced

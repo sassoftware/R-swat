@@ -22,7 +22,7 @@ the following strings \code{"everything"}, \code{"all.obs"},
 the \code{cov()} function.}
 }
 \value{
-matrix
+Matrix
 }
 \description{
 Unlike the \code{cov} function for data frames,
@@ -38,4 +38,3 @@ cov(i2[c("col1", "col2", "col3")])
 cov(i2$col1, i2$col2)
 }
 }
-% Copyright SAS Institute
