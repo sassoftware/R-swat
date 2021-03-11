@@ -16,7 +16,6 @@
 
 # CAS descriptive statistics ------------------------
 
-#' @keywords internal
 .summary_stat <- function(x, stat, na.rm = FALSE, numeric.only = FALSE) {
   UseMethod(".summary_stat")
 }
@@ -29,7 +28,7 @@
 #'
 #' @return Named numeric vector
 #'
-#' @keywords internal
+#' @noRd
 .summary_stat.CASTable <- function(x, stat, na.rm = FALSE, numeric.only = FALSE) {
   stat <- tolower(stat)
 

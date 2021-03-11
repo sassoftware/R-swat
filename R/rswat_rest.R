@@ -16,8 +16,7 @@
 
 #' Print tracing information for action call
 #'
-#' @keywords internal
-#'
+#' @noRd
 .trace_actions <- function(action_name, params) {
   ui <- FALSE
   if (!is.null(params$`_apptag`)) {
@@ -42,8 +41,7 @@
 
 #' Paste strings together using sep as needed
 #'
-#' @keywords internal
-#'
+#' @noRd
 .paste_prefix <- function(str1, str2, sep = ".") {
   if (is.null(str1)) {
     return(str2)
@@ -53,8 +51,7 @@
 
 #' Print tracing information for list parameter
 #'
-#' @keywords internal
-#'
+#' @noRd
 .trace_list <- function(params, prefix = NULL) {
   for (name in names(params)) {
     value <- params[[name]]
@@ -88,7 +85,7 @@
 
 #' CAS error class
 #'
-#' @keywords internal
+#' @noRd
 #'
 REST_CASError <- setRefClass(
   Class = "REST_CASError",
@@ -128,8 +125,7 @@ REST_CASError <- setRefClass(
 
 #' CAS results table class
 #'
-#' @keywords internal
-#'
+#' @noRd
 REST_CASTable <- setRefClass(
   Class = "REST_CASTable",
 
@@ -327,7 +323,7 @@ REST_CASTable <- setRefClass(
     },
 
     getInt64Value = function(row, col) {
-      return(swat.as.integer64(obj_$rows[[row + 1]][[col + 1]]))
+      return(.as.integer64(obj_$rows[[row + 1]][[col + 1]]))
     },
 
     getInt64ValueAsString = function(row, col) {
@@ -335,7 +331,7 @@ REST_CASTable <- setRefClass(
     },
 
     getInt64ArrayValue = function(row, col, elem) {
-      return(swat.as.integer64(obj_$rows[[row + 1]][[col + 1]][[elem + 1]]))
+      return(.as.integer64(obj_$rows[[row + 1]][[col + 1]][[elem + 1]]))
     },
 
     getInt64ArrayValueAsString = function(row, col, elem) {
@@ -374,8 +370,7 @@ REST_CASTable <- setRefClass(
 
 #' CAS value class
 #'
-#' @keywords internal
-#'
+#' @noRd
 REST_CASValue <- setRefClass(
   Class = "REST_CASValue",
 
@@ -470,7 +465,7 @@ REST_CASValue <- setRefClass(
     },
 
     getInt64 = function() {
-      return(swat.as.integer64(value_))
+      return(.as.integer64(value_))
     },
 
     getInt64AsString = function() {
@@ -478,7 +473,7 @@ REST_CASValue <- setRefClass(
     },
 
     getTime = function() {
-      return(swat.as.integer64(value_))
+      return(.as.integer64(value_))
     },
 
     getTimeAsString = function() {
@@ -486,7 +481,7 @@ REST_CASValue <- setRefClass(
     },
 
     getDatetime = function() {
-      return(swat.as.integer64(value_))
+      return(.as.integer64(value_))
     },
 
     getDatetimeAsString = function() {
@@ -540,16 +535,14 @@ REST_CASValue <- setRefClass(
 
 #' Convert camel-case name to underscore-delimited
 #'
-#' @keywords internal
-#'
+#' @noRd
 .camel2underscore <- function(str) {
   return(tolower(gsub("^_([A-Z])", "\\1", gsub("([A-Z])", "_\\1", str, perl = TRUE), perl = TRUE)))
 }
 
 #' Map severity name to integer valuu
 #'
-#' @keywords internal
-#'
+#' @noRd
 .mapseverity <- function(sev) {
   if (is.null(sev)) {
     return(0)
@@ -565,8 +558,7 @@ REST_CASValue <- setRefClass(
 
 #' Map reason string to normalized case
 #'
-#' @keywords internal
-#'
+#' @noRd
 .mapreason <- function(reason) {
   if (is.null(reason) || reason == "ok") {
     return("")
@@ -576,8 +568,7 @@ REST_CASValue <- setRefClass(
 
 #' Response from the CAS server
 #'
-#' @keywords internal
-#'
+#' @noRd
 REST_CASResponse <- setRefClass(
   Class = "REST_CASResponse",
 
@@ -780,8 +771,7 @@ REST_CASResponse <- setRefClass(
 
 #' Message object from CAS server
 #'
-#' @keywords internal
-#'
+#' @noRd
 REST_CASMessage <- setRefClass(
   Class = "REST_CASMessage",
 
@@ -839,8 +829,7 @@ REST_CASMessage <- setRefClass(
 
 #' Convert CASTable objects to list parameters
 #'
-#' @keywords internal
-#'
+#' @noRd
 .expand_params <- function(params) {
   out <- list()
   for (name in names(params)) {
@@ -866,8 +855,7 @@ REST_CASMessage <- setRefClass(
 
 #' CAS connection object
 #'
-#' @keywords internal
-#'
+#' @noRd
 REST_CASConnection <- setRefClass(
   Class = "REST_CASConnection",
 
@@ -1341,8 +1329,7 @@ REST_CASConnection <- setRefClass(
 
 #' CAS connection event watcher class
 #'
-#' @keywords internal
-#'
+#' @noRd
 REST_CASConnectionEventWatcher <- setRefClass(
   Class = "REST_CASConnectionEventWatcher",
 

@@ -26,7 +26,7 @@
 #'
 #' @return character
 #'
-#' @keywords internal
+#' @noRd
 .output_file <- function(x, file, ext) {
   if (nchar(file) == 0) {
     return(paste(x@tname, ext, sep = ""))
@@ -41,7 +41,7 @@
 #'
 #' @return List contaning new casOut parameter
 #'
-#' @keywords internal
+#' @noRd
 .casout <- function(out, file) {
   out <- c(out)
   if (is.character(out)) {

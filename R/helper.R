@@ -18,8 +18,7 @@
 #'
 #' This is an internal function to aid in formating results as \R users expect.
 #'
-#' @keywords internal
-#'
+#' @noRd
 .translate <- function(df, col = 2L) {
   if (is.data.frame(df)) {
     x <- as.vector(t(df[, col]))
@@ -34,8 +33,7 @@
 #'
 #' @return String
 #'
-#' @keywords internal
-#'
+#' @noRd
 .unique_table_name <- function(prefix = "") {
   a <- gsub("\\", "/", tempfile(prefix), fixed = TRUE)
   b <- strsplit(a, split = "/")
@@ -48,8 +46,7 @@
 #'
 #' @return List containing CASTable parameters
 #'
-#' @keywords internal
-#'
+#' @noRd
 .gen_table_param <- function(ct) {
   tp <- list()
   if (class(ct) == "CASTable") tp[["name"]] <- ct@tname
@@ -61,9 +58,9 @@
 
   # if (length(ct@computedVars) > 1 || ct@computedVars != "")
   if (sum(nchar(ct@computedVars))) {
-    if (sum(nchar(ct@XcomputedVars))) {
+    if (sum(nchar(ct@.computedVars))) {
       cmpvars <- ct@computedVars
-      for (Xcmp in ct@XcomputedVars) {
+      for (Xcmp in ct@.computedVars) {
         if (!(Xcmp %in% ct@computedVars)) {
           cmpvars <- c(cmpvars, Xcmp)
         }
@@ -87,14 +84,14 @@
     if (length(tp[["vars"]]) == 0) {
       tp[["vars"]] <- list()
     }
-    if (sum(nchar(ct@XcomputedVars))) {
-      tp[["computedVars"]] <- c(ct@XcomputedVars)
+    if (sum(nchar(ct@.computedVars))) {
+      tp[["computedVars"]] <- c(ct@.computedVars)
       tp[["computedVarsProgram"]] <- paste(paste(ct@computedVarsProgram, collapse = ";"), ";", sep = "")
     }
   }
 
-  if ((!sum(nchar(ct@XcomputedVars))) & sum(nchar(ct@XcomputedVarsProgram))) {
-    cw <- paste(ct@XcomputedVarsProgram, sep = "", collapse = " AND ")
+  if ((!sum(nchar(ct@.computedVars))) & sum(nchar(ct@.computedVarsProgram))) {
+    cw <- paste(ct@.computedVarsProgram, sep = "", collapse = " AND ")
     if (ct@where != "") {
       tp[["where"]] <- paste("(", ct@where, " AND ", cw, ")", sep = "")
     } else {
@@ -111,8 +108,7 @@
 #'
 #' @return covr::coverage
 #'
-#' @keywords internal
-#'
+#' @noRd
 .combine_reports <- function(...) { # nocov start
   args <- list(...)
   if (length(args) < 1) {
@@ -134,8 +130,7 @@
 #'
 #' @param ... one or more filenames containing covr::coverage objects
 #'
-#' @keywords internal
-#'
+#' @noRd
 .combine_coverage_files <- function(..., file = 'coverage.rds', ignore.missing = TRUE) { # nocov start
   files <- list(...)
   reports <- list()
@@ -162,8 +157,7 @@
 #'
 #' @return logical
 #'
-#' @keywords internal
-#'
+#' @noRd
 .check_for_cas_errors <- function(result, stop.on.error = TRUE) {
   if (result$disposition$severity > 1) {
     if (stop.on.error) {
@@ -208,8 +202,7 @@
 #'
 #' @return list with target and inputs as members
 #'
-#' @keywords internal
-#'
+#' @noRd
 .cas_formula <- function(f, ct) {
   if (class(f) != "formula") {
     stop("must be a formula")
@@ -246,7 +239,6 @@
   return(list(target, inputs[[1]]))
 }
 
-#' @keywords internal
 .cas_where <- function(ct, s) {
   # String $ operator and prior string
   a <- gsub("\\b\\w+\\$", " ", s, perl = TRUE)
@@ -272,7 +264,7 @@
 
 #' Retrieve a vector of the column types
 #'
-#' @keywords internal
+#' @noRd
 .column_types <- function(x) {
   tp <- .gen_table_param(x)
   if (sum(nchar(tp$computedVars))) {
@@ -289,13 +281,15 @@
 
 #' Retrieve numeric variable list
 #'
-#' @keywords internal
+#' @noRd
 .numeric_var_list <- function(x) {
   types <- .column_types(x)
   return(names(types[!(types %in% c("char", "varchar", "binary", "varbinary"))]))
 }
 
-#' @keywords internal
+#' Retrieve character variable list
+#'
+#' @noRd
 .character_var_list <- function(x) {
   types <- .column_types(x)
   return(names(types[types %in% c("char", "varchar", "binary", "varbinary")]))

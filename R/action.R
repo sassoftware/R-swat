@@ -20,7 +20,7 @@
 #'
 #' @return datastep.runCode action results
 #'
-#' @keywords internal
+#' @noRd
 .run_sas_code <- function(x, code = "") {
   res <- cas.retrieve(x, "dataStep.runCode", code = code, stop.on.error = TRUE)
   return(res$results)
@@ -43,7 +43,7 @@
 #' .list_action_sets(conn)
 #' }
 #'
-#' @keywords internal
+#' @noRd
 #'
 .list_action_sets <- function(x) {
   res <- cas.retrieve(x, "builtins.actionSetInfo", all = "FALSE", stop.on.error = TRUE)
@@ -52,7 +52,7 @@
 
 #' Get reflection signature of action
 #'
-#' @keywords internal
+#' @noRd
 #'
 .gen_sig <- function(x, action) {
   args <- list(quote(x), "builtins.reflect", stop.on.error = TRUE, action = action, showLabels = FALSE)
@@ -93,7 +93,7 @@
 
 #' Generate action function wrappers using actionset reflection information
 #'
-#' @keywords internal
+#' @noRd
 #'
 .gen_functions <- function(x, actionset) {
   res <- cas.retrieve(x, "builtins.actionSetInfo", "extensions" = actionset)
@@ -156,8 +156,7 @@
 #' .list_action_params(s, cas.regression.logistic)
 #' }
 #'
-#' @keywords internal
-#'
+#' @noRd
 .list_action_params <- function(x, action, display = TRUE) {
   if (typeof(action) == "closure") {
     action <- toString(substitute(action))

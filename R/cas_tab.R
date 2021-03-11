@@ -89,10 +89,10 @@ CASTable <- setClass("CASTable",
     computedOnDemand = "logical",
     computedVars = "character",
     computedVarsProgram = "character",
-    XcomputedVarsProgram = "character",
-    XcomputedVars = "character",
     names = "character",
-    compcomp = "logical"
+    .computedVarsProgram = "character",
+    .computedVars = "character",
+    .compcomp = "logical"
   )
 )
 
@@ -122,9 +122,9 @@ setMethod("initialize", "CASTable", function(.Object, conn, tname, caslib = "",
   .Object@computedOnDemand <- computedOnDemand
   .Object@computedVars <- computedVars
   .Object@computedVarsProgram <- computedVarsProgram
-  .Object@XcomputedVarsProgram <- ""
-  .Object@XcomputedVars <- ""
-  .Object@compcomp <- FALSE
+  .Object@.computedVarsProgram <- ""
+  .Object@.computedVars <- ""
+  .Object@.compcomp <- FALSE
 
   if (is.null(columns)) {
     .Object@names <- ""
@@ -278,8 +278,8 @@ setMethod(
 
     if (rows) {
       if (class(i) == "CASTable") {
-        where <- i@XcomputedVarsProgram
-        xcompvars <- i@XcomputedVars
+        where <- i@.computedVarsProgram
+        xcompvars <- i@.computedVars
       }
       else {
         where <- .cas_where(x, deparse(substitute(i)))
@@ -442,7 +442,7 @@ setMethod(
       "CASTable", x@conn, x@tname, x@caslib, vars,
       where, x@orderby, x@groupby, x@gbmode, FALSE, compvars, compvpgm
     )
-    ret@XcomputedVars <- xcompvars
+    ret@.computedVars <- xcompvars
     return(ret)
   }
 )
@@ -574,8 +574,8 @@ setMethod(
         # Figure out what the program for this col is
         if (class(value) == "CASTable") {
           # Expresion, else col name
-          if (sum(nchar(value@XcomputedVarsProgram))) {
-            pgm <- paste(colname, " = ", value@XcomputedVarsProgram, sep = "")
+          if (sum(nchar(value@.computedVarsProgram))) {
+            pgm <- paste(colname, " = ", value@.computedVarsProgram, sep = "")
           } else {
             vname <- c(value@names, value@computedVars)
             vname <- vname[vname != ""]
@@ -687,7 +687,7 @@ setMethod(
       "CASTable", x@conn, x@tname, x@caslib, vars, x@where, x@orderby,
       x@groupby, x@gbmode, FALSE, compvars, compvpgm
     )
-    rct@XcomputedVars <- x@XcomputedVars
+    rct@.computedVars <- x@.computedVars
     return(rct)
   }
 )
@@ -790,8 +790,8 @@ setMethod(
 
       # Figure out what the program for this col is
       if (class(value) == "CASTable") {
-        if (sum(nchar(value@XcomputedVarsProgram))) { # expresion, else col name
-          pgm <- paste(name, " = ", value@XcomputedVarsProgram, sep = "")
+        if (sum(nchar(value@.computedVarsProgram))) { # expresion, else col name
+          pgm <- paste(name, " = ", value@.computedVarsProgram, sep = "")
         } else {
           vname <- c(value@names, value@computedVars)
           vname <- vname[vname != ""]
@@ -1154,8 +1154,8 @@ as.data.frame.CASTable <- function(x, max.rows = getOption("cas.max.download.row
     tp$computedOnDemand <- NULL
     tp$computedVars <- NULL
     tp$computedVarsProgram <- NULL
-    tp$XcomputedVars <- NULL
-    tp$XcomputedVarsProgram <- NULL
+    tp$.computedVars <- NULL
+    tp$.computedVarsProgram <- NULL
     name <- .unique_table_name(x@tname)
     vars <- x@names
     tp$vars <- NULL
@@ -1180,8 +1180,8 @@ as.data.frame.CASTable <- function(x, max.rows = getOption("cas.max.download.row
                   groupby = x@groupby, gbmode = x@gbmode, computedVars = x@computedVars,
                   computedVarsProgram = x@computedVarsProgram,
                   computedOnDemand = x@computedOnDemand)
-    y@XcomputedVars <- x@XcomputedVars
-    y@XcomputedVarsProgram <- x@XcomputedVarsProgram
+    y@.computedVars <- x@.computedVars
+    y@.computedVarsProgram <- x@.computedVarsProgram
 
     x <- y
   }
@@ -1189,8 +1189,8 @@ as.data.frame.CASTable <- function(x, max.rows = getOption("cas.max.download.row
   tp <- .gen_table_param(x)
   fv <- c(tp$vars, tp$computedVars)
   fv <- fv[fv != ""]
-  if (sum(nchar(x@XcomputedVars))) {
-    for (Xcmp in x@XcomputedVars) {
+  if (sum(nchar(x@.computedVars))) {
+    for (Xcmp in x@.computedVars) {
       if (!(Xcmp %in% x@computedVars)) {
         fv <- fv[fv != Xcmp]
       }

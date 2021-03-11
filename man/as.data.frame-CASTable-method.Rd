@@ -4,7 +4,13 @@
 \alias{as.data.frame,CASTable-method}
 \title{Convert a CAS Table to a Data Frame (Download)}
 \usage{
-\S4method{as.data.frame}{CASTable}(x, obs = getOption("cas.max.download.rows"), ...)
+\S4method{as.data.frame}{CASTable}(
+  x,
+  max.rows = getOption("cas.max.download.rows"),
+  sample = FALSE,
+  sample.seed = 0,
+  ...
+)
 }
 \arguments{
 \item{x}{The CAS table data to download.}

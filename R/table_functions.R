@@ -43,8 +43,8 @@ setMethod(
     tp <- .gen_table_param(x)
     fv <- c(tp$vars, tp$computedVars)
     fv <- fv[fv != ""]
-    if (sum(nchar(x@XcomputedVars))) {
-      for (Xcmp in x@XcomputedVars) {
+    if (sum(nchar(x@.computedVars))) {
+      for (Xcmp in x@.computedVars) {
         if (!(Xcmp %in% x@computedVars)) {
           fv <- fv[fv != Xcmp]
         }
@@ -59,6 +59,8 @@ setMethod(
                           index = FALSE, to = n, from = 1)
     }
     .check_for_cas_errors(res)
+    print(1:min(nrow(res$results$Fetch), n))
+    print(res$results$Fetch)
     rownames(res$results$Fetch) <- 1:min(nrow(res$results$Fetch), n)
     return(res$results$Fetch)
   }
@@ -96,8 +98,8 @@ setMethod(
     tp <- .gen_table_param(x)
     fv <- c(tp$vars, tp$computedVars)
     fv <- fv[fv != ""]
-    if (sum(nchar(x@XcomputedVars))) {
-      for (Xcmp in x@XcomputedVars) {
+    if (sum(nchar(x@.computedVars))) {
+      for (Xcmp in x@.computedVars) {
         if (!(Xcmp %in% x@computedVars)) {
           fv <- fv[fv != Xcmp]
         }

@@ -193,7 +193,7 @@
 
 #' Determine if binary communication with a CAS server is possible
 #'
-#' @keywords internal
+#' @noRd
 .binary_enabled <- function() {
   return(any(grepl("/rswat.(dll|so|dylib)", as.character(.dynLibs()))))
 }
@@ -209,7 +209,7 @@ retry_action_code <- 0x280034
 #' 
 #' @param x C extension object.
 #'
-#' @keywords internal
+#' @noRd
 .error_check <- function(x) {
   if (!is.null(x)) {
     m <- x$getLastErrorMessage()
@@ -229,8 +229,8 @@ setClass("_p_void", slots = c(ref = "externalptr"))
 #' an int64 value. The current implementation simply returns a
 #' numeric since int64 values are not well supported in R at this time.
 #'
-#' @keywords internal
-swat.as.integer64 <- function(value) {
+#' @noRd
+.as.integer64 <- function(value) {
   return(as.numeric(value))
 }
 
@@ -238,7 +238,7 @@ swat.as.integer64 <- function(value) {
 #'
 #' @param sw_request The C extension request object.
 #'
-#' @keywords internal
+#' @noRd
 CASRequest <- setRefClass(
   Class = "CASRequest",
 
@@ -275,7 +275,7 @@ CASRequest <- setRefClass(
 #'   CAS action.
 #' @field messages    List of messages produced by the CAS action.
 #'
-#' @keywords internal
+#' @noRd
 CASResponse <- setRefClass(
   Class = "CASResponse",
 
@@ -639,7 +639,7 @@ CASDataMsgHandler <- setRefClass(
 #'
 #' @return String containing the detected protocol of the server.
 #'
-#' @keywords internal
+#' @noRd
 .detect_protocol <- function(hostname, port, protocol) {
   if (protocol[[1]] != "auto") {
     return(protocol[[1]])
@@ -670,7 +670,7 @@ CASDataMsgHandler <- setRefClass(
 #'
 #' @return List of resulting hostnames.
 #'
-#' @keywords internal
+#' @noRd
 .expand_url <- function(hostname) {
   final <- c()
 
@@ -722,7 +722,7 @@ CASDataMsgHandler <- setRefClass(
 #'
 #' @return List containing all connection parmeters resolved.
 #'
-#' @keywords internal
+#' @noRd
 .get_connection_info <- function(hostname, port, username, password, protocol, path) {
   # Get defaults from environment
   hostname <- hostname[hostname != ""]
@@ -1630,9 +1630,9 @@ setMethod(
                     computedOnDemand = x@computedOnDemand,
                     computedVars = c(x@computedVars),
                     computedVarsProgram = c(x@computedVarsProgram))
-    tbl@XcomputedVarsProgram <- c(x@XcomputedVarsProgram)
-    tbl@XcomputedVars <- c(x@XcomputedVars)
-    tbl@compcomp <- x@compcomp
+    tbl@.computedVarsProgram <- c(x@.computedVarsProgram)
+    tbl@.computedVars <- c(x@.computedVars)
+    tbl@.compcomp <- x@.compcomp
     return(tbl)
   }
 )
@@ -1682,7 +1682,7 @@ setMethod(
 #' @field datamsghandler A data message handler class used for actions
 #'   that require data uploads.
 #'
-#' @keywords internal
+#' @noRd
 CASEventWatcher <- setRefClass(
   Class = "CASEventWatcher",
 
@@ -1870,7 +1870,7 @@ getnext <- function(...) {
 #'   an empty string is returned; otherwise, the string argument
 #'   given is returned.
 #'
-#' @keywords internal
+#' @noRd
 .no_null_string <- function(str) {
   if (is.null(str)) {
     return("")
@@ -1884,7 +1884,7 @@ getnext <- function(...) {
 #'
 #' @return An R object corresponding to the given value.
 #'
-#' @keywords internal
+#' @noRd
 .cas2r <- function(sw_value) {
   t <- sw_value$getType()
   .error_check(sw_value)
@@ -1897,7 +1897,7 @@ getnext <- function(...) {
   } else if (t == "int64") {
     out <- sw_value$getInt64AsString()
     .error_check(sw_value)
-    return(swat.as.integer64(out))
+    return(.as.integer64(out))
   } else if (t == "double") {
     out <- sw_value$getDouble()
     .error_check(sw_value)
@@ -1961,7 +1961,7 @@ getnext <- function(...) {
         else if (typ == "int64") {
           attrs[[key]] <- sw_table$getInt64AttributeAsString(key)
           .error_check(sw_table)
-          attrs[[key]] <- swat.as.integer64(attrs[[key]])
+          attrs[[key]] <- .as.integer64(attrs[[key]])
         }
         else if (typ == "double") {
           attrs[[key]] <- sw_table$getDoubleAttribute(key)
@@ -2003,7 +2003,7 @@ getnext <- function(...) {
           for (i in 1:nitems) {
             value[[i]] <- sw_table$getInt64ArrayAttributeItemAsString(key, i - 1)
             .error_check(sw_table)
-            value[[i]] <- swat.as.integer64(value[[i]])
+            value[[i]] <- .as.integer64(value[[i]])
           }
           attrs[[key]] <- value
         }
@@ -2071,7 +2071,7 @@ getnext <- function(...) {
             else if (typ == "int64") {
               info[[key]] <- sw_table$getColumnInt64AttributeAsString(col, key)
               .error_check(sw_table)
-              info[[key]] <- swat.as.integer64(info[[key]])
+              info[[key]] <- .as.integer64(info[[key]])
             }
             else if (typ == "string") {
               info[[key]] <- .no_null_string(sw_table$getColumnStringAttribute(col, key))
@@ -2109,7 +2109,7 @@ getnext <- function(...) {
               for (i in 1:nitems) {
                 value[[i]] <- sw_table$getColumnInt64ArrayAttributeItemAsString(col, key, i - 1)
                 .error_check(sw_table)
-                value[[i]] <- swat.as.integer64(value[[i]])
+                value[[i]] <- .as.integer64(value[[i]])
               }
               info[[key]] <- value
             }
@@ -2246,7 +2246,7 @@ getnext <- function(...) {
             if (identical(out, numeric(0))) {
               out <- 0
             }
-            column <- c(column, swat.as.integer64(set_missing(out, int64_missval)))
+            column <- c(column, .as.integer64(set_missing(out, int64_missval)))
           }
           table <- add_column(table, name, column)
         }
@@ -2259,7 +2259,7 @@ getnext <- function(...) {
               if (identical(out, numeric(0))) {
                 out <- 0
               }
-              column <- c(column, swat.as.integer64(set_missing(out, int64_missval)))
+              column <- c(column, .as.integer64(set_missing(out, int64_missval)))
             }
             table <- add_column(table, paste(name, elem + 1, sep = ""), column)
           }
@@ -2454,7 +2454,7 @@ getnext <- function(...) {
 #'
 #' @return The next list index to be populated.
 #'
-#' @keywords internal
+#' @noRd
 .set_list_value <- function(sw_values, i, key, value) {
   if (key == "datamsghandler") {
     return(i)
@@ -2517,7 +2517,7 @@ getnext <- function(...) {
 #' @param sw_error A \code{CASError} object for storing resulting error messages.
 #' @param a Arbitrary R object to convert.
 #'
-#' @keywords internal
+#' @noRd
 .r2cas <- function(soptions, sw_error, a) {
   len <- length(a)
   if (!is.null(a$datamsghandler)) {
@@ -2543,7 +2543,7 @@ getnext <- function(...) {
 #' @param sw_values A \code{CASValueList} object.
 #' @param len The length of the CAS value list
 #'
-#' @keywords internal
+#' @noRd
 .casvaluelist2r <- function(sw_values, len) {
   num <- 1
   output <- list()

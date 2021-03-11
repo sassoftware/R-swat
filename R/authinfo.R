@@ -16,7 +16,7 @@
 
 #' Retrieve information from authinfo file
 #'
-#' @keywords internal
+#' @noRd
 .query_authinfo <- function(hostname, username = NULL, protocol = NULL, filepath = NULL) {
   hosts <- list()
   host <- NULL

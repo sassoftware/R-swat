@@ -15,22 +15,19 @@
 #  limitations under the License.
 
 
-#' CASTable arithmetic operators
-#'
-#' @name CASTable-arithmetic
-NULL
+#
+# CASTable arithmetic operators
+#
 
-#' @rdname CASTable-arithmetic
-#' @keywords internal
 .cas_arith <- function(e1, op, e2) {
   if (class(e1) == "CASTable") {
     rct <- new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names,
       where = e1@where, orderby = e1@orderby, groupby = e1@groupby
     )
-    rct@compcomp <- e1@compcomp
-    if (nchar(e1@XcomputedVarsProgram)) {
-      e1p <- e1@XcomputedVarsProgram
-      rct@XcomputedVars <- e1@XcomputedVars
+    rct@.compcomp <- e1@.compcomp
+    if (nchar(e1@.computedVarsProgram)) {
+      e1p <- e1@.computedVarsProgram
+      rct@.computedVars <- e1@.computedVars
       rct@computedVars <- e1@computedVars
       rct@computedVarsProgram <- e1@computedVarsProgram
     }
@@ -39,9 +36,9 @@ NULL
       e1p <- e1p[e1p != ""]
       e1p <- paste('"', e1p, '"n', sep = "")
       if (sum(nchar(e1@computedVars))) {
-        rct@compcomp <- TRUE
-        rct@XcomputedVars <- c(e1@XcomputedVars, e1@computedVars)
-        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@.compcomp <- TRUE
+        rct@.computedVars <- c(e1@.computedVars, e1@computedVars)
+        rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
         rct@computedVars <- e1@computedVars
         rct@computedVarsProgram <- e1@computedVarsProgram
       }
@@ -51,15 +48,15 @@ NULL
     rct <- new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names,
       where = e2@where, orderby = e2@orderby, groupby = e2@groupby
     )
-    rct@compcomp <- e2@compcomp
+    rct@.compcomp <- e2@.compcomp
     e1p <- e1
   }
 
   if (class(e2) == "CASTable") {
-    if (nchar(e2@XcomputedVarsProgram)) {
-      e2p <- e2@XcomputedVarsProgram
-      rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars)
-      rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+    if (nchar(e2@.computedVarsProgram)) {
+      e2p <- e2@.computedVarsProgram
+      rct@.computedVars <- c(rct@.computedVars, e2@.computedVars)
+      rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
       rct@computedVars <- c(rct@computedVars, e2@computedVars)
       rct@computedVars <- rct@computedVars[rct@computedVars != ""]
       rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
@@ -70,9 +67,9 @@ NULL
       e2p <- e2p[e2p != ""]
       e2p <- paste('"', e2p, '"n', sep = "")
       if (sum(nchar(e2@computedVars))) {
-        rct@compcomp <- TRUE
-        rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars)
-        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@.compcomp <- TRUE
+        rct@.computedVars <- c(rct@.computedVars, e2@.computedVars, e2@computedVars)
+        rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
         rct@computedVars <- c(rct@computedVars, e2@computedVars)
         rct@computedVars <- rct@computedVars[rct@computedVars != ""]
         rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
@@ -85,19 +82,18 @@ NULL
   }
 
   if (op == " %% ") {
-    rct@XcomputedVarsProgram <- paste("mod(", e1p, ", ", e2p, ")", sep = "")
+    rct@.computedVarsProgram <- paste("mod(", e1p, ", ", e2p, ")", sep = "")
   } else
   if (op == " %/% ") {
-    rct@XcomputedVarsProgram <- paste("floor(", e1p, " / ", e2p, ")", sep = "")
+    rct@.computedVarsProgram <- paste("floor(", e1p, " / ", e2p, ")", sep = "")
   } else {
-    rct@XcomputedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
+    rct@.computedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
   }
   return(rct)
 }
 
 # Subtraction ---------------------------
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "-",
@@ -107,7 +103,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "-",
@@ -117,7 +112,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "-",
@@ -129,7 +123,6 @@ setMethod(
 
 # Addition ---------------------------
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "+",
@@ -139,7 +132,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "+",
@@ -149,7 +141,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "+",
@@ -161,7 +152,6 @@ setMethod(
 
 # Division ---------------------------
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "/",
@@ -171,7 +161,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "/",
@@ -181,7 +170,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "/",
@@ -193,7 +181,6 @@ setMethod(
 
 # Multiplication ---------------------------
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "*",
@@ -203,7 +190,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "*",
@@ -213,7 +199,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "*",
@@ -225,7 +210,6 @@ setMethod(
 
 # Exponentiation ---------------------------
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "^",
@@ -235,7 +219,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "^",
@@ -245,7 +228,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "^",
@@ -257,7 +239,6 @@ setMethod(
 
 # Modulus ---------------------------
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "%%",
@@ -267,7 +248,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "%%",
@@ -277,7 +257,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "%%",
@@ -289,7 +268,6 @@ setMethod(
 
 # Integer Division ---------------------------
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "%/%",
@@ -299,7 +277,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "%/%",
@@ -309,7 +286,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-arithmetic
 #' @export
 setMethod(
   "%/%",
@@ -319,22 +295,19 @@ setMethod(
   }
 )
 
-#' CASTable comparison operators
-#'
-#' @name CASTable-comparison
-NULL
+#
+# CASTable comparison operators
+#
 
-#' @rdname CASTable-comparison
-#' @keywords internal
 .cas_compare <- function(e1, op, e2) {
   if (class(e1) == "CASTable") {
     rct <- new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names,
       where = e1@where, orderby = e1@orderby, groupby = e1@groupby
     )
-    rct@compcomp <- e1@compcomp
-    if (nchar(e1@XcomputedVarsProgram)) {
-      e1p <- e1@XcomputedVarsProgram
-      rct@XcomputedVars <- e1@XcomputedVars
+    rct@.compcomp <- e1@.compcomp
+    if (nchar(e1@.computedVarsProgram)) {
+      e1p <- e1@.computedVarsProgram
+      rct@.computedVars <- e1@.computedVars
       rct@computedVars <- e1@computedVars
       rct@computedVarsProgram <- e1@computedVarsProgram
     }
@@ -343,9 +316,9 @@ NULL
       e1p <- e1p[e1p != ""]
       e1p <- paste('"', e1p, '"n', sep = "")
       if (sum(nchar(e1@computedVars))) {
-        rct@compcomp <- TRUE
-        rct@XcomputedVars <- c(e1@XcomputedVars, e1@computedVars)
-        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@.compcomp <- TRUE
+        rct@.computedVars <- c(e1@.computedVars, e1@computedVars)
+        rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
         rct@computedVars <- e1@computedVars
         rct@computedVarsProgram <- e1@computedVarsProgram
       }
@@ -355,7 +328,7 @@ NULL
     rct <- new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names,
       where = e2@where, orderby = e2@orderby, groupby = e2@groupby
     )
-    rct@compcomp <- e2@compcomp
+    rct@.compcomp <- e2@.compcomp
     if (class(e1) == "character") {
       e1p <- paste("'", e1, "'", sep = "")
     } else {
@@ -364,10 +337,10 @@ NULL
   }
 
   if (class(e2) == "CASTable") {
-    if (nchar(e2@XcomputedVarsProgram)) {
-      e2p <- e2@XcomputedVarsProgram
-      rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars)
-      rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+    if (nchar(e2@.computedVarsProgram)) {
+      e2p <- e2@.computedVarsProgram
+      rct@.computedVars <- c(rct@.computedVars, e2@.computedVars)
+      rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
       rct@computedVars <- c(rct@computedVars, e2@computedVars)
       rct@computedVars <- rct@computedVars[rct@computedVars != ""]
       rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
@@ -378,9 +351,9 @@ NULL
       e2p <- e2p[e2p != ""]
       e2p <- paste('"', e2p, '"n', sep = "")
       if (sum(nchar(e2@computedVars))) {
-        rct@compcomp <- TRUE
-        rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars)
-        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@.compcomp <- TRUE
+        rct@.computedVars <- c(rct@.computedVars, e2@.computedVars, e2@computedVars)
+        rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
         rct@computedVars <- c(rct@computedVars, e2@computedVars)
         rct@computedVars <- rct@computedVars[rct@computedVars != ""]
         rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
@@ -396,13 +369,12 @@ NULL
     }
   }
 
-  rct@XcomputedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
+  rct@.computedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
   return(rct)
 }
 
 # Greater Than ---------------------------
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   ">",
@@ -412,7 +384,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   ">",
@@ -422,7 +393,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   ">",
@@ -434,7 +404,6 @@ setMethod(
 
 # Less Than ---------------------------
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "<",
@@ -444,7 +413,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "<",
@@ -454,7 +422,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "<",
@@ -466,7 +433,6 @@ setMethod(
 
 # Greater Than or Equal ---------------------------
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   ">=",
@@ -476,7 +442,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   ">=",
@@ -486,7 +451,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   ">=",
@@ -498,7 +462,6 @@ setMethod(
 
 # Less Than or Equal ---------------------------
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "<=",
@@ -508,7 +471,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "<=",
@@ -518,7 +480,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "<=",
@@ -530,7 +491,6 @@ setMethod(
 
 # Equal ---------------------------
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "==",
@@ -540,7 +500,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "==",
@@ -550,7 +509,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "==",
@@ -562,7 +520,6 @@ setMethod(
 
 # Not Equal ---------------------------
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "!=",
@@ -573,7 +530,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "!=",
@@ -583,7 +539,6 @@ setMethod(
   }
 )
 
-#' @rdname CASTable-comparison
 #' @export
 setMethod(
   "!=",
@@ -593,22 +548,19 @@ setMethod(
   }
 )
 
-#' CASTable logical operators
-#'
-#' @name CASTable-logical
-NULL
+#
+# CASTable logical operators
+#
 
-#' @rdname CASTable-logical
-#' @keywords internal
 .cas_logic <- function(e1, op, e2) {
   if (class(e1) == "CASTable") {
     rct <- new("CASTable", e1@conn, e1@tname, e1@caslib, e1@names,
       where = e1@where, orderby = e1@orderby, groupby = e1@groupby
     )
-    rct@compcomp <- e1@compcomp
-    if (nchar(e1@XcomputedVarsProgram)) {
-      e1p <- e1@XcomputedVarsProgram
-      rct@XcomputedVars <- e1@XcomputedVars
+    rct@.compcomp <- e1@.compcomp
+    if (nchar(e1@.computedVarsProgram)) {
+      e1p <- e1@.computedVarsProgram
+      rct@.computedVars <- e1@.computedVars
       rct@computedVars <- e1@computedVars
       rct@computedVarsProgram <- e1@computedVarsProgram
     }
@@ -617,9 +569,9 @@ NULL
       e1p <- e1p[e1p != ""]
       e1p <- paste('"', e1p, '"n', sep = "")
       if (sum(nchar(e1@computedVars))) {
-        rct@compcomp <- TRUE
-        rct@XcomputedVars <- c(e1@XcomputedVars, e1@computedVars)
-        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@.compcomp <- TRUE
+        rct@.computedVars <- c(e1@.computedVars, e1@computedVars)
+        rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
         rct@computedVars <- e1@computedVars
         rct@computedVarsProgram <- e1@computedVarsProgram
       }
@@ -629,15 +581,15 @@ NULL
     rct <- new("CASTable", e2@conn, e2@tname, e2@caslib, e2@names,
       where = e2@where, orderby = e2@orderby, groupby = e2@groupby
     )
-    rct@compcomp <- e2@compcomp
+    rct@.compcomp <- e2@.compcomp
     e1p <- e1
   }
 
   if (class(e2) == "CASTable") {
-    if (nchar(e2@XcomputedVarsProgram)) {
-      e2p <- e2@XcomputedVarsProgram
-      rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars)
-      rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+    if (nchar(e2@.computedVarsProgram)) {
+      e2p <- e2@.computedVarsProgram
+      rct@.computedVars <- c(rct@.computedVars, e2@.computedVars)
+      rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
       rct@computedVars <- c(rct@computedVars, e2@computedVars)
       rct@computedVars <- rct@computedVars[rct@computedVars != ""]
       rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
@@ -648,9 +600,9 @@ NULL
       e2p <- e2p[e2p != ""]
       e2p <- paste('"', e2p, '"n', sep = "")
       if (sum(nchar(e2@computedVars))) {
-        rct@compcomp <- TRUE
-        rct@XcomputedVars <- c(rct@XcomputedVars, e2@XcomputedVars, e2@computedVars)
-        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@.compcomp <- TRUE
+        rct@.computedVars <- c(rct@.computedVars, e2@.computedVars, e2@computedVars)
+        rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
         rct@computedVars <- c(rct@computedVars, e2@computedVars)
         rct@computedVars <- rct@computedVars[rct@computedVars != ""]
         rct@computedVarsProgram <- c(rct@computedVarsProgram, e2@computedVarsProgram)
@@ -662,77 +614,70 @@ NULL
     e2p <- e2
   }
 
-  rct@XcomputedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
+  rct@.computedVarsProgram <- paste("(", e1p, op, e2p, ")", sep = "")
   return(rct)
 }
 
 # And ---------------------------
 
-#' @rdname CASTable-logical
 #' @export
 setMethod(
   "&",
   signature(e1 = "CASTable", e2 = "CASTable"),
   function(e1, e2) {
-    return(.cas_compare(e1, " AND ", e2))
+    return(.cas_logic(e1, " AND ", e2))
   }
 )
 
-#' @rdname CASTable-logical
 #' @export
 setMethod(
   "&",
   signature(e1 = "CASTable", e2 = "ANY"),
   function(e1, e2) {
-    return(.cas_compare(e1, " AND ", e2))
+    return(.cas_logic(e1, " AND ", e2))
   }
 )
 
-#' @rdname CASTable-logical
 #' @export
 setMethod(
   "&",
   signature(e1 = "ANY", e2 = "CASTable"),
   function(e1, e2) {
-    return(.cas_compare(e1, " AND ", e2))
+    return(.cas_logic(e1, " AND ", e2))
   }
 )
 
 # Or ---------------------------
 
-#' @rdname CASTable-logical
 #' @export
 setMethod(
   "|",
   signature(e1 = "CASTable", e2 = "CASTable"),
   function(e1, e2) {
-    return(.cas_compare(e1, " OR ", e2))
+    return(.cas_logic(e1, " OR ", e2))
   }
 )
 
-#' @rdname CASTable-logical
 #' @export
 setMethod(
   "|",
   signature(e1 = "CASTable", e2 = "ANY"),
   function(e1, e2) {
-    return(.cas_compare(e1, " OR ", e2))
+    return(.cas_logic(e1, " OR ", e2))
   }
 )
 
-#' @rdname CASTable-logical
 #' @export
 setMethod(
   "|",
   signature(e1 = "ANY", e2 = "CASTable"),
   function(e1, e2) {
-    return(.cas_compare(e1, " OR ", e2))
+    return(.cas_logic(e1, " OR ", e2))
   }
 )
 
 # Not ---------------------------
 
-#' @rdname CASTable-logical
 #' @export
 setMethod(
   "!",
@@ -741,10 +686,10 @@ setMethod(
     rct <- new("CASTable", x@conn, x@tname, x@caslib, x@names,
       where = x@where, orderby = x@orderby, groupby = x@groupby
     )
-    rct@compcomp <- x@compcomp
-    if (sum(nchar(x@XcomputedVarsProgram))) {
-      e1p <- x@XcomputedVarsProgram
-      rct@XcomputedVars <- x@XcomputedVars
+    rct@.compcomp <- x@.compcomp
+    if (sum(nchar(x@.computedVarsProgram))) {
+      e1p <- x@.computedVarsProgram
+      rct@.computedVars <- x@.computedVars
       rct@computedVars <- x@computedVars
       rct@computedVarsProgram <- x@computedVarsProgram
     }
@@ -752,14 +697,14 @@ setMethod(
       e1p <- c(x@names, x@computedVars)
       e1p <- e1p[e1p != ""]
       if (sum(nchar(x@computedVars))) {
-        rct@compcomp <- TRUE
-        rct@XcomputedVars <- c(x@XcomputedVars, x@computedVars)
-        rct@XcomputedVars <- rct@XcomputedVars[rct@XcomputedVars != ""]
+        rct@.compcomp <- TRUE
+        rct@.computedVars <- c(x@.computedVars, x@computedVars)
+        rct@.computedVars <- rct@.computedVars[rct@.computedVars != ""]
         rct@computedVars <- x@computedVars
         rct@computedVarsProgram <- x@computedVarsProgram
       }
     }
-    rct@XcomputedVarsProgram <- paste("NOT ", e1p, sep = "")
+    rct@.computedVarsProgram <- paste("NOT ", e1p, sep = "")
     return(rct)
   }
 )
