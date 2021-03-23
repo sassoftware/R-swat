@@ -848,8 +848,10 @@ CAS <- setRefClass(
 
          soptions <<- gsub('^\\s+|\\s+$', '', paste(soptions, paste('protocol=', .self$protocol, sep=''), sep=' '))
 
+         authinfo <- NULL
          if ( !is.null(options) && 'authinfo' %in% names(options) && password == '' )
          {
+            authinfo <- options$authinfo
             if ( class(options$authinfo) == 'character' && length(options$authinfo) == 1 )
             {
                if ( !file.exists(options$authinfo) )
@@ -975,17 +977,40 @@ CAS <- setRefClass(
             options(cas.message.level=ml)
          }
 
-         .self
+         if (grepl('^https?:', .self$hostname[[1]], perl = TRUE)) {
+           conn_str <- paste0("library(swat);\n",
+                              "conn <- swat::CAS('", .self$hostname[[1]], "'")
+
+         } else {
+           conn_str <- paste0("library(swat);\n",
+                              "conn <- swat::CAS('", .self$protocol,
+                              "://", .self$hostname[[1]], ":", .self$port, "'")
+         }
+
+         if (!is.null(authinfo)) {
+           conn_str <- paste0(conn_str, ", authinfo = '", options$authinfo, "')")
+         }
+
+         .on_connection_opened(.self, conn_str)
+
+        .self
       },
 
       close = function() {
-         rc <- sw_connection$close()
-         swat::errorcheck(sw_connection)
+         sw_conn <- sw_connection
+         .self$sw_connection <- NULL
+         rc <- sw_conn$close()
+         .on_connection_closed(.self)
+         swat::errorcheck(sw_conn)
          return(rc)
       },
 
+      isConnected = function() {
+         return(!is.null(sw_connection))
+      },
+
       copy = function() {
-         return (CAS$new(hostname='', port=0, prototype=.self))
+         return(CAS$new(hostname='', port=0, prototype=.self))
       },
 
       fork = function(num=2) {
@@ -1138,6 +1163,12 @@ CAS <- setRefClass(
          .self$messages    = output[['messages']]   
          .self$events      = output[['events']]      
 
+         actn <- tolower(actn)
+         if (actn == "table.loadtable" || actn == "loadtable" ||
+             actn == "table.addcaslib" || actn == "addcaslib") {
+           .on_connection_updated(.self, "") 
+         }
+
          return (output)
       },
 
@@ -1235,6 +1266,9 @@ CAS <- setRefClass(
          }
          output[['messages']] <- msgs
          output[['results']] <- results
+
+         .on_connection_updated(.self, "")
+
          return (output)
       }
    )

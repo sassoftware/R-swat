@@ -213,11 +213,18 @@ listActionSets <- function(conn){
 #' @keywords internal
 #' @rawRd % Copyright SAS Institute
 casRetrieve <-  function(caz, ...) {
+  args <- list(...)
   if (class(caz)=='CAS'){
-    return(caz$retrieve(..., '_messagelevel'=as.character(getOption('cas.message.level'))))
+    if (is.null(args$messageLevel))
+      return(caz$retrieve(..., '_messageLevel'=as.character(getOption('cas.message.level'))))
+    else
+      return(caz$retrieve(...))
   }
   if (class(caz) =='CASTable'){
-    return(caz$retrieve(caz@conn, ..., '_messagelevel'=as.character(getOption('cas.message.level'))))
+    if (is.null(args$messageLevel))
+      return(caz$retrieve(caz@conn, ..., '_messageLevel'=as.character(getOption('cas.message.level'))))
+    else
+      return(caz$retrieve(caz@conn, ...))
   }
 }
 
@@ -307,7 +314,7 @@ gen.functions2 <-  function(cas, actionSet) {
   str3 = paste(str3, "   args = c('CASorCASTab'=substitute(CASorCASTab), args)\n", sep = '')
 
   str1 = paste("cas.", actn,  " <- function(CASorCASTab", str, ", ...){\n" , sep = '')
-  str1 = paste(str1, str3, "do.call('swat::runAction', args) \n}\n", sep="")
+  str1 = paste(str1, str3, "do.call(swat::runAction, args) \n}\n", sep="")
 
   #message(paste('Defined ', actn, ' as:\n', str1, '\n'))
   return (str1)

@@ -44,5 +44,6 @@ Collate:
     'analytical_functions.R'
     'graphics.R'
     'Ops.R'
+    'connection_viewer.R'
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
