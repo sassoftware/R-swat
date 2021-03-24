@@ -81,11 +81,11 @@
 
   # Display tables for a specific caslib
   if (!is.null(args$caslib)) {
-    out <- cas.table.tableInfo(connection, caslib = args$caslib, `_messageLevel` = "error")
+    out <- cas.table.tableInfo(connection, caslib = args$caslib, `_messagelevel` = "error")
     if (is.null(out$TableInfo))
       return(character())
 
-    out <- out$TableInfo@df
+    out <- out$TableInfo
 
     types <- out$View
     types[types == 0] <- "table"
@@ -98,11 +98,11 @@
   }
 
   # Display all caslibs
-  out <- cas.table.caslibInfo(connection, `_messageLevel` = "error")
+  out <- cas.table.caslibInfo(connection, `_messagelevel` = "error")
   if (is.null(out$CASLibInfo))
     return(character())
 
-  out <- out$CASLibInfo@df
+  out <- out$CASLibInfo
 
   types <- rep("caslib", dim(out)[1])
   if (length(types) > 0) {
@@ -124,11 +124,11 @@
     }
 
     out <- cas.table.columnInfo(connection, table = list(name = table, caslib = args$caslib),
-                                `_messageLevel` = "error")
+                                `_messagelevel` = "error")
     if (is.null(out$ColumnInfo))
       return(NULL)
 
-    out <- out$ColumnInfo@df
+    out <- out$ColumnInfo
 
     return(data.frame(name = out$Column, type = out$Type, stringsAsFactors = FALSE))
   }
@@ -146,11 +146,11 @@
     }
 
     out <- cas.table.fetch(connection, table = list(name = table, caslib = args$caslib),
-                           to = limit, index = FALSE, `_messageLevel` = "error")
+                           to = limit, index = FALSE, `_messagelevel` = "error")
     if (is.null(out$Fetch))
       return(NULL)
 
-    return(out$Fetch@df)
+    return(out$Fetch)
   }
   NULL
 }

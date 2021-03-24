@@ -1118,7 +1118,7 @@ CAS <- setRefClass(
       .self$sw_connection <- NULL
       rc <- sw_conn$close()
       .on_connection_closed(.self)
-      swat::errorcheck(sw_conn)
+      .error_check(sw_conn)
       return(rc)
     },
 
@@ -1345,9 +1345,9 @@ CAS <- setRefClass(
         return(invisible(output))
       }
 
-      actn <- tolower(actn)
-      if (actn == "table.loadtable" || actn == "loadtable" ||
-          actn == "table.addcaslib" || actn == "addcaslib") {
+      .action <- tolower(.action)
+      if (.action == "table.loadtable" || .action == "loadtable" ||
+          .action == "table.addcaslib" || .action == "addcaslib") {
         .on_connection_updated(.self, "")
       }
 

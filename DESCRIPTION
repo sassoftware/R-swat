@@ -46,6 +46,7 @@ Collate:
     'analytical_functions.R'
     'graphics.R'
     'ops.R'
+    'connection_viewer.R'
 Encoding: UTF-8
 RoxygenNote: 7.1.0
 VignetteBuilder: knitr

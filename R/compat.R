@@ -26,6 +26,13 @@ listActionParms <- function(cas.conn, .action) {
   return(NULL)
 }
 
-as.casTable <- function(cas.conn, frame) {
-  return(as.CASTable(cas.conn, frame))
+as.casTable <- function(cas.conn, frame, casOut = "") {
+  name <- deparse(substitute(frame))
+  if (casOut == "") {
+    casOut <- name
+  }
+  else if (is.null(casOut$name) || casOut$name == "") {
+    casOut$name <- name
+  }
+  return(as.CASTable(cas.conn, frame, casOut = casOut))
 }
