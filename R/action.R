@@ -279,7 +279,11 @@ gen.functions2 <-  function(cas, actionSet) {
   #swat::check_for_cas_errors(res)
   str  = ''
   str2 = ''
+
   str3 = '   args <- list(...)\n'
+  str3 = paste(str3, "   args[['CASorCASTab']] <- CASorCASTab\n", sep = '')
+  str3 = paste(str3, "   args[['actn']] <- '", actn, "'\n", sep = '')
+
   for (parms in res[[1]]$actions[[1]]$params)
      {
      #message(paste("for parm", Sys.time()))
@@ -309,9 +313,6 @@ gen.functions2 <-  function(cas, actionSet) {
            }
      str3 = paste(str3, "   if( ! missing(`",parms$name,"`)) args = c('", parms$name, "'=substitute(`", parms$name, "`), args)\n", sep = '')
      }
-
-  str3 = paste(str3, "   args = c('actn'='", actn, "', args)\n", sep = '')
-  str3 = paste(str3, "   args = c('CASorCASTab'=substitute(CASorCASTab), args)\n", sep = '')
 
   str1 = paste("cas.", actn,  " <- function(CASorCASTab", str, ", ...){\n" , sep = '')
   str1 = paste(str1, str3, "do.call(swat::runAction, args) \n}\n", sep="")
