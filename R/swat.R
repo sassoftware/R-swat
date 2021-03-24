@@ -976,7 +976,9 @@ CAS <- setRefClass(
                         paste(soptions,
                               paste("protocol=", .self$protocol, sep = ""), sep = " "))
 
+      authinfo <- NULL
       if (!is.null(options) && "authinfo" %in% names(options) && password == "") {
+        authinfo <- options$authinfo
         if (class(options$authinfo) == "character" && length(options$authinfo) == 1) {
           if (!file.exists(options$authinfo)) {
             stop(paste("The specified authinfo file does not exist:", options$authinfo))
@@ -1086,6 +1088,21 @@ CAS <- setRefClass(
           )
       }
 
+      if (grepl('^https?:', .self$hostname[[1]], perl = TRUE)) {
+        conn_str <- paste0("library(swat);\n",
+                           "conn <- swat::CAS('", .self$hostname[[1]], "'")
+      } else {
+        conn_str <- paste0("library(swat);\n",
+                           "conn <- swat::CAS('", .self$protocol,
+                           "://", .self$hostname[[1]], ":", .self$port, "'")
+      }
+
+      if (!is.null(authinfo)) {
+        conn_str <- paste0(conn_str, ", authinfo = '", authinfo, "')")
+      }
+
+      .on_connection_opened(.self, conn_str)
+
       return(.self)
     },
 
@@ -1097,9 +1114,16 @@ CAS <- setRefClass(
       # Typically the \\code{cas.close()} function is used to close
       # connections. This function has a parameter that can also end the
       # session.
-      rc <- sw_connection$close()
-      .error_check(sw_connection)
+      sw_conn <- sw_connection
+      .self$sw_connection <- NULL
+      rc <- sw_conn$close()
+      .on_connection_closed(.self)
+      swat::errorcheck(sw_conn)
       return(rc)
+    },
+
+    isConnected = function() {
+       return(!is.null(sw_connection))
     },
 
     copy = function() {
@@ -1321,6 +1345,12 @@ CAS <- setRefClass(
         return(invisible(output))
       }
 
+      actn <- tolower(actn)
+      if (actn == "table.loadtable" || actn == "loadtable" ||
+          actn == "table.addcaslib" || actn == "addcaslib") {
+        .on_connection_updated(.self, "")
+      }
+
       return(output)
     },
 
@@ -1424,6 +1454,8 @@ CAS <- setRefClass(
       if (stop.on.error) {
         .check_for_cas_errors(output)
       }
+
+      .on_connection_updated(.self, "")
 
       return(output)
     }
