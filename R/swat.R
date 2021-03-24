@@ -988,7 +988,7 @@ CAS <- setRefClass(
          }
 
          if (!is.null(authinfo)) {
-           conn_str <- paste0(conn_str, ", authinfo = '", options$authinfo, "')")
+           conn_str <- paste0(conn_str, ", authinfo = '", authinfo, "')")
          }
 
          .on_connection_opened(.self, conn_str)
