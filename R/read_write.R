@@ -209,6 +209,230 @@ setMethod(
   }
 )
 
+setGeneric("cas.read.csv2",
+  function(x, file, ..., casOut = NULL) {
+    standardGeneric("cas.read.csv2")
+  }
+)
+
+#' Read a CSV File and Upload to a CAS Table
+#'
+#' This function is a convenience wrapper for
+#' the \R \code{read.csv2} and \code{as.CASTable} functions.
+#' After reading the file that is accessible to the \R
+#' client, it is uploaded to an in-memory table in
+#' CAS (the server).
+#'
+#' @param x An instance of a CAS object that represents
+#'  a connection and CAS session.
+#' @param file An \code{character} string that specifies
+#'   the filename or connection for the data to read.
+#' @param \dots Optional parameters that are passed to
+#'   \code{read.csv2}.
+#' @param casOut An optional \code{character} or list. If
+#'   you specify a string, then the string is used as the
+#'   in-memory table name. A list can be used to specify
+#'   properties for the in-memory table as follows:
+#'   \describe{
+#'     \item{\code{name}}{An optional \code{character} that
+#'       specifies the name for the in-memory table. By
+#'       default, the name of the data frame is used.}
+#'     \item{\code{caslib}}{An optional \code{character} that
+#'       specifies the caslib. Specify this parameter to
+#'       override the active caslib.}
+#'     \item{\code{label}}{An optional \code{character} that
+#'       specifies a descriptive label for the data.}
+#'     \item{\code{replace}}{An optional \code{logical}. When
+#'       set to TRUE, you can replace an existing in-memory
+#'       table with the same name in the same caslib. The
+#'       default value is FALSE.}
+#'     \item{\code{promote}}{An optional \code{logical}. When
+#'       set to TRUE, the in-memory table has global scope and
+#'       can be available to other CAS sessions (subject to
+#'       access controls). The default value is FALSE and
+#'       the in-memory table has session scope so that it is
+#'       accessible with the session that uploaded the table
+#'       only. Session-scope tables are ideal for data analysis.
+#'       Global-scope tables are better suited for reporting.}
+#'     \item{\code{replication}}{An optional \code{numeric} that
+#'       specifies the number of redundant copies of in-memory
+#'       blocks. This parameter applies to distributed servers
+#'       only. The default value is 1.}
+#'    }
+#'
+#' @return \code{\link{CASTable}}
+#'
+#' @examples
+#' \dontrun{
+#' # Upload a CSV, the in-memory table is named HEART
+#' heartct <- cas.read.csv2(s, "http://support.sas.com/documentation/
+#'   onlinedoc/viya/exampledatasets/heart.csv")
+#'
+#' # Upload the same CSV, name the in-memory table HEARTCT
+#' heartct <- cas.read.csv2(s, "http://support.sas.com/documentation/
+#'   onlinedoc/viya/exampledatasets/heart.csv",
+#'   casOut = list(name = "heartct", replace = TRUE)
+#' )
+#' }
+#'
+#' @export
+setMethod(
+  "cas.read.csv2",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    return(as.CASTable(x, read.csv2(file, ...), casOut = .casout(casOut, file)))
+  }
+)
+
+setGeneric("cas.read.delim",
+  function(x, file, ..., casOut = NULL) {
+    standardGeneric("cas.read.delim")
+  }
+)
+
+#' Read a Delimited File and Upload to a CAS Table
+#'
+#' This function is a convenience wrapper for
+#' the \R \code{read.delim} and \code{as.CASTable} functions.
+#' After reading the file that is accessible to the \R
+#' client, it is uploaded to an in-memory table in
+#' CAS (the server).
+#'
+#' @param x An instance of a CAS object that represents
+#'  a connection and CAS session.
+#' @param file An \code{character} string that specifies
+#'   the filename or connection for the data to read.
+#' @param \dots Optional parameters that are passed to
+#'   \code{read.delim}.
+#' @param casOut An optional \code{character} or list. If
+#'   you specify a string, then the string is used as the
+#'   in-memory table name. A list can be used to specify
+#'   properties for the in-memory table as follows:
+#'   \describe{
+#'     \item{\code{name}}{An optional \code{character} that
+#'       specifies the name for the in-memory table. By
+#'       default, the name of the data frame is used.}
+#'     \item{\code{caslib}}{An optional \code{character} that
+#'       specifies the caslib. Specify this parameter to
+#'       override the active caslib.}
+#'     \item{\code{label}}{An optional \code{character} that
+#'       specifies a descriptive label for the data.}
+#'     \item{\code{replace}}{An optional \code{logical}. When
+#'       set to TRUE, you can replace an existing in-memory
+#'       table with the same name in the same caslib. The
+#'       default value is FALSE.}
+#'     \item{\code{promote}}{An optional \code{logical}. When
+#'       set to TRUE, the in-memory table has global scope and
+#'       can be available to other CAS sessions (subject to
+#'       access controls). The default value is FALSE and
+#'       the in-memory table has session scope so that it is
+#'       accessible with the session that uploaded the table
+#'       only. Session-scope tables are ideal for data analysis.
+#'       Global-scope tables are better suited for reporting.}
+#'     \item{\code{replication}}{An optional \code{numeric} that
+#'       specifies the number of redundant copies of in-memory
+#'       blocks. This parameter applies to distributed servers
+#'       only. The default value is 1.}
+#'    }
+#'
+#' @return \code{\link{CASTable}}
+#'
+#' @examples
+#' \dontrun{
+#' # Upload a CSV, the in-memory table is named HEART
+#' heartct <- cas.read.delim(s, "http://support.sas.com/documentation/
+#'   onlinedoc/viya/exampledatasets/heart.csv", sep = ",")
+#'
+#' # Upload the same CSV, name the in-memory table HEARTCT
+#' heartct <- cas.read.delim(s, "http://support.sas.com/documentation/
+#'   onlinedoc/viya/exampledatasets/heart.csv", sep = ",",
+#'   casOut = list(name = "heartct", replace = TRUE)
+#' )
+#' }
+#'
+#' @export
+setMethod(
+  "cas.read.delim",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    return(as.CASTable(x, read.delim(file, ...), casOut = .casout(casOut, file)))
+  }
+)
+
+setGeneric("cas.read.delim2",
+  function(x, file, ..., casOut = NULL) {
+    standardGeneric("cas.read.delim2")
+  }
+)
+
+#' Read a Delimited File and Upload to a CAS Table
+#'
+#' This function is a convenience wrapper for
+#' the \R \code{read.delim2} and \code{as.CASTable} functions.
+#' After reading the file that is accessible to the \R
+#' client, it is uploaded to an in-memory table in
+#' CAS (the server).
+#'
+#' @param x An instance of a CAS object that represents
+#'  a connection and CAS session.
+#' @param file An \code{character} string that specifies
+#'   the filename or connection for the data to read.
+#' @param \dots Optional parameters that are passed to
+#'   \code{read.delim2}.
+#' @param casOut An optional \code{character} or list. If
+#'   you specify a string, then the string is used as the
+#'   in-memory table name. A list can be used to specify
+#'   properties for the in-memory table as follows:
+#'   \describe{
+#'     \item{\code{name}}{An optional \code{character} that
+#'       specifies the name for the in-memory table. By
+#'       default, the name of the data frame is used.}
+#'     \item{\code{caslib}}{An optional \code{character} that
+#'       specifies the caslib. Specify this parameter to
+#'       override the active caslib.}
+#'     \item{\code{label}}{An optional \code{character} that
+#'       specifies a descriptive label for the data.}
+#'     \item{\code{replace}}{An optional \code{logical}. When
+#'       set to TRUE, you can replace an existing in-memory
+#'       table with the same name in the same caslib. The
+#'       default value is FALSE.}
+#'     \item{\code{promote}}{An optional \code{logical}. When
+#'       set to TRUE, the in-memory table has global scope and
+#'       can be available to other CAS sessions (subject to
+#'       access controls). The default value is FALSE and
+#'       the in-memory table has session scope so that it is
+#'       accessible with the session that uploaded the table
+#'       only. Session-scope tables are ideal for data analysis.
+#'       Global-scope tables are better suited for reporting.}
+#'     \item{\code{replication}}{An optional \code{numeric} that
+#'       specifies the number of redundant copies of in-memory
+#'       blocks. This parameter applies to distributed servers
+#'       only. The default value is 1.}
+#'    }
+#'
+#' @return \code{\link{CASTable}}
+#'
+#' @examples
+#' \dontrun{
+#' # Upload a CSV, the in-memory table is named HEART
+#' heartct <- cas.read.delim2(s, "http://support.sas.com/documentation/
+#'   onlinedoc/viya/exampledatasets/heart.csv", sep = ",")
+#'
+#' # Upload the same CSV, name the in-memory table HEARTCT
+#' heartct <- cas.read.delim2(s, "http://support.sas.com/documentation/
+#'   onlinedoc/viya/exampledatasets/heart.csv",
+#'   casOut = list(name = "heartct", replace = TRUE, sep = ",")
+#' )
+#' }
+#'
+#' @export
+setMethod(
+  "cas.read.delim2",
+  signature(x = "CAS"),
+  function(x, file, ..., casOut = "") {
+    return(as.CASTable(x, read.delim2(file, ...), casOut = .casout(casOut, file)))
+  }
+)
 setGeneric("cas.read.xlsx",
   function(x, file, ..., casOut = "") {
     standardGeneric("cas.read.xlsx")

@@ -1237,6 +1237,11 @@ as.data.frame.CASTable <- function(x, max.rows = getOption("cas.max.download.row
 
   out <- do.call("rbind", out)
   row.names(out) <- NULL
+
+  if (length(list(...)) > 0) {
+     out <- as.data.frame(out, ...)
+  }
+
   attributes(out)$table.name <- name
   attributes(out)$table.label <- label
   attributes(out)$table.title <- title
@@ -1247,6 +1252,7 @@ as.data.frame.CASTable <- function(x, max.rows = getOption("cas.max.download.row
   attributes(out)$col.sizes <- col.sizes
   attributes(out)$col.types <- col.types
   attributes(out)$col.widths <- col.widths
+
   return(out)
 }
 
