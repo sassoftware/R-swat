@@ -7,7 +7,7 @@
 \S4method{cas.help}{CAS}(.x, .action)
 }
 \arguments{
-\item{.x}{The \code{\link{CAS}} connection object}
+\item{.x}{\code{\link{CAS}} connection object}
 
 \item{.action}{The action name to display help for.}
 }

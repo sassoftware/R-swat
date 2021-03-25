@@ -59,8 +59,6 @@ setMethod(
                           index = FALSE, to = n, from = 1)
     }
     .check_for_cas_errors(res)
-    print(1:min(nrow(res$results$Fetch), n))
-    print(res$results$Fetch)
     rownames(res$results$Fetch) <- 1:min(nrow(res$results$Fetch), n)
     return(res$results$Fetch)
   }

@@ -283,7 +283,7 @@ CASResponse <- setRefClass(
     sw_response = "ANY",
     disposition = "list",
     performance = "list",
-    messages = "list"
+    messages = "character"
   ),
 
   methods = list(
@@ -297,12 +297,21 @@ CASResponse <- setRefClass(
       .error_check(sw_response)
       d[["reason"]] <- sw_response$getDispositionReason()
       .error_check(sw_response)
+      if (is.null(d[["reason"]])) {
+        d[["reason"]] <- character()
+      }
       d[["status"]] <- sw_response$getDispositionStatus()
       .error_check(sw_response)
+      if (is.null(d[["status"]])) {
+        d[["status"]] <- character()
+      }
       d[["statusCode"]] <- sw_response$getDispositionStatusCode()
       .error_check(sw_response)
       d[["debug"]] <- sw_response$getDispositionDebug()
       .error_check(sw_response)
+      if (is.null(d[["debug"]])) {
+        d[["debug"]] <- character()
+      }
       disposition <<- d
 
       p <- list()
@@ -328,13 +337,13 @@ CASResponse <- setRefClass(
       .error_check(sw_response)
       performance <<- p
 
-      msgs <- list()
+      msgs <- character()
       nmessages <- sw_response$getNMessages()
       for (i in 1:nmessages) {
         m <- sw_response$getNextMessage()
         .error_check(sw_response)
         if (!is.null(m) && nchar(m) > 0) {
-          msgs[i] <- m
+          msgs <- c(msgs, m)
           if (as.logical(getOption("cas.print.messages"))) {
             message(m)
           }
@@ -935,13 +944,14 @@ CAS <- setRefClass(
     protocol = "character",
     username = "character",
     session = "character",
-    performance = "ANY",
-    severity = "ANY",
-    statusCode = "ANY",
-    reason = "ANY",
-    status = "ANY",
-    messages = "ANY",
-    events = "ANY",
+    performance = "list",
+    severity = "numeric",
+    statusCode = "numeric",
+    reason = "character",
+    status = "character",
+    messages = "character",
+    debug = "character",
+    events = "list",
     serverFeatures = "character"
   ),
 
@@ -1287,7 +1297,7 @@ CAS <- setRefClass(
         do.call(.self$invoke, args)
         output <- list()
         results <- list()
-        msgs <- list()
+        msgs <- character()
         evts <- list()
         idx <- 1
         while (TRUE) {
@@ -1331,6 +1341,7 @@ CAS <- setRefClass(
       .self$statusCode <- output[["disposition"]][["statusCode"]]
       .self$reason <- output[["disposition"]][["reason"]]
       .self$status <- output[["disposition"]][["status"]]
+      .self$debug <- output[["disposition"]][["debug"]]
       .self$messages <- output[["messages"]]
       .self$events <- output[["events"]]
 
@@ -2721,7 +2732,7 @@ setGeneric("cas.help",
 
 #' Display help for a given action
 #'
-#' @param .x The \code{\link{CAS}} connection object
+#' @param .x \code{\link{CAS}} connection object
 #' @param .action The action name to display help for.
 #'
 #' @export
@@ -2731,5 +2742,509 @@ setMethod(
   function(.x, .action) {
     invisible(sapply(cas.retrieve(.x, "builtins.help", action=.action)$messages,
                      function(y) { cat(gsub("^.*?: ", '', y, perl=TRUE)); cat("\n") }))
+  }
+)
+
+setGeneric("cas.performance",
+  function(.x, .action) {
+    standardGeneric("cas.performance")
+  }
+)
+
+#' Return performance metrics for last CAS action
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return list
+#'
+#' @export
+setMethod(
+  "cas.performance",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$performance)
+  }
+)
+
+#' Return performance metrics for last CAS action
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return list
+#'
+#' @export
+setMethod(
+  "cas.performance",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$performance)
+  }
+)
+
+#' Return performance metrics from result set
+#'
+#' @param .x list
+#'
+#' @return list
+#'
+#' @export
+setMethod(
+  "cas.performance",
+  signature(.x = "list"),
+  function(.x) {
+    if (!is.null(.x$performance)) {
+      return(.x$performance)
+    }
+    return(list())
+  }
+)
+
+setGeneric("cas.severity",
+  function(.x) {
+    standardGeneric("cas.severity")
+  }
+)
+
+#' Return resulting severity of last CAS action
+#'
+#' Possible values are 0 for no errors or warnings,
+#' 1 for warnings, and 2 for errors.
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return integer
+#'
+#' @export
+setMethod(
+  "cas.severity",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$severity)
+  }
+)
+
+#' Return resulting severity of last CAS action
+#'
+#' Possible values are 0 for no errors or warnings,
+#' 1 for warnings, and 2 for errors.
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return integer
+#'
+#' @export
+setMethod(
+  "cas.severity",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$severity)
+  }
+)
+
+#' Return resulting severity from result set
+#'
+#' Possible values are 0 for no errors or warnings,
+#' 1 for warnings, and 2 for errors.
+#'
+#' @param .x list
+#'
+#' @return integer
+#'
+#' @export
+setMethod(
+  "cas.severity",
+  signature(.x = "list"),
+  function(.x) {
+    if (!is.null(.x$disposition) && !is.null(.x$disposition$severity)) {
+      return(.x$disposition$severity)
+    }
+    return(0)
+  }
+)
+
+setGeneric("cas.reason",
+  function(.x) {
+    standardGeneric("cas.reason")
+  }
+)
+
+#' Return resulting reason for failure of last CAS action
+#'
+#' The reason is a general class of error that occurred.
+#' Use `cas.status` for the full error message.
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.reason",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$reason)
+  }
+)
+
+#' Return resulting reason for failure of last CAS action
+#'
+#' The reason is a general class of error that occurred.
+#' Use `cas.status` for the full error message.
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.reason",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$reason)
+  }
+)
+
+#' Return resulting reason for failure from result set
+#'
+#' The reason is a general class of error that occurred.
+#' Use `cas.status` for the full error message.
+#'
+#' @param .x list
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.reason",
+  signature(.x = "list"),
+  function(.x) {
+    if (!is.null(.x$disposition) && !is.null(.x$disposition$reason)) {
+      return(.x$disposition$reason)
+    }
+    return(character())
+  }
+)
+
+setGeneric("cas.status",
+  function(.x) {
+    standardGeneric("cas.status")
+  }
+)
+
+#' Return resulting status message for failure of last CAS action
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.status",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$status)
+  }
+)
+
+#' Return resulting status message for failure of last CAS action
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.status",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$status)
+  }
+)
+
+#' Return resulting status message from result set
+#'
+#' @param .x list
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.status",
+  signature(.x = "list"),
+  function(.x) {
+    if (!is.null(.x$disposition) && !is.null(.x$disposition$status)) {
+      return(.x$disposition$status)
+    }
+    return(character())
+  }
+)
+
+setGeneric("cas.status_code",
+  function(.x) {
+    standardGeneric("cas.status_code")
+  }
+)
+
+#' Return resulting status code for failure of last CAS action
+#'
+#' This status code can be helpful in tech support issues to
+#' determine the underlying problem.
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return numeric
+#'
+#' @export
+setMethod(
+  "cas.status_code",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$statusCode)
+  }
+)
+
+#' Return resulting status code for failure of last CAS action
+#'
+#' This status code can be helpful in tech support issues to
+#' determine the underlying problem.
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return numeric
+#'
+#' @export
+setMethod(
+  "cas.status_code",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$statusCode)
+  }
+)
+
+#' Return resulting status code from result set
+#'
+#' This status code can be helpful in tech support issues to
+#' determine the underlying problem.
+#'
+#' @param .x list
+#'
+#' @return numeric
+#'
+#' @export
+setMethod(
+  "cas.status_code",
+  signature(.x = "list"),
+  function(.x) {
+    if (!is.null(.x$disposition) && !is.null(.x$disposition$statusCode)) {
+      return(.x$disposition$statusCode)
+    }
+    return(0)
+  }
+)
+
+setGeneric("cas.debug",
+  function(.x) {
+    standardGeneric("cas.debug")
+  }
+)
+
+#' Return resulting debug messages of last CAS action
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.debug",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$debug)
+  }
+)
+
+#' Return resulting debug messages of last CAS action
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.debug",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$debug)
+  }
+)
+
+#' Return resulting debug messages from result set
+#'
+#' @param .x list
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.debug",
+  signature(.x = "list"),
+  function(.x) {
+    if (!is.null(.x$disposition) && !is.null(.x$disposition$debug)) {
+      return(.x$disposition$debug)
+    }
+    return(character())
+  }
+)
+
+setGeneric("cas.messages",
+  function(.x) {
+    standardGeneric("cas.messages")
+  }
+)
+
+#' Return messages from the last CAS action
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.messages",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$messages)
+  }
+)
+
+#' Return messages from the last CAS action
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.messages",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$messages)
+  }
+)
+
+#' Return messages from result set
+#'
+#' @param .x list
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.messages",
+  signature(.x = "list"),
+  function(.x) {
+    if (!is.null(.x$messages)) {
+      return(.x$messages)
+    }
+    return(character())
+  }
+)
+
+setGeneric("cas.events",
+  function(.x) {
+    standardGeneric("cas.events")
+  }
+)
+
+#' Return events from the last CAS action
+#'
+#' Events are things such as caslibs or tables being added,
+#' updated, or deleted.
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return list
+#'
+#' @export
+setMethod(
+  "cas.events",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$events)
+  }
+)
+
+#' Return events from the last CAS action
+#'
+#' Events are things such as caslibs or tables being added,
+#' updated, or deleted.
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return list
+#'
+#' @export
+setMethod(
+  "cas.events",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$events)
+  }
+)
+
+#' Return events from result set
+#'
+#' Events are things such as caslibs or tables being added,
+#' updated, or deleted.
+#'
+#' @param .x list
+#'
+#' @return list
+#'
+#' @export
+setMethod(
+  "cas.events",
+  signature(.x = "list"),
+  function(.x) {
+    if (!is.null(.x$events)) {
+      return(.x$events)
+    }
+    return(list())
+  }
+)
+
+setGeneric("cas.session",
+  function(.x) {
+    standardGeneric("cas.session")
+  }
+)
+
+#' Return the session ID of the CAS connection
+#'
+#' @param .x \code{\link{CAS}} connection object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.session",
+  signature(.x = "CAS"),
+  function(.x) {
+    return(.x$session)
+  }
+)
+
+#' Return the session ID of the CAS connection
+#'
+#' @param .x \code{\link{CASTable}} object
+#'
+#' @return character
+#'
+#' @export
+setMethod(
+  "cas.session",
+  signature(.x = "CASTable"),
+  function(.x) {
+    return(.x@conn$session)
   }
 )
