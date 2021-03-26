@@ -474,7 +474,7 @@ REST_CASValue <- setRefClass(
         },
 
         getBlobBase64 = function() {
-            return( as.character(value_) )
+            return( as.character(value_$data) )
         },
 
         getBoolean = function() {
