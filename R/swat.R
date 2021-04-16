@@ -1775,7 +1775,57 @@ cas2r <- function(sw_value) {
           return( value )
       }
 
-      if ( nCols > 0 )
+      get_transformer <- function (type) {
+         if ( type == "int64" )
+            return(function (out) swat.as.integer64(setMissing(out[[1]], int64_missval)))
+         else if ( type == "int64-array" )
+            return(function (out) swat.as.integer64(setMissing(out[[1]], int64_missval)))
+         else if ( type == "date" )
+            return(cas2rDate)
+         else if ( type == "time" )
+            return(cas2rPOSIXct)
+         else if ( type == "datetime" )
+            return(cas2rPOSIXct)
+         else
+            return(NULL)
+      }
+
+      toVectors <- NULL
+      try({ toVectors <- sw_table$toVectors }, silent = TRUE)
+
+      # Use toVectors if it exists, it will be much faster
+      if ( nCols > 0 && !is.null(toVectors) ) {
+         col.names <- c()
+         col.transformers <- list()
+         for (col in 0 : (nCols - 1)) {
+            name <- sw_table$getColumnName(col)
+            swat::errorcheck(sw_table)
+            len <- sw_table$getColumnArrayNItems(col)
+            swat::errorcheck(sw_table)
+            type <- sw_table$getColumnType(col)
+            swat::errorcheck(sw_table)
+            if ( len == 1 ) {
+               col.names <- c(col.names, name)
+               col.transformers[[name]] <- get_transformer(type)
+            } else {
+               for (i in 1:len) {
+                  col.names <- c(col.names, paste0(name, i))
+                  col.transformers[[paste0(name, i)]] <- get_transformer(type)
+               }
+            }
+         }
+         table <- as.data.frame(sw_table$toVectors(),
+                                stringsAsFactors = FALSE,
+                                col.names = col.names,
+                                check.names = FALSE)
+         for (col in names(col.transformers)) {
+            table[col] <- lapply(table[col], col.transformers[[col]])
+         }
+         table <- add_bygroup_columns(table)
+         table <- table[c(setdiff(names(table), col.names), col.names)]
+      }
+
+      else if ( nCols > 0 )
       {
          columns <- list()
          colnames <- c()

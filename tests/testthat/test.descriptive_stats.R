@@ -172,8 +172,9 @@ test_that("cas.tvalue", {
 
 
 test_that("colSums", {
-  expect_that(colSums(ct[1:4]), is_a("numeric"))
-  expect_equivalent(colSums(df[1:4]), colSums(ct[1:4]))
+  out <- colSums(ct[1:4])
+  expect_true(class(out) == "numeric" || class(out) == "integer")
+  expect_equivalent(colSums(df[1:4]), out)
 })
 
 ## colMeans()

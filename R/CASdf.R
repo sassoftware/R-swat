@@ -211,9 +211,9 @@ to.casDataFrame <-  function(ct, obs=32768) {
            fv = fv[fv != Xcmp]
 
   if (length(tp$orderby))
-     res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=10, sortby=tp$orderby)
+     res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=1000, sortby=tp$orderby)
   else
-     res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=10)
+     res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=1000)
 
   fetch <- res$results$Fetch
 
