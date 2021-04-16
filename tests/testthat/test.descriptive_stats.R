@@ -48,7 +48,7 @@ test_that("Table Meta Functions", {
 test_that("cas.count", {
   cout <- cas.count(t)
   dfout <- sapply(titanic, function(x) sum(!is.na(x)))
-  expect_that(cout, is_a("numeric"))
+  expect_true(class(cout) == "numeric" || class(cout) == "integer")
   expect_equivalent(names(cout), names(dfout))
   expect_equivalent(cout, dfout)
 })
@@ -348,8 +348,9 @@ test_that("cas.quantile", {
 })
 
 test_that("colSums", {
-  expect_that(colSums(ct[1:4]), is_a("numeric"))
-  expect_equivalent(colSums(df[1:4]), colSums(ct[1:4]))
+  out <- colSums(ct[1:4])
+  expect_true(class(out) == "numeric" || class(out) == "integer")
+  expect_equivalent(colSums(df[1:4]), out)
 })
 
 test_that("colMeans", {

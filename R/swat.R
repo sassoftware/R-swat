@@ -2241,7 +2241,57 @@ getnext <- function(...) {
       return(value)
     }
 
-    if (n_cols > 0) {
+    get_transformer <- function (type) {
+      if ( type == "int64" )
+        return(function (out) .as.integer64(set_missing(out[[1]], int64_missval)))
+      else if ( type == "int64-array" )
+        return(function (out) .as.integer64(set_missing(out[[1]], int64_missval)))
+      else if ( type == "date" )
+        return(CASd.as.Date)
+      else if ( type == "time" )
+        return(CASdt.as.POSIXct)
+      else if ( type == "datetime" )
+        return(CASdt.as.POSIXct)
+      else
+        return(NULL)
+    }
+
+    to_vectors <- NULL
+    try({ to_vectors <- sw_table$toVectors }, silent = TRUE)
+
+    # Use to_vectors if it exists, it will be much faster
+    if ( n_cols > 0 && !is.null(to_vectors) ) {
+      col.names <- c()
+      col.transformers <- list()
+      for (col in 0 : (n_cols - 1)) {
+        name <- sw_table$getColumnName(col)
+        .error_check(sw_table)
+        len <- sw_table$getColumnArrayNItems(col)
+        .error_check(sw_table)
+        type <- sw_table$getColumnType(col)
+        .error_check(sw_table)
+        if ( len == 1 ) {
+          col.names <- c(col.names, name)
+          col.transformers[[name]] <- get_transformer(type)
+        } else {
+          for (i in 1:len) {
+            col.names <- c(col.names, paste0(name, i))
+            col.transformers[[paste0(name, i)]] <- get_transformer(type)
+          }
+        }
+      }
+      table <- as.data.frame(sw_table$toVectors(),
+                             stringsAsFactors = FALSE,
+                             col.names = col.names,
+                             check.names = FALSE)
+      for (col in names(col.transformers)) {
+        table[col] <- lapply(table[col], col.transformers[[col]])
+      }
+      table <- add_bygroup_columns(table)
+      table <- table[c(setdiff(names(table), col.names), col.names)]
+    }
+
+    else if (n_cols > 0) {
       table <- add_bygroup_columns(table)
 
       for (col in 0:(n_cols - 1)) {

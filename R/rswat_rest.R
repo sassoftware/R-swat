@@ -155,6 +155,52 @@ REST_CASTable <- setRefClass(
       }
     },
 
+    toVectors = function() {
+      # Compute column names taking vectors into account
+      col.names <- c()
+      for ( i in 1:length(obj_$schema) ) {
+        type <- .self$getColumnType(i-1)
+        name <- .self$getColumnName(i-1)
+        if ( grepl("-array", type, fixed = TRUE) ) {
+          nitems <- .self$getColumnArrayNItems(i-1)
+          for ( j in 1:nitems ) {
+            col.names <- c(col.names, paste0(name, j))
+          }
+        } else {
+          col.names <- c(col.names, name)
+        }
+      }
+
+      # Normalize NULLs, vector columns, and binary data columns
+      normalize <- function(row) {
+        out <- list()
+        for ( i in 1:length(row) ) {
+          cell <- row[[i]]
+          if ( is.null(cell) ) {
+            out <- c(out, NaN)
+          }
+          else if ( class(cell) == "list" ) {
+            if ( is.null(cell$data) ) {
+              out <- c(out, unlist(cell))
+            } else {
+              out <- c(out, cell$data)
+            }
+          } else {
+            out <- c(out, cell)
+          }
+        }
+        return( out )
+      }
+      out <- lapply(obj_$rows, normalize)
+
+      # Convert rows of data to data.frame
+      out$stringsAsFactors = FALSE
+      out <- do.call(rbind.data.frame, out)
+      names(out) <- col.names
+
+      return( out )
+    },
+
     getAttributes = function() {
       return(attrs_)
     },
