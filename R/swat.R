@@ -1790,11 +1790,20 @@ cas2r <- function(sw_value) {
             return(NULL)
       }
 
-      toVectors <- NULL
-      try({ toVectors <- sw_table$toVectors }, silent = TRUE)
+      vectors <- NULL
+      tryCatch({
+         if ( nCols > 0 ) {
+            vectors <- sw_table$toVectors()
+         }
+      }, error = function (e) {
+         e <- as.character(e)
+         if (!grepl("not available for .Call", e)) {
+            stop(e)
+         }
+      }, silent = TRUE)
 
-      # Use toVectors if it exists, it will be much faster
-      if ( nCols > 0 && !is.null(toVectors) ) {
+      # Use vectors if it exists, it will be much faster
+      if ( !is.null(vectors) ) {
          col.names <- c()
          col.transformers <- list()
          for (col in 0 : (nCols - 1)) {
@@ -1814,7 +1823,7 @@ cas2r <- function(sw_value) {
                }
             }
          }
-         table <- as.data.frame(sw_table$toVectors(),
+         table <- as.data.frame(vectors,
                                 stringsAsFactors = FALSE,
                                 col.names = col.names,
                                 check.names = FALSE)

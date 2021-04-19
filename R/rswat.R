@@ -4,6 +4,9 @@
 # Do not make changes to this file unless you know what you are doing--modify
 # the SWIG interface file instead.
 
+##   Generated via the command line invocation:
+##	 /sas3rd/dev/mva-vb025/lax/swig/swig-4.0.1/bin/swig-exec -r -module rswat -I/sas/dev/mva-vbviya/TKLAX/h -I/sas/dev/mva-vbviya/TKPOS/h -I/u/kesmit/pp/swat.vbviya/GTKLAXND/h -I/u/kesmit/pp/swat.vbviya/tkcas/h -I/sas/dev/mva-vbviya/GTKLAXND/h -I/sas/dev/mva-vbviya/tkcas/h -I/sas/dev/mva-vbviya/tklua/h -I/sas/dev/mva-vbviya/tkaasubs/h -I/sas/dev/mva-vbviya/tkpublic/public/h -I/sas/dev/mva-vbviya/tkmk/public/h -I/sas/dev/mva-vbviya/tkext/h -I/sas/dev/mva-vbviya/tkcommon/h -I/sas/dev/mva-vbviya/tkhostcm/h -I/sas/dev/mva-vbviya/tksubs/h -I/sas/dev/mva-vbviya/tkvsubs/h -I/sas/dev/mva-vbviya/tk/h -I/sasjdk/jdk/LAX/oracle-1.5.0_06/include -I/sasjdk/jdk/LAX/oracle-1.5.0_06/include/linux -outdir /usr/tmp/dev_mva-vbviya_laxnd_en_r_swat_85886690 -o /usr/tmp/dev_mva-vbviya_laxnd_en_r_swat_1573667632 /u/kesmit/pp/swat.vbviya/tkcas/misc/swat.i
+
 
 #                         srun.swg                            #
 #
@@ -306,6 +309,17 @@ function(x) {print(as(x, "character"))})))
 attr(`InitializeTK`, 'returnType') = '_p_void'
 attr(`InitializeTK`, "inputTypes") = c('character')
 class(`InitializeTK`) = c("SWIGFunction", class('InitializeTK'))
+
+# Start of TKVersion
+
+`TKVersion` = function()
+{
+  ;.Call('R_swig_TKVersion', PACKAGE='rswat');
+  
+}
+
+attr(`TKVersion`, 'returnType') = 'character'
+class(`TKVersion`) = c("SWIGFunction", class('TKVersion'))
 
 # Start of new_SW_CASConnection
 
@@ -3784,6 +3798,19 @@ attr(`SW_CASTable_getColumnDoubleArrayAttributeItem`, 'returnType') = 'numeric'
 attr(`SW_CASTable_getColumnDoubleArrayAttributeItem`, "inputTypes") = c('_p_CASTable', 'integer', 'character', 'integer')
 class(`SW_CASTable_getColumnDoubleArrayAttributeItem`) = c("SWIGFunction", class('SW_CASTable_getColumnDoubleArrayAttributeItem'))
 
+# Start of SW_CASTable_toVectors
+
+`SW_CASTable_toVectors` = function(self, .copy = FALSE)
+{
+  if (inherits(self, "ExternalReference")) self = slot(self,"ref") 
+  ;.Call('R_swig_SW_CASTable_toVectors', self, as.logical(.copy), PACKAGE='rswat');
+  
+}
+
+attr(`SW_CASTable_toVectors`, 'returnType') = '_p_SEXP'
+attr(`SW_CASTable_toVectors`, "inputTypes") = c('_p_CASTable')
+class(`SW_CASTable_toVectors`) = c("SWIGFunction", class('SW_CASTable_toVectors'))
+
 # Start of new_SW_CASTable
 
 `SW_CASTable` = function(.copy = FALSE)
@@ -3804,7 +3831,7 @@ class(`SW_CASTable`) = c("SWIGFunction", class('SW_CASTable'))
 setMethod('$', '_p_CASTable', function(x, name)
 
 {
-  accessorFuns = list('destroy' = SW_CASTable_destroy, 'getTypeName' = SW_CASTable_getTypeName, 'getSOptions' = SW_CASTable_getSOptions, 'isNULL' = SW_CASTable_isNULL, 'getName' = SW_CASTable_getName, 'getLabel' = SW_CASTable_getLabel, 'getTitle' = SW_CASTable_getTitle, 'getNColumns' = SW_CASTable_getNColumns, 'getNRows' = SW_CASTable_getNRows, 'getColumnName' = SW_CASTable_getColumnName, 'getColumnLabel' = SW_CASTable_getColumnLabel, 'getColumnType' = SW_CASTable_getColumnType, 'getColumnWidth' = SW_CASTable_getColumnWidth, 'getColumnArrayNItems' = SW_CASTable_getColumnArrayNItems, 'getColumnFormat' = SW_CASTable_getColumnFormat, 'getStringValue' = SW_CASTable_getStringValue, 'getBinaryValue' = SW_CASTable_getBinaryValue, 'getBinaryNBytes' = SW_CASTable_getBinaryNBytes, 'getBinaryBase64Value' = SW_CASTable_getBinaryBase64Value, 'getDateValue' = SW_CASTable_getDateValue, 'getTimeValue' = SW_CASTable_getTimeValue, 'getTimeValueAsString' = SW_CASTable_getTimeValueAsString, 'getDatetimeValue' = SW_CASTable_getDatetimeValue, 'getDatetimeValueAsString' = SW_CASTable_getDatetimeValueAsString, 'getInt64Value' = SW_CASTable_getInt64Value, 'getInt64ValueAsString' = SW_CASTable_getInt64ValueAsString, 'getInt64ArrayValue' = SW_CASTable_getInt64ArrayValue, 'getInt64ArrayValueAsString' = SW_CASTable_getInt64ArrayValueAsString, 'getInt32Value' = SW_CASTable_getInt32Value, 'getInt32ArrayValue' = SW_CASTable_getInt32ArrayValue, 'getDoubleValue' = SW_CASTable_getDoubleValue, 'getDoubleArrayValue' = SW_CASTable_getDoubleArrayValue, 'getLastErrorMessage' = SW_CASTable_getLastErrorMessage, 'getNextAttributeKey' = SW_CASTable_getNextAttributeKey, 'getAttributeType' = SW_CASTable_getAttributeType, 'getAttributeNItems' = SW_CASTable_getAttributeNItems, 'getInt32Attribute' = SW_CASTable_getInt32Attribute, 'getInt32ArrayAttributeItem' = SW_CASTable_getInt32ArrayAttributeItem, 'getInt64Attribute' = SW_CASTable_getInt64Attribute, 'getInt64AttributeAsString' = SW_CASTable_getInt64AttributeAsString, 'getInt64ArrayAttributeItem' = SW_CASTable_getInt64ArrayAttributeItem, 'getInt64ArrayAttributeItemAsString' = SW_CASTable_getInt64ArrayAttributeItemAsString, 'getStringAttribute' = SW_CASTable_getStringAttribute, 'getDoubleAttribute' = SW_CASTable_getDoubleAttribute, 'getDoubleArrayAttributeItem' = SW_CASTable_getDoubleArrayAttributeItem, 'getNextColumnAttributeKey' = SW_CASTable_getNextColumnAttributeKey, 'getColumnAttributeType' = SW_CASTable_getColumnAttributeType, 'getColumnAttributeNItems' = SW_CASTable_getColumnAttributeNItems, 'getColumnInt32Attribute' = SW_CASTable_getColumnInt32Attribute, 'getColumnInt32ArrayAttributeItem' = SW_CASTable_getColumnInt32ArrayAttributeItem, 'getColumnInt64Attribute' = SW_CASTable_getColumnInt64Attribute, 'getColumnInt64AttributeAsString' = SW_CASTable_getColumnInt64AttributeAsString, 'getColumnInt64ArrayAttributeItem' = SW_CASTable_getColumnInt64ArrayAttributeItem, 'getColumnInt64ArrayAttributeItemAsString' = SW_CASTable_getColumnInt64ArrayAttributeItemAsString, 'getColumnStringAttribute' = SW_CASTable_getColumnStringAttribute, 'getColumnDoubleAttribute' = SW_CASTable_getColumnDoubleAttribute, 'getColumnDoubleArrayAttributeItem' = SW_CASTable_getColumnDoubleArrayAttributeItem);
+  accessorFuns = list('destroy' = SW_CASTable_destroy, 'getTypeName' = SW_CASTable_getTypeName, 'getSOptions' = SW_CASTable_getSOptions, 'isNULL' = SW_CASTable_isNULL, 'getName' = SW_CASTable_getName, 'getLabel' = SW_CASTable_getLabel, 'getTitle' = SW_CASTable_getTitle, 'getNColumns' = SW_CASTable_getNColumns, 'getNRows' = SW_CASTable_getNRows, 'getColumnName' = SW_CASTable_getColumnName, 'getColumnLabel' = SW_CASTable_getColumnLabel, 'getColumnType' = SW_CASTable_getColumnType, 'getColumnWidth' = SW_CASTable_getColumnWidth, 'getColumnArrayNItems' = SW_CASTable_getColumnArrayNItems, 'getColumnFormat' = SW_CASTable_getColumnFormat, 'getStringValue' = SW_CASTable_getStringValue, 'getBinaryValue' = SW_CASTable_getBinaryValue, 'getBinaryNBytes' = SW_CASTable_getBinaryNBytes, 'getBinaryBase64Value' = SW_CASTable_getBinaryBase64Value, 'getDateValue' = SW_CASTable_getDateValue, 'getTimeValue' = SW_CASTable_getTimeValue, 'getTimeValueAsString' = SW_CASTable_getTimeValueAsString, 'getDatetimeValue' = SW_CASTable_getDatetimeValue, 'getDatetimeValueAsString' = SW_CASTable_getDatetimeValueAsString, 'getInt64Value' = SW_CASTable_getInt64Value, 'getInt64ValueAsString' = SW_CASTable_getInt64ValueAsString, 'getInt64ArrayValue' = SW_CASTable_getInt64ArrayValue, 'getInt64ArrayValueAsString' = SW_CASTable_getInt64ArrayValueAsString, 'getInt32Value' = SW_CASTable_getInt32Value, 'getInt32ArrayValue' = SW_CASTable_getInt32ArrayValue, 'getDoubleValue' = SW_CASTable_getDoubleValue, 'getDoubleArrayValue' = SW_CASTable_getDoubleArrayValue, 'getLastErrorMessage' = SW_CASTable_getLastErrorMessage, 'getNextAttributeKey' = SW_CASTable_getNextAttributeKey, 'getAttributeType' = SW_CASTable_getAttributeType, 'getAttributeNItems' = SW_CASTable_getAttributeNItems, 'getInt32Attribute' = SW_CASTable_getInt32Attribute, 'getInt32ArrayAttributeItem' = SW_CASTable_getInt32ArrayAttributeItem, 'getInt64Attribute' = SW_CASTable_getInt64Attribute, 'getInt64AttributeAsString' = SW_CASTable_getInt64AttributeAsString, 'getInt64ArrayAttributeItem' = SW_CASTable_getInt64ArrayAttributeItem, 'getInt64ArrayAttributeItemAsString' = SW_CASTable_getInt64ArrayAttributeItemAsString, 'getStringAttribute' = SW_CASTable_getStringAttribute, 'getDoubleAttribute' = SW_CASTable_getDoubleAttribute, 'getDoubleArrayAttributeItem' = SW_CASTable_getDoubleArrayAttributeItem, 'getNextColumnAttributeKey' = SW_CASTable_getNextColumnAttributeKey, 'getColumnAttributeType' = SW_CASTable_getColumnAttributeType, 'getColumnAttributeNItems' = SW_CASTable_getColumnAttributeNItems, 'getColumnInt32Attribute' = SW_CASTable_getColumnInt32Attribute, 'getColumnInt32ArrayAttributeItem' = SW_CASTable_getColumnInt32ArrayAttributeItem, 'getColumnInt64Attribute' = SW_CASTable_getColumnInt64Attribute, 'getColumnInt64AttributeAsString' = SW_CASTable_getColumnInt64AttributeAsString, 'getColumnInt64ArrayAttributeItem' = SW_CASTable_getColumnInt64ArrayAttributeItem, 'getColumnInt64ArrayAttributeItemAsString' = SW_CASTable_getColumnInt64ArrayAttributeItemAsString, 'getColumnStringAttribute' = SW_CASTable_getColumnStringAttribute, 'getColumnDoubleAttribute' = SW_CASTable_getColumnDoubleAttribute, 'getColumnDoubleArrayAttributeItem' = SW_CASTable_getColumnDoubleArrayAttributeItem, 'toVectors' = SW_CASTable_toVectors);
   ;        idx = pmatch(name, names(accessorFuns));
   if(is.na(idx)) 
   return(callNextMethod(x, name));
