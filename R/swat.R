@@ -2256,11 +2256,20 @@ getnext <- function(...) {
         return(NULL)
     }
 
-    to_vectors <- NULL
-    try({ to_vectors <- sw_table$toVectors }, silent = TRUE)
+    vectors <- NULL
+    tryCatch({
+      if ( nCols > 0 ) {
+        vectors <- sw_table$toVectors()
+      }
+    }, error = function (e) {
+       e <- as.character(e)
+       if (!grepl("not available for .Call", e)) {
+          stop(e)
+       }
+    }, silent = TRUE)
 
-    # Use to_vectors if it exists, it will be much faster
-    if ( n_cols > 0 && !is.null(to_vectors) ) {
+    # Use vectors if it exists, it will be much faster
+    if ( !is.null(vectors) ) {
       col.names <- c()
       col.transformers <- list()
       for (col in 0 : (n_cols - 1)) {
