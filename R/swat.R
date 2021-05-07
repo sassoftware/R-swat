@@ -1827,8 +1827,10 @@ cas2r <- function(sw_value) {
                                 stringsAsFactors = FALSE,
                                 col.names = col.names,
                                 check.names = FALSE)
-         for (col in names(col.transformers)) {
-            table[col] <- lapply(table[col], col.transformers[[col]])
+         if (nRows > 0) {
+            for (col in names(col.transformers)) {
+               table[col] <- lapply(table[col], col.transformers[[col]])
+            }
          }
          table <- add_bygroup_columns(table)
          table <- table[c(setdiff(names(table), col.names), col.names)]
