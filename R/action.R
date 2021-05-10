@@ -55,7 +55,10 @@
 #' @noRd
 #'
 .gen_sig <- function(x, action) {
-  args <- list(quote(x), "builtins.reflect", stop.on.error = TRUE, action = action, showLabels = FALSE)
+  args <- list(quote(x), "builtins.reflect", stop.on.error = TRUE, action = action)
+  if ("reflection.show.labels" %in% x$serverFeatures) {
+    args$levels <- FALSE
+  }
   if ("reflection.levels" %in% x$serverFeatures) {
     args$levels <- 1
   }
@@ -164,7 +167,10 @@
   if (startsWith(action, "cas.")) {
     action <- substr(action, 5, nchar(action))
   }
-  args <- list("builtins.reflect", action = action, showLabels = FALSE)
+  args <- list("builtins.reflect", action = action)
+  if ("reflection.show.labels" %in% x$serverFeatures) {
+    args$levels <- FALSE
+  }
   if ("reflection.levels" %in% x$serverFeatures) {
     args$levels <- 1
   }

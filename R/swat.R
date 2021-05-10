@@ -1067,13 +1067,17 @@ CAS <- setRefClass(
       # Get server features
       res <- .self$retrieve("builtins.reflect",
         action = "builtins.reflect",
-        showLabels = FALSE, `_messagelevel` = "error"
+        `_messagelevel` = "error"
       )
       params <- res$results[[1]]$actions[[1]]$params
       for (i in seq_len(length(params))) {
         if (params[[i]]$name == "levels") {
           serverFeatures <<- c(.self$serverFeatures, "reflection.levels")
         }
+      }
+      res <- .self$retrieve("builtins.about", `_messagelevel` = "error")
+      if (as.numeric(res$results$About$Version) >= 3.5) {
+        serverFeatures <<- c(.self$serverFeatures, "reflection.show.labels")
       }
 
       if (as.logical(getOption("cas.gen.function"))) {
@@ -2293,8 +2297,10 @@ getnext <- function(...) {
                              stringsAsFactors = FALSE,
                              col.names = col.names,
                              check.names = FALSE)
-      for (col in names(col.transformers)) {
-        table[col] <- lapply(table[col], col.transformers[[col]])
+      if ( nrows > 0 ) {
+        for (col in names(col.transformers)) {
+          table[col] <- lapply(table[col], col.transformers[[col]])
+        }
       }
       table <- add_bygroup_columns(table)
       table <- table[c(setdiff(names(table), col.names), col.names)]
