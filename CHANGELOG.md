@@ -1,6 +1,13 @@
 
 # Change Log
 
+## 1.6.1 - 2021-05-10
+
+- Improve CAS result table to `data.frame` performance
+- Fix blob support in REST interface
+- Add support for RStudio connections
+- Improve libssl / libcrypto detection
+
 ## 1.6.0 - 2021-01-13
 
 - Fix binary parameters and downloads
