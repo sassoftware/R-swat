@@ -230,7 +230,8 @@ casRetrieve <-  function(caz, ...) {
 
 gen.functions2 <-  function(cas, actionSet) {
   #message(paste("get action set list", Sys.time()))
-  args <- list(quote(cas), 'builtins.reflect', actionSet=actionSet, showLabels=FALSE)
+  args <- list(quote(cas), 'builtins.reflect', actionSet=actionSet)
+  if ( 'reflection.show.labels' %in% cas$serverFeatures ) { args$showLabels <- FALSE }
   if ( 'reflection.levels' %in% cas$serverFeatures ) { args$levels <- 1 }
   res = do.call(swat::runAction, args)
   #message(paste("got action set list", Sys.time()))
@@ -272,7 +273,8 @@ gen.functions2 <-  function(cas, actionSet) {
 
 .gen.sig <-  function(cas, actn) {
   #message(paste("get action list", Sys.time()))
-  args <- list(quote(cas), 'builtins.reflect', check_errors=TRUE, action=actn, showLabels=FALSE)
+  args <- list(quote(cas), 'builtins.reflect', check_errors=TRUE, action=actn)
+  if ( 'reflection.show.labels' %in% cas$serverFeatures ) { args$showLabels <- FALSE }
   if ( 'reflection.levels' %in% cas$serverFeatures ) { args$levels <- 1 }
   res = do.call(swat::runAction, args)
   #message(paste("got action list", Sys.time()))
@@ -412,7 +414,8 @@ listActionParms <- function(conn, actn, display=TRUE){
      actn = toString(substitute(actn))
   if (startsWith(actn, 'cas.'))
      actn = substr(actn, 5, nchar(actn))
-  args <- list('builtins.reflect', action=actn, showLabels=FALSE)
+  args <- list('builtins.reflect', action=actn)
+  if ( 'reflection.show.labels' %in% conn$serverFeatures ) { args$showLabels <- FALSE }
   if ( 'reflection.levels' %in% conn$serverFeatures ) { args$levels <- 1 }
   res <- do.call(conn$retrieve, args)
   swat::check_for_cas_errors(res)

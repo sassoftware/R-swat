@@ -951,12 +951,16 @@ CAS <- setRefClass(
 
          # Get server features
          res <- .self$retrieve('builtins.reflect', action='builtins.reflect',
-                               showLabels=FALSE, `_messagelevel`='error')
+                               `_messagelevel`='error')
          params <- res$results[[1]]$actions[[1]]$params
          for (i in 1:length(params)) {
             if ( params[[i]]$name == 'levels' ) {
                serverFeatures <<- c(.self$serverFeatures, 'reflection.levels')
             }
+         }
+         res <- .self$retrieve('builtins.about', `_messagelevel`='error')
+         if (as.numeric(res$results$About$Version) >= 3.5) {
+            serverFeatures <<- c(.self$serverFeatures, 'reflection.show.labels')
          }
 
          if ( is.null(options) || !('gen_actions' %in% names(options)) ||
