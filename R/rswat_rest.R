@@ -860,6 +860,29 @@ expand_params <- function (params)
    return (out)
 }
 
+.setup_ssl <- function() {
+   sslreqcert <- tolower(Sys.getenv('SSLREQCERT', unset='0'))
+   if ( sslreqcert == 'y' || sslreqcert == 'yes' || sslreqcert == '1' || sslreqcert == 'on' )
+   {
+      return(httr::config(ssl_verifypeer=0L))
+   }
+   else if ( !is.na(Sys.getenv('CAS_CLIENT_SSL_CA_LIST', unset=NA)) )
+   {
+     return(httr::config(cainfo=Sys.getenv('CAS_CLIENT_SSL_CA_LIST')))
+   }
+   else if ( !is.na(Sys.getenv('SAS_TRUSTED_CA_CERTIFICATES_PEM_FILE', unset=NA)) )
+   {
+     return(httr::config(cainfo=Sys.getenv('SAS_TRUSTED_CA_CERTIFICATES_PEM_FILE')))
+   }
+   else if ( !is.na(Sys.getenv('SSLCALISTLOC', unset=NA)) )
+   {
+     return(httr::config(cainfo=Sys.getenv('SSLCALISTLOC')))
+   }
+   else {
+     return(httr::config())
+   }
+}
+
 REST_CASConnection <- setRefClass(
 
     Class = 'REST_CASConnection',
@@ -897,21 +920,7 @@ REST_CASConnection <- setRefClass(
             orig_port_ <<- port
             tkhttp_id_ <<- ''
 
-            if ( !is.na(Sys.getenv('CAS_CLIENT_SSL_CA_LIST', unset=NA)) )
-            {
-                config_ <<- httr::config(cainfo=Sys.getenv('CAS_CLIENT_SSL_CA_LIST'))
-            }
-            else if ( !is.na(Sys.getenv('SAS_TRUSTED_CA_CERTIFICATES_PEM_FILE', unset=NA)) )
-            {
-                config_ <<- httr::config(cainfo=Sys.getenv('SAS_TRUSTED_CA_CERTIFICATES_PEM_FILE'))
-            }
-            else if ( !is.na(Sys.getenv('SSLCALISTLOC', unset=NA)) )
-            {
-                config_ <<- httr::config(cainfo=Sys.getenv('SSLCALISTLOC'))
-            }
-            else {
-                config_ <<- httr::config()
-            }
+            config_ <<- .setup_ssl()
 
             if ( is.null(password) )
             {
@@ -978,7 +987,11 @@ REST_CASConnection <- setRefClass(
                 authinfo <- query_authinfo(current_hostname_, username=username, protocol=current_port_)
             }
 
-            if ( is.null(authinfo) )
+            if ( (is.null(username) || username == '') && (!is.null(password) && password != '') ) {
+                auth_ <<- httr::add_headers(Authorization=paste('Bearer', password))
+                password_ <<- jsonlite::base64_enc(password)
+            }
+            else if ( is.null(authinfo) )
             {
                 if ( is.null(username) || username == '' ) {
                    stop('No username was specified.')
