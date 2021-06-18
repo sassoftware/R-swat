@@ -1,6 +1,10 @@
 
 # Change Log
 
+## 1.6.2 - 2021-06-18
+
+- Add authorization code style of authentication
+
 ## 1.6.1 - 2021-05-10
 
 - Improve CAS result table to `data.frame` performance
