@@ -873,6 +873,65 @@ CASDataMsgHandler <- setRefClass(
               password = password, protocol = protocol))
 }
 
+.get_token <- function(username=NULL, password=NULL, authcode=NULL, client_id=NULL,
+                       client_secret=NULL, url=NULL) {
+  if ( is.null(client_id) ) {
+    client_id <- getOption('cas.client_id')
+    if ( is.null(client_id) ) {
+      client_id <- 'SWAT'
+    }
+  }
+
+  if ( is.null(client_secret) ) {
+    client_secret <- getOption('cas.client_secret')
+    if ( is.null(client_secret) ) {
+      client_secret <- ''
+    }
+  }
+
+  if ( is.null(username) ) {
+    username <- getOption('cas.username')
+  }
+
+  if ( is.null(password) ) {
+    password <- getOption('cas.token')
+  }
+
+  config <- .setup_ssl()
+  auth <- httr::authenticate(client_id, '')
+
+  url <- httr::parse_url(url)
+  url$path <- '/SASLogon/oauth/token'
+  url$query <- NULL
+  url$params <- NULL
+  url$fragment <- NULL
+  url$username <- NULL
+  url$password <- NULL
+  url <- httr::build_url(url)
+  httr::handle_reset(url)
+
+  if ( !is.null(authcode) ) {
+    body <- paste0('grant_type=authorization_code',
+                   '&code=', URLencode(authcode),
+                   '&client_id=', URLencode(client_id),
+                   '&client_secret=', URLencode(client_secret))
+  } else if ( !is.null(username) && !is.null(password) ) {
+    body <- paste0('grant_type=password',
+                   '&username=', URLencode(username),
+                   '&password=', URLencode(password))
+  } else {
+    stop('no authcode, username, or password was given')
+  }
+
+  res <- httr::POST(url, auth, config, body=body,
+                    httr::add_headers('Accept'='application/vnd.sas.compute.session+json',
+                                      'Content-Type'='application/x-www-form-urlencoded'))
+
+  out <- httr::content(res, as='parsed', type='application/json', encoding='utf-8')
+
+  return(out$access_token)
+}
+
 #' CAS Object Class
 #'
 #' An instance of this class represents a connection and session
@@ -907,6 +966,9 @@ CASDataMsgHandler <- setRefClass(
 #'   for authentication.  By default, ~/.authinfo is used on
 #'   Linux and \%HOMEDRIVE\% \\\%HOMEPATH\%\\_authinfo is used on
 #'   Windows.
+#' @param path Base path of the connection URL
+#' @param authcode Authorization code from SASLogon used to retrieve
+#'   an OAuth token.
 #'
 #' @return A CAS object.
 #'
@@ -957,7 +1019,8 @@ CAS <- setRefClass(
 
   methods = list(
     initialize = function(hostname = NULL, port = NULL, username = NULL,
-                          password = NULL, protocol = "auto", path = NULL, ...) {
+                          password = NULL, protocol = "auto", path = NULL,
+                          authcode = NULL, ...) {
       prototype <- NULL
       options <- list(...)
 
@@ -1022,6 +1085,11 @@ CAS <- setRefClass(
       }
 
       if (.self$protocol == "http" || .self$protocol == "https") {
+        if ( !is.null(authcode) )
+        {
+          .self$username <<- ''
+          password <- .get_token(authcode=authcode, url=.self$hostname)
+        }
         sw_error <<- REST_CASError(soptions)
         cas_connection_class <- REST_CASConnection
       }
