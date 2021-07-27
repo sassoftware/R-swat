@@ -3,6 +3,11 @@
 '''
 Return the preferred CAS protocol ('cas' if TK is available; 'http' otherwise)
 
+This utility checks the package `DESCRIPTION` file for a `TKVersion`
+parameter that indicates the packaged version of the TK libraries.
+If it finds it, the `cas` protocol will be returned. If the value is
+set to `None`, the `http` protocol is returned.
+
 '''
 
 import argparse

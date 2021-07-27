@@ -3,6 +3,13 @@
 '''
 Generate a Tox config file for all test configurations
 
+To create a test matrix for all supported versions of R,
+this utility takes a template `tox.ini` file and adds additional
+Tox environments to the end of it. The version of R used in the
+environments are determined by those available on Anaconda.
+This includes using the standard R engine and the MRO (Microsoft)
+engine.
+
 '''
 
 import argparse
@@ -225,7 +232,8 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=__doc__.strip())
+    parser = argparse.ArgumentParser(description=__doc__.strip(),
+                                     formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('tox_ini', type=str, metavar='ini-file',
                         help='path to tox.ini file')
