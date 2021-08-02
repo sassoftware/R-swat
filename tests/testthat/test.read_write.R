@@ -386,8 +386,8 @@ test_that("Read semicolon separated csv files with comma as decimal", {
 
 # Read web dat file
 test_that("Read web dat file", {
-  import_effort_dat <- read.table("https://data.princeton.edu/wws509/datasets/effort.dat", header=TRUE)
-  import_effort_dat.cas <- cas.read.table(caz, "https://data.princeton.edu/wws509/datasets/effort.dat", header=TRUE, casOut = list(replace=TRUE))
+  import_effort_dat <- read.table("https://raw.githubusercontent.com/sassoftware/R-swat/main/tests/data/effort.txt", header=TRUE)
+  import_effort_dat.cas <- cas.read.table(caz, "https://raw.githubusercontent.com/sassoftware/R-swat/main/tests/data/effort.txt", header=TRUE, casOut = list(replace=TRUE))
   expect_that(import_effort_dat.cas, is_a("CASTable"))
   expect_equivalent(dim(import_effort_dat), dim(import_effort_dat.cas))
 })
