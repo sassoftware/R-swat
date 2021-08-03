@@ -1837,20 +1837,15 @@ cas2r <- function(sw_value) {
       int64_missval <- '-9223372036854775808'
       setMissing <- function (value, missval)
       {
-          if ( is.na(value) || is.nan(value) ) {
-              return( NA )
-          }
-          if ( value == missval ) {
-              return( NA )
-          }
-          return( value )
+          value[is.na(value) || is.nan(value) || value == missval] <- NA
+          return(value)
       }
 
       get_transformer <- function (type) {
          if ( type == "int64" )
-            return(function (out) swat.as.integer64(setMissing(out[[1]], int64_missval)))
+            return(function (out) swat.as.integer64(setMissing(out, int64_missval)))
          else if ( type == "int64-array" )
-            return(function (out) swat.as.integer64(setMissing(out[[1]], int64_missval)))
+            return(function (out) swat.as.integer64(setMissing(out, int64_missval)))
          else if ( type == "date" )
             return(cas2rDate)
          else if ( type == "time" )
