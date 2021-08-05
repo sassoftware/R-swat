@@ -215,14 +215,14 @@ listActionSets <- function(conn){
 casRetrieve <-  function(caz, ...) {
   args <- list(...)
   if (class(caz)=='CAS'){
-    if (is.null(args$messageLevel))
-      return(caz$retrieve(..., '_messageLevel'=as.character(getOption('cas.message.level'))))
+    if (is.null(args$`_messageLevel`) && is.null(args$`_messagelevel`))
+      return(caz$retrieve(..., `_messageLevel`=as.character(getOption('cas.message.level'))))
     else
       return(caz$retrieve(...))
   }
   if (class(caz) =='CASTable'){
-    if (is.null(args$messageLevel))
-      return(caz$retrieve(caz@conn, ..., '_messageLevel'=as.character(getOption('cas.message.level'))))
+    if (is.null(args$`_messageLevel`) && is.null(args$`_messagelevel`))
+      return(caz$retrieve(caz@conn, ..., `_messageLevel`=as.character(getOption('cas.message.level'))))
     else
       return(caz$retrieve(caz@conn, ...))
   }
