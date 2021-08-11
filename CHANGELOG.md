@@ -1,6 +1,11 @@
 
 # Change Log
 
+## 1.6.3 - 2021-08-11
+
+- Fix duplicate action parameter issue
+- Fix integer issue in table to data.frame converter
+
 ## 1.6.2 - 2021-06-18
 
 - Add authorization code style of authentication
