@@ -212,19 +212,26 @@ listActionSets <- function(conn){
 #'
 #' @keywords internal
 #' @rawRd % Copyright SAS Institute
-casRetrieve <-  function(caz, ...) {
+casRetrieve <-  function(caz, actn, ...) {
   args <- list(...)
+  newargs <- list()
+  # Remove duplicate keys
+  for (i in seq_len(length(args))) {
+    name <- names(args[i])
+    newargs[[name]] <- args[i][[1]]
+  }
+  args <- newargs
   if (class(caz)=='CAS'){
-    if (is.null(args$`_messageLevel`) && is.null(args$`_messagelevel`))
-      return(caz$retrieve(..., `_messageLevel`=as.character(getOption('cas.message.level'))))
-    else
-      return(caz$retrieve(...))
+    if (is.null(args$`_messageLevel`) && is.null(args$`_messagelevel`)) {
+      args$`_messageLevel`=as.character(getOption('cas.message.level'))
+    }
+    return(do.call(caz$retrieve, c(list(actn), args)))
   }
   if (class(caz) =='CASTable'){
-    if (is.null(args$`_messageLevel`) && is.null(args$`_messagelevel`))
-      return(caz$retrieve(caz@conn, ..., `_messageLevel`=as.character(getOption('cas.message.level'))))
-    else
-      return(caz$retrieve(caz@conn, ...))
+    if (is.null(args$`_messageLevel`) && is.null(args$`_messagelevel`)) {
+      args$`_messageLevel`=as.character(getOption('cas.message.level'))
+    }
+    return(do.call(caz$retrieve, c(list(caz@conn, actn), args)))
   }
 }
 

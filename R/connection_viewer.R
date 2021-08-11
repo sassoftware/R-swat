@@ -81,7 +81,7 @@
 
   # Display tables for a specific caslib
   if (!is.null(args$caslib)) {
-    out <- cas.table.tableInfo(connection, caslib = args$caslib)
+    out <- cas.table.tableInfo(connection, caslib = args$caslib, `_messageLevel` = "error")
     if (is.null(out$TableInfo))
       return(character())
 
@@ -98,7 +98,7 @@
   }
 
   # Display all caslibs
-  out <- cas.table.caslibInfo(connection)
+  out <- cas.table.caslibInfo(connection, `_messageLevel` = "error")
   if (is.null(out$CASLibInfo))
     return(character())
 
@@ -123,7 +123,8 @@
       table <- args$table
     }
 
-    out <- cas.table.columnInfo(connection, table = list(name = table, caslib = args$caslib))
+    out <- cas.table.columnInfo(connection, table = list(name = table, caslib = args$caslib),
+                                `_messageLevel` = "error")
     if (is.null(out$ColumnInfo))
       return(NULL)
 
@@ -145,7 +146,7 @@
     }
 
     out <- cas.table.fetch(connection, table = list(name = table, caslib = args$caslib),
-                           to = limit, index = FALSE)
+                           to = limit, index = FALSE, `_messageLevel` = "error")
     if (is.null(out$Fetch))
       return(NULL)
 
