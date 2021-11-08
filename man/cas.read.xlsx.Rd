@@ -4,11 +4,22 @@
 \alias{cas.read.xlsx}
 \title{Read an XLSX File and Upload to a CAS Table}
 \usage{
-cas.read.xlsx(conn, file, sheetIndex = 1, sheetName = NULL,
-  rowIndex = NULL, startRow = NULL, endRow = NULL, colIndex = NULL,
-  as.data.frame = TRUE, header = TRUE, colClasses = NA,
-  keepFormulas = FALSE, encoding = "unknown", casOut = list(name = "",
-  replace = FALSE))
+cas.read.xlsx(
+  conn,
+  file,
+  sheetIndex = 1,
+  sheetName = NULL,
+  rowIndex = NULL,
+  startRow = NULL,
+  endRow = NULL,
+  colIndex = NULL,
+  as.data.frame = TRUE,
+  header = TRUE,
+  colClasses = NA,
+  keepFormulas = FALSE,
+  encoding = "unknown",
+  casOut = list(name = "", replace = FALSE)
+)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
@@ -113,9 +124,12 @@ myCasTable <- cas.read.xlsx(s, file="/path/to/data_out.xlsx",
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.csv}},
-  \code{\link{cas.read.jmp}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.table}}, \code{\link{cas.readRDS}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.csv}()},
+\code{\link{cas.read.jmp}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.table}()},
+\code{\link{cas.readRDS}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

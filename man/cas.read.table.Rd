@@ -4,15 +4,35 @@
 \alias{cas.read.table}
 \title{Read a File and Upload to a CAS Table}
 \usage{
-cas.read.table(conn, file, header = FALSE, sep = "", quote = "\\"'",
-  dec = ".", numerals = c("allow.loss", "warn.loss", "no.loss"), row.names,
-  col.names, as.is = !stringsAsFactors, na.strings = "NA",
-  colClasses = NA, nrows = -1, skip = 0, check.names = TRUE,
-  fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = TRUE,
-  comment.char = "#", allowEscapes = FALSE, flush = FALSE,
-  stringsAsFactors = default.stringsAsFactors(), fileEncoding = "",
-  encoding = "unknown", text, skipNul = FALSE, casOut = list(name = "",
-  replace = FALSE))
+cas.read.table(
+  conn,
+  file,
+  header = FALSE,
+  sep = "",
+  quote = "\\"'",
+  dec = ".",
+  numerals = c("allow.loss", "warn.loss", "no.loss"),
+  row.names,
+  col.names,
+  as.is = !stringsAsFactors,
+  na.strings = "NA",
+  colClasses = NA,
+  nrows = -1,
+  skip = 0,
+  check.names = TRUE,
+  fill = !blank.lines.skip,
+  strip.white = FALSE,
+  blank.lines.skip = TRUE,
+  comment.char = "#",
+  allowEscapes = FALSE,
+  flush = FALSE,
+  stringsAsFactors = default.stringsAsFactors(),
+  fileEncoding = "",
+  encoding = "unknown",
+  text,
+  skipNul = FALSE,
+  casOut = list(name = "", replace = FALSE)
+)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
@@ -162,13 +182,16 @@ CAS (the server).
 \examples{
 \dontrun{
 myCasTable <- cas.read.table(s, "/path/to/data.tsv", header=TRUE,
-                             sep="\\t", casOut=list(name="mycastable"))
+                             sep="\t", casOut=list(name="mycastable"))
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.csv}},
-  \code{\link{cas.read.jmp}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.xlsx}}, \code{\link{cas.readRDS}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.csv}()},
+\code{\link{cas.read.jmp}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.xlsx}()},
+\code{\link{cas.readRDS}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

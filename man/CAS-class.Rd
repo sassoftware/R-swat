@@ -42,6 +42,11 @@ an alternative path to a .authinfo file that is used
 for authentication.  By default, ~/.authinfo is used on
 Linux and \%HOMEDRIVE\% \\\%HOMEPATH\%\\_authinfo is used on
 Windows.}
+
+\item{path}{Base path of the connection URL}
+
+\item{authcode}{Authorization code from SASLogon used to retrieve
+an OAuth token.}
 }
 \value{
 A CAS object.

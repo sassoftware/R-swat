@@ -4,8 +4,15 @@
 \alias{cas.write.xlsx}
 \title{Write a CAS Table to a Microsoft Excel Workbook}
 \usage{
-cas.write.xlsx(CASTable, file = "", sheetName = "Sheet1",
-  col.names = TRUE, row.names = TRUE, append = FALSE, showNA = TRUE)
+cas.write.xlsx(
+  CASTable,
+  file = "",
+  sheetName = "Sheet1",
+  col.names = TRUE,
+  row.names = TRUE,
+  append = FALSE,
+  showNA = TRUE
+)
 }
 \arguments{
 \item{CASTable}{The instance of the CASTable to save as
@@ -46,8 +53,10 @@ cas.write.xlsx(myCasTable, file="/path/to/data_out.xlsx")
 }
 }
 \seealso{
-Other functions for saving in-memory data: \code{\link{cas.saveRDS}},
-  \code{\link{cas.write.csv}},
-  \code{\link{cas.write.table}}
+Other functions for saving in-memory data: 
+\code{\link{cas.saveRDS}()},
+\code{\link{cas.write.csv}()},
+\code{\link{cas.write.table}()}
 }
+\concept{functions for saving in-memory data}
 % Copyright SAS Institute

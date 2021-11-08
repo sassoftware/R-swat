@@ -4,7 +4,7 @@
 \alias{listActionParms}
 \title{List CAS Action Parameters by Name}
 \usage{
-listActionParms(conn, actn)
+listActionParms(conn, actn, display = TRUE)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
@@ -19,6 +19,9 @@ the action name. You can specify the following forms:
 }
 The third form matches the generated functions for
 the CAS actions.}
+
+\item{display}{Should the parameters be printed to the 
+screen?}
 }
 \description{
 This function displays the parameters for the specified

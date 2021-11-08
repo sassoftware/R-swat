@@ -4,7 +4,6 @@
 \name{swat}
 \alias{swat}
 \alias{swat-package}
-\alias{swat-package}
 \title{SWAT: SAS Wrapper for Analytics Transfer (SWAT)}
 \description{
 This package enables you to connect from \R to a SAS Cloud Analytic Services

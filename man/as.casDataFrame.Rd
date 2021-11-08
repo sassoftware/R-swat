@@ -4,9 +4,19 @@
 \alias{as.casDataFrame}
 \title{Convert an \R Data Frame to a CAS Data Frame}
 \usage{
-as.casDataFrame(df, name = "", label = "", title = "", attrs = list(),
-  col.labels = "", col.formats = "", col.attrs = list(),
-  col.sizes = list(), col.types = "", col.widths = 0)
+as.casDataFrame(
+  df,
+  name = "",
+  label = "",
+  title = "",
+  attrs = list(),
+  col.labels = "",
+  col.formats = "",
+  col.attrs = list(),
+  col.sizes = list(),
+  col.types = "",
+  col.widths = 0
+)
 }
 \value{
 casDataFrame
