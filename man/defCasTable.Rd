@@ -4,8 +4,16 @@
 \alias{defCasTable}
 \title{Create a CASTable Object for an Existing CAS Table}
 \usage{
-defCasTable(conn, tablename, caslib = "", columns = "", where = "",
-  orderby = list(), groupby = list(), gbmode = "")
+defCasTable(
+  conn,
+  tablename,
+  caslib = "",
+  columns = "",
+  where = "",
+  orderby = list(),
+  groupby = list(),
+  gbmode = ""
+)
 }
 \arguments{
 \item{conn}{A \code{\link{CAS}} object that represents

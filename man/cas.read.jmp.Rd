@@ -55,14 +55,17 @@ object to reference the in-memory table in CAS.
 }
 \examples{
 \dontrun{
-spring_example <- cas.read.jmp(s, "/path/to/Spring\\ Example.jmp", 
+spring_example <- cas.read.jmp(s, "/path/to/Spring\ Example.jmp", 
                                casOut=list(name="spring_example"))
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.csv}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.table}},
-  \code{\link{cas.read.xlsx}}, \code{\link{cas.readRDS}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.csv}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.table}()},
+\code{\link{cas.read.xlsx}()},
+\code{\link{cas.readRDS}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

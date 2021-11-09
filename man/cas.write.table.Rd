@@ -4,9 +4,20 @@
 \alias{cas.write.table}
 \title{Write a CAS Table to a Table}
 \usage{
-cas.write.table(CASTable, file = "", append = FALSE, quote = TRUE,
-  sep = " ", eol = "\\n", na = "NA", dec = ".", row.names = TRUE,
-  col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+cas.write.table(
+  CASTable,
+  file = "",
+  append = FALSE,
+  quote = TRUE,
+  sep = " ",
+  eol = "\\n",
+  na = "NA",
+  dec = ".",
+  row.names = TRUE,
+  col.names = TRUE,
+  qmethod = c("escape", "double"),
+  fileEncoding = ""
+)
 }
 \arguments{
 \item{CASTable}{The instance of the CASTable to save as
@@ -65,7 +76,10 @@ cas.write.table(myCasTable, file="/path/to/data_out.txt", na="")
 }
 }
 \seealso{
-Other functions for saving in-memory data: \code{\link{cas.saveRDS}},
-  \code{\link{cas.write.csv}}, \code{\link{cas.write.xlsx}}
+Other functions for saving in-memory data: 
+\code{\link{cas.saveRDS}()},
+\code{\link{cas.write.csv}()},
+\code{\link{cas.write.xlsx}()}
 }
+\concept{functions for saving in-memory data}
 % Copyright SAS Institute

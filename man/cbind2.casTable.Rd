@@ -20,8 +20,6 @@ cbind2.casTable(x, y, ...)
 }
 \description{
 This is the implementation of \code{cbind} for in-memory tables.
-
-Combine CAS Tables by Columns
 }
 \examples{
 \dontrun{

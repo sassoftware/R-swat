@@ -4,7 +4,7 @@
 \alias{runAction}
 \title{Run a CAS Action by Name}
 \usage{
-runAction(CASorCASTab = "", actn, ...)
+runAction(CASorCASTab = "", actn, check_errors = FALSE, ...)
 }
 \arguments{
 \item{CASorCASTab}{An instance of a CAS object that represents

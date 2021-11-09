@@ -4,9 +4,18 @@
 \alias{cas.read.csv}
 \title{Read a CSV File and Upload to a CAS Table}
 \usage{
-cas.read.csv(conn, file, header = TRUE, sep = ",", quote = "\\"",
-  dec = ".", fill = TRUE, comment.char = "", casOut = list(name = "",
-  replace = FALSE), ...)
+cas.read.csv(
+  conn,
+  file,
+  header = TRUE,
+  sep = ",",
+  quote = "\\"",
+  dec = ".",
+  fill = TRUE,
+  comment.char = "",
+  casOut = list(name = "", replace = FALSE),
+  ...
+)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
@@ -94,9 +103,12 @@ heartct <- cas.read.csv(s, "http://support.sas.com/documentation/
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.jmp}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.table}},
-  \code{\link{cas.read.xlsx}}, \code{\link{cas.readRDS}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.jmp}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.table}()},
+\code{\link{cas.read.xlsx}()},
+\code{\link{cas.readRDS}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

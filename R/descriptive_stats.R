@@ -18,6 +18,8 @@
 
 #' Maximum Values
 #'
+#' @docType methods
+#' 
 #' @param x CASTable.
 #'
 #' @seealso \code{cas.max}
@@ -44,6 +46,8 @@ setMethod("max",
 
 #' Minimum Value
 #'
+#' @docType methods
+#' 
 #' @param x CASTable.
 #'
 #' @seealso \code{cas.min}
@@ -74,6 +78,8 @@ setMethod("min",
 #' Returns the mean value for the specified column in 
 #' the input table.
 #'
+#' @docType methods
+#' 
 #' @param x CASTable.
 #'
 #' @seealso \code{cas.mean}
@@ -102,6 +108,8 @@ setMethod("mean",
 
 #' Median Values
 #'
+#' @docType methods
+#' 
 #' @param x CASTable.
 #'
 #' @seealso \code{cas.median}
@@ -127,6 +135,8 @@ setMethod("median",
 
 #' Column Sums
 #'
+#' @docType methods
+#' 
 #' @param x CASTable.
 #'
 #' @seealso \code{cas.sum}
@@ -165,6 +175,9 @@ setMethod("colSums",
 #' method as "kendall" or "spearman." The results
 #' for method "pearson" are returned.
 #'
+#' @docType methods
+#' 
+#' 
 #' @param x CASTable.
 #'
 #' @return matrix
@@ -296,6 +309,8 @@ setMethod("cor",
 #' method as "kendall" or "spearman." The results
 #' for method "pearson" are returned.
 #'
+#' @docType methods
+#' 
 #' @param x CASTable.
 #'
 #' @return matrix
@@ -387,6 +402,9 @@ setMethod("cov",
 
 #' Column Means
 #'
+#' @docType methods
+#' 
+#' 
 #' @param x CASTable.
 #'
 #' @seealso \code{cas.mean}
@@ -499,7 +517,7 @@ cas.max <- function(CASTable){
 #' cas.mean(ct[1:4])
 #' cas.mean(ct$n2)
 #' }
-cas.mean        <- function(CASTable){
+cas.mean <- function(CASTable){
   if (class(CASTable) != 'CASTable'){ stop("Method only valid on a CASTable")}
   x <- CASTable
   tp = swat::gen.table.parm(x)
@@ -533,7 +551,7 @@ cas.mean        <- function(CASTable){
 #' cas.median(ct[1:4])
 #' cas.median(ct$n2)
 #' }
-cas.median      <- function(CASTable, q){
+cas.median <- function(CASTable, q){
   if (class(CASTable) != 'CASTable'){ stop("Method only valid on a CASTable")}
   x <- CASTable
   tp = swat::gen.table.parm(x)
@@ -603,7 +621,7 @@ cas.min <- function(CASTable){
 #' cas.mode(ct[1:4])
 #' cas.mode(ct$n2)
 #' }
-cas.mode        <- function(CASTable){
+cas.mode <- function(CASTable){
   if (class(CASTable) != 'CASTable'){ stop("Method only valid on a CASTable")}
   x <- CASTable
   tp = swat::gen.table.parm(x)
@@ -642,7 +660,7 @@ cas.mode        <- function(CASTable){
 #' cas.quantile(ct[1:4], q=50)
 #' cas.quantile(ct$n2, q=c(10, 25, 50, 75, 90))
 #' }
-cas.quantile    <- function(CASTable, q){
+cas.quantile <- function(CASTable, q){
   if (class(CASTable) != 'CASTable'){ stop("Method only valid on a CASTable")}
   x <- CASTable
   tp = swat::gen.table.parm(x)
@@ -658,7 +676,8 @@ cas.quantile    <- function(CASTable, q){
 #' the input table.
 #'
 #' This function operates on numeric columns only.
-#'
+#' @docType methods
+#'  
 #' @param x CASTable.
 #'
 #' @seealso \code{colSums,CASTable-method}
@@ -725,7 +744,7 @@ cas.sd  <- function(CASTable, na.rm = TRUE){
     t1 <- sd_res
     t1["miss"] <- ! t1$Column %in% nm3
     
-    sd_res <- transform(t1, Std = ifelse(t1$miss, Std <- t1$Std, Std<- NA))
+    sd_res <- transform(t1, Std = ifelse(t1$miss, Std <- t1$Std, Std <- NA))
   }
   return(sd_res[1:2])
 }
@@ -982,7 +1001,8 @@ cas.probt <- function(CASTable){
 #' Summary Statistics
 #'
 #' Returns simple descriptive statistics.
-#'
+#' @docType methods
+#' 
 #' @param object CASTable.
 #'
 #' @return table

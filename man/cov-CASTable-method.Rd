@@ -5,8 +5,7 @@
 \alias{cov,CASTable-method}
 \title{Covariance}
 \usage{
-\S4method{cov}{CASTable}(x, y = NULL, use = "everything",
-  method = c("pearson"))
+\S4method{cov}{CASTable}(x, y = NULL, use = "everything", method = c("pearson"))
 }
 \arguments{
 \item{x}{CASTable.}

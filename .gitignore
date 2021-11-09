@@ -84,3 +84,4 @@ doc/source/generated
 .Rhistory
 .RData
 .Ruserdata
+*.Rproj

@@ -294,6 +294,8 @@ CASResponse <- setRefClass(
    )
 )
 
+#' @export
+
 CASDataMsgHandler <- setRefClass(
 
    Class = 'CASDataMsgHandler',
@@ -601,6 +603,8 @@ CASDataMsgHandler <- setRefClass(
 
    return( final )
 }
+
+#' @export
 
 .getConnectionInfo <- function(hostname, port, username, password, protocol, path) 
 {
@@ -1494,7 +1498,6 @@ nonull.string <- function(str) {
     }
     return( str )
 }
-
 cas2r <- function(sw_value) {
    t <- sw_value$getType()
    swat::errorcheck(sw_value)
@@ -2273,6 +2276,7 @@ casvaluelist2r <- function(sw_values, len) {
    return (output)
 }
 
+#' @export
 rbind.bygroups <- function(res) {
    if ( is.null(res[['ByGroupInfo']]) && is.null(res[['ByGroupSet1.ByGroupInfo']]) )
    {
@@ -2305,6 +2309,8 @@ rbind.bygroups <- function(res) {
 #' Close a CAS connection while leaving the session alive
 #'
 #' @param CAS The CAS connection object
+#' @export
+
 cas.close <- function(conn)
 {
    conn$close()
@@ -2313,6 +2319,8 @@ cas.close <- function(conn)
 #' End a CAS session and close the connection
 #'
 #' @param CAS The CAS connection object
+#' @export
+
 cas.terminate <- function(conn)
 {
    conn$retrieve('session.endsession', `_messagelevel`='error')
@@ -2326,6 +2334,7 @@ cas.terminate <- function(conn)
 #' @param \dots Optional parameters that are passed to the table.loadtable action.
 #'
 #' @return \code{list}
+#' @export
 cas.upload <- function(conn, ...)
 {
    return( conn$upload(...) )
@@ -2338,6 +2347,7 @@ cas.upload <- function(conn, ...)
 #' @param \dots Optional parameters that are passed to the table.loadtable action.
 #'
 #' @return \code{\link{CASTable}}
+#' @export
 cas.upload.frame <- function(conn, ...)
 {
     res <- conn$upload(...)
@@ -2351,6 +2361,7 @@ cas.upload.frame <- function(conn, ...)
 #' @param \dots Optional parameters that are passed to the table.loadtable action.
 #'
 #' @return \code{\link{CASTable}}
+#' @export
 cas.upload.file <- function(conn, ...)
 {
     res <- conn$upload(...)

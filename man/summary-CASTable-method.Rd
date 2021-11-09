@@ -5,8 +5,7 @@
 \alias{summary,CASTable-method}
 \title{Summary Statistics}
 \usage{
-\S4method{summary}{CASTable}(object, maxsum = 7, digits = max(3,
-  getOption("digits") - 3), ...)
+\S4method{summary}{CASTable}(object, maxsum = 7, digits = max(3, getOption("digits") - 3), ...)
 }
 \arguments{
 \item{object}{CASTable.}

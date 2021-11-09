@@ -4,7 +4,7 @@
 \alias{casRetrieve}
 \title{Utility function that is run from several exported functions.}
 \usage{
-casRetrieve(caz, ...)
+casRetrieve(caz, actn, ...)
 }
 \description{
 The generated functions, such as cas.table.tableInfo and
