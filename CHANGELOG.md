@@ -1,6 +1,10 @@
 
 # Change Log
 
+## 1.6.4 - 2021-11-08
+
+- Added `to.r.data.frame` function to download a `CAStbl` as `data.frame` without defining a `casDataFrame` 
+
 ## 1.6.3 - 2021-08-11
 
 - Fix duplicate action parameter issue
