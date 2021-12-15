@@ -1156,3 +1156,62 @@ is.castable <-  function(x) {
 #        browser()
 #        })
 #
+
+
+#' Convert a CAS Table to a R Data Frame (Download)
+#'
+#' Downloads the in-memory table that is referenced by
+#' the CASTable object and stores it as a data.frame
+#' in R. This function is used to download datasets from CAS.
+#'
+#' @param ct The CASTable object to download.
+#' @param obs Number of rows to download, by default 32768
+#' 
+#' @return Returns a data.frame object that contains
+#'         a copy of the in-memory data.
+#' @export
+#' @rawRd % Copyright SAS Institute
+#'
+#' @examples
+#' \dontrun{
+#' rdf = to.r.data.frame(CASTable)
+#' }
+#' 
+
+to.r.data.frame <-  function(ct, obs=32768) {
+  if (class(ct) != 'CASTable') {
+    stop("The first parameter must be a CASTable object")
+  }
+  
+  tp = gen.table.parm(ct)
+  fv = c(tp$vars, tp$computedVars)
+  fv = fv[fv != ""]
+  if (sum(nchar(ct@XcomputedVars)))
+    for (Xcmp in ct@XcomputedVars)
+      if (!(Xcmp %in% ct@computedVars))
+        fv = fv[fv != Xcmp]
+  
+  if (length(tp$orderby))
+    res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=1000, sortby=tp$orderby)
+  else
+    res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=1000)
+  
+  out <- list()
+  for ( i in 1:length(res$results) ) {
+    if ( i == 1 ) {
+      keyname <- 'Fetch'
+    } else {
+      keyname <- paste('Fetch', i-1, sep='')
+    }
+    if ( is.null(res$results[keyname]) ) {
+      break
+    }
+    out[[i]] <- res$results[[keyname]]
+  }
+  
+  
+  out <- do.call('rbind', out)
+  rownames(out) <- NULL
+  
+  return( out )
+}
