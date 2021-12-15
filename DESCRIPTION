@@ -45,5 +45,5 @@ Collate:
     'graphics.R'
     'Ops.R'
     'connection_viewer.R'
-RoxygenNote: 7.1.1
+RoxygenNote: 6.0.1
 VignetteBuilder: knitr
