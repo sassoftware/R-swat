@@ -4,8 +4,14 @@
 \alias{cas.saveRDS}
 \title{Write a CAS Table to RDS}
 \usage{
-cas.saveRDS(CASTable, file = "", ascii = FALSE, version = NULL,
-  compress = TRUE, refhook = NULL)
+cas.saveRDS(
+  CASTable,
+  file = "",
+  ascii = FALSE,
+  version = NULL,
+  compress = TRUE,
+  refhook = NULL
+)
 }
 \arguments{
 \item{CASTable}{The instance of the CASTable to save as
@@ -43,8 +49,10 @@ cas.saveRDS(myCasTable, file="/path/to/data_out.rds")
 }
 }
 \seealso{
-Other functions for saving in-memory data: \code{\link{cas.write.csv}},
-  \code{\link{cas.write.table}},
-  \code{\link{cas.write.xlsx}}
+Other functions for saving in-memory data: 
+\code{\link{cas.write.csv}()},
+\code{\link{cas.write.table}()},
+\code{\link{cas.write.xlsx}()}
 }
+\concept{functions for saving in-memory data}
 % Copyright SAS Institute

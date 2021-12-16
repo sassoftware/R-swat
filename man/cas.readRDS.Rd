@@ -4,8 +4,12 @@
 \alias{cas.readRDS}
 \title{Read an RDS File and Upload to a CAS Table}
 \usage{
-cas.readRDS(conn, file, refhook = NULL, casOut = list(name = "", replace =
-  FALSE))
+cas.readRDS(
+  conn,
+  file,
+  refhook = NULL,
+  casOut = list(name = "", replace = FALSE)
+)
 }
 \arguments{
 \item{conn}{An instance of a CAS object that represents
@@ -66,9 +70,12 @@ myCasTable <- cas.readRDS(s, file="/path/to/data_out.rds",
 }
 }
 \seealso{
-Other functions for loading in-memory data: \code{\link{cas.read.csv}},
-  \code{\link{cas.read.jmp}},
-  \code{\link{cas.read.sas7bdat}},
-  \code{\link{cas.read.table}}, \code{\link{cas.read.xlsx}}
+Other functions for loading in-memory data: 
+\code{\link{cas.read.csv}()},
+\code{\link{cas.read.jmp}()},
+\code{\link{cas.read.sas7bdat}()},
+\code{\link{cas.read.table}()},
+\code{\link{cas.read.xlsx}()}
 }
+\concept{functions for loading in-memory data}
 % Copyright SAS Institute

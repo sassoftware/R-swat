@@ -119,6 +119,7 @@ setMethod("initialize", "casDataFrame", function(.Object,
 })
 
 #' CAS data frame show method
+#' @docType methods
 #'
 #' @param object A \code{casDataFrame} object.
 #'

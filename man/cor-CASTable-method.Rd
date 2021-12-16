@@ -5,8 +5,7 @@
 \alias{cor,CASTable-method}
 \title{Correlation}
 \usage{
-\S4method{cor}{CASTable}(x, y = NULL, use = "everything",
-  method = c("pearson"))
+\S4method{cor}{CASTable}(x, y = NULL, use = "everything", method = c("pearson"))
 }
 \arguments{
 \item{x}{CASTable.}

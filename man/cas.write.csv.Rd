@@ -4,8 +4,15 @@
 \alias{cas.write.csv}
 \title{Write a CAS Table to a CSV File}
 \usage{
-cas.write.csv(CASTable, file = "", quote = TRUE, eol = "\\n", na = "NA",
-  row.names = TRUE, fileEncoding = "")
+cas.write.csv(
+  CASTable,
+  file = "",
+  quote = TRUE,
+  eol = "\\n",
+  na = "NA",
+  row.names = TRUE,
+  fileEncoding = ""
+)
 }
 \arguments{
 \item{CASTable}{The instance of the CASTable to save as
@@ -73,8 +80,10 @@ cas.write.csv(gold_medals, "~/gold_medals.csv")
 }
 }
 \seealso{
-Other functions for saving in-memory data: \code{\link{cas.saveRDS}},
-  \code{\link{cas.write.table}},
-  \code{\link{cas.write.xlsx}}
+Other functions for saving in-memory data: 
+\code{\link{cas.saveRDS}()},
+\code{\link{cas.write.table}()},
+\code{\link{cas.write.xlsx}()}
 }
+\concept{functions for saving in-memory data}
 % Copyright SAS Institute

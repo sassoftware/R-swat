@@ -6,9 +6,19 @@
 \alias{casDataFrame}
 \title{CAS Data Frame Class}
 \usage{
-casDataFrame(..., name = "", label = "", title = "", attrs = list(),
-  col.labels = "", col.formats = "", col.attrs = list(),
-  col.sizes = list(), col.types = "", col.widths = 0)
+casDataFrame(
+  ...,
+  name = "",
+  label = "",
+  title = "",
+  attrs = list(),
+  col.labels = "",
+  col.formats = "",
+  col.attrs = list(),
+  col.sizes = list(),
+  col.types = "",
+  col.widths = 0
+)
 }
 \value{
 casDataFrame

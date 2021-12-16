@@ -20,6 +20,8 @@
 #' Returns the first part of an in-memory table that is referenced
 #' by a \code{\link{CASTable}} object.
 #'
+#' @docType methods
+#' 
 #' @section Note:
 #' 
 #' The \code{head} function is not deterministic between reloads of data
@@ -64,6 +66,8 @@ setMethod("head",
 #' Returns the last part of an in-memory table that is referenced
 #' by a \code{\link{CASTable}} object.
 #'
+#' @docType methods
+#' 
 #' @section Note:
 #' 
 #' The \code{tail} function is not deterministic between reloads of data
@@ -142,7 +146,8 @@ setMethod("subset", "CASTable", subset.casTable)
 #' Extract Unique Values from a CAS Table
 #'
 #' Extracts distinct values from columns in a \code{\link{CASTable}}.
-#'
+#' @docType methods
+#' 
 #' @param x              A CASTable object.
 #' @param incomparables  A vector of values that cannot be compared.
 #'                       See the help for base::unique.
@@ -208,7 +213,8 @@ setMethod("unique", signature(x = "CASTable"),
 #' Combine CAS Tables by Rows
 #' 
 #' This is the implementation of \code{rbind} for in-memory tables.
-#'
+#' @docType methods
+#' 
 #' @param \dots          Arguments that are passed to method arguments.
 #' @param deparse.level  See the help for base::rbind.
 #'
@@ -250,7 +256,8 @@ rbind.casTable <- function(..., deparse.level = 1){
 #' Combine CAS Tables by Rows
 #' 
 #' This is the implementation of rbind for in-memory tables.
-#'
+#' @docType methods
+#'  
 #' @param \dots          Arguments that are passed to method arguments.
 #' @param deparse.level  See the help for base::rbind.
 #'
@@ -268,7 +275,8 @@ setMethod("rbind", "CASTable", rbind.casTable)
 #' Combine CAS Tables by Columns
 #'
 #' This is the implementation of \code{cbind} for in-memory tables.
-#'
+#' @docType methods
+#' 
 #' @param \dots          Arguments that are passed to method arguments.
 #' @param deparse.level  See the help for base::cbind.
 #'

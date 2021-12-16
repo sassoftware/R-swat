@@ -4,8 +4,15 @@
 \alias{cas.write.csv2}
 \title{Write a CAS Table to a CSV File}
 \usage{
-cas.write.csv2(CASTable, file = "", quote = TRUE, eol = "\\n",
-  na = "NA", row.names = TRUE, fileEncoding = "")
+cas.write.csv2(
+  CASTable,
+  file = "",
+  quote = TRUE,
+  eol = "\\n",
+  na = "NA",
+  row.names = TRUE,
+  fileEncoding = ""
+)
 }
 \description{
 This function is identical to \code{\link{cas.write.csv}}

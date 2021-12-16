@@ -271,6 +271,7 @@ defCasTable <- function(conn, tablename, caslib = '', columns = '',where = '',
 }
 
 #' Extract Columns from a CAS Table
+#' @docType methods
 #' @rdname CASTable-Extract
 #' @export
 setMethod("[",
@@ -861,6 +862,9 @@ setMethod("$<-",
           })
 
 #' @export
+#'
+#' @docType methods
+#' 
 #' @rawRd % Copyright SAS Institute
 setMethod("show",
           signature(object = "CASTable"),
@@ -874,6 +878,8 @@ setMethod("show",
 #' Returns the list of column names for the in-memory
 #' table that is referenced by the \code{\link{CASTable}} object.
 #'
+#' @docType methods
+#' 
 #' @param x A CASTable object.
 #'
 #' @return vector
@@ -895,6 +901,8 @@ setMethod("names",
 #' Returns the number of rows and columns for the in-memory
 #' table that is referenced by the \code{\link{CASTable}} object.
 #'
+#' @docType methods
+#' 
 #' @param x A CASTable object.
 #'
 #' @return vector
@@ -916,6 +924,8 @@ setMethod("dim",
 #' Returns the number of rows in an in-memory table
 #' that is referenced by the \code{\link{CASTable}} object.
 #'
+#' @docType methods
+#' 
 #' @param x A CASTable object.
 #'
 #' @return scalar
@@ -945,6 +955,8 @@ setMethod("nrow",
 #' Returns the number of columns in an in-memory table
 #' that is referenced by the \code{\link{CASTable}} object.
 #'
+#' @docType methods
+#' 
 #' @param x A CASTable object.
 #'
 #' @return scalar
@@ -968,6 +980,8 @@ setMethod("ncol",
 #' Returns the number of columns in an in-memory table
 #' that is referenced by the \code{\link{CASTable}} object.
 #'
+#' @docType methods
+#' 
 #' @param x A CASTable object.
 #'
 #' @return scalar
@@ -993,6 +1007,8 @@ setMethod("length",
 #' Returns the column names from the in-memory table
 #' that is referenced by the \code{\link{CASTable}} object.
 #'
+#' @docType methods
+#' 
 #' @section Note:
 #' You cannot use this function to set the column names.
 #'
@@ -1018,6 +1034,8 @@ setMethod("colnames",
 
 #' Dimension Names of a CAS Table
 #'
+#' @docType methods
+#' 
 #' @param x A \code{\link{CASTable}} object.
 #'
 #' @return list
@@ -1040,6 +1058,8 @@ setMethod("dimnames",
 
 #' Row Names of a CAS Table
 #'
+#' @docType methods
+#' 
 #' @param x A \code{\link{CASTable}} object.
 #'
 #' @return list of strings
@@ -1136,3 +1156,62 @@ is.castable <-  function(x) {
 #        browser()
 #        })
 #
+
+
+#' Convert a CAS Table to a R Data Frame (Download)
+#'
+#' Downloads the in-memory table that is referenced by
+#' the CASTable object and stores it as a data.frame
+#' in R. This function is used to download datasets from CAS.
+#'
+#' @param ct The CASTable object to download.
+#' @param obs Number of rows to download, by default 32768
+#' 
+#' @return Returns a data.frame object that contains
+#'         a copy of the in-memory data.
+#' @export
+#' @rawRd % Copyright SAS Institute
+#'
+#' @examples
+#' \dontrun{
+#' rdf = to.r.data.frame(CASTable)
+#' }
+#' 
+
+to.r.data.frame <-  function(ct, obs=32768) {
+  if (class(ct) != 'CASTable') {
+    stop("The first parameter must be a CASTable object")
+  }
+  
+  tp = gen.table.parm(ct)
+  fv = c(tp$vars, tp$computedVars)
+  fv = fv[fv != ""]
+  if (sum(nchar(ct@XcomputedVars)))
+    for (Xcmp in ct@XcomputedVars)
+      if (!(Xcmp %in% ct@computedVars))
+        fv = fv[fv != Xcmp]
+  
+  if (length(tp$orderby))
+    res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=1000, sortby=tp$orderby)
+  else
+    res <- casRetrieve(ct@conn, 'table.fetch', table=tp, fetchVars=fv, index=FALSE, from=1, to=obs, maxRows=1000)
+  
+  out <- list()
+  for ( i in 1:length(res$results) ) {
+    if ( i == 1 ) {
+      keyname <- 'Fetch'
+    } else {
+      keyname <- paste('Fetch', i-1, sep='')
+    }
+    if ( is.null(res$results[keyname]) ) {
+      break
+    }
+    out[[i]] <- res$results[[keyname]]
+  }
+  
+  
+  out <- do.call('rbind', out)
+  rownames(out) <- NULL
+  
+  return( out )
+}
