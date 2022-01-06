@@ -186,6 +186,10 @@ def get_supported_versions(platform, r_base):
         ver = item['version']
         if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
             continue
+        # skip mro 3.5.1 due to build issues
+        if platform == "linux-64" and r_base == "mro" and tuple([int(x) for x in ver.split('.')]) == (3, 5, 1):
+            continue
+
         r_base_vers.add(item['version'])
 
     for pkg in ['r::r-httr', 'r::r-jsonlite', 'r::r-testthat']:
