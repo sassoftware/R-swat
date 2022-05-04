@@ -1206,7 +1206,7 @@ to.r.data.frame <-  function(ct, obs=32768) {
     if ( is.null(res$results[keyname]) ) {
       break
     }
-    out[[i]] <- res$results[[keyname]]
+    out[[i]] <- res$results[[keyname]]@df
   }
   
   
