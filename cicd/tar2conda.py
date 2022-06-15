@@ -184,10 +184,13 @@ def get_supported_versions(platform, r_base):
 
     for item in out:
         ver = item['version']
-        if tuple([int(x) for x in ver.split('.')]) < (3, 4, 3):
+        # skip 4.2.0, not supported yet
+        if (tuple([int(x) for x in ver.split('.')]) < (3, 4, 3)
+                or tuple([int(x) for x in ver.split('.')]) > (4, 0, 0)):
             continue
         # skip mro 3.5.1 due to build issues
-        if platform == "linux-64" and r_base == "mro" and tuple([int(x) for x in ver.split('.')]) == (3, 5, 1):
+        if (platform == "linux-64" and r_base == "mro"
+                and tuple([int(x) for x in ver.split('.')]) == (3, 5, 1)):
             continue
 
         r_base_vers.add(item['version'])
@@ -291,6 +294,8 @@ def main(url, args):
                 cmd.extend(['--R', ver])
                 if args.debug:
                     cmd.append('--debug')
+                if args.no_test:
+                    cmd.append('--no-test')
                 if args.output_folder:
                     cmd.extend(['--output-folder', args.output_folder])
                 if args.override_channels:
@@ -318,6 +323,8 @@ if __name__ == '__main__':
                       help='additional chanel to search')
     opts.add_argument('--debug', action='store_true',
                       help='enable conda build debug logging')
+    opts.add_argument('--no-test', action='store_true',
+                      help='disable conda build tests')
     opts.add_argument('--output-folder', type=str, default='',
                       help='folder to create the output package in')
     opts.add_argument('--override-channels', action='store_true', default=False,
