@@ -1125,6 +1125,13 @@ CAS <- setRefClass(
          swat::errorcheck(sw_connection)
          if ( !is.null(sw_message) && !sw_message$isNULL() )
          {
+            if ( class(sw_message) == '_p_CASMessage' ) {
+                # register a finalizer for SWAT cleanup
+                if (!is.null(sw_message@ref)) {
+                    reg.finalizer(sw_message@ref, delete_SW_CASMessage)
+                }
+            }
+
             t <- sw_message$getType()
             if ( t == 'response' )
             {
@@ -1132,6 +1139,12 @@ CAS <- setRefClass(
                swat::errorcheck(sw_message)
                if ( !is.null(sw_response) && !sw_message$isNULL() )
                {
+                  if ( class(sw_response) == '_p_CASResponse' ) {
+                     # register a finalizer for SWAT cleanup
+                     if (!is.null(sw_response@ref)) {
+                        reg.finalizer(sw_response@ref, delete_SW_CASResponse)
+                     }
+                  }
                   output <- CASResponse$new(sw_response=sw_response)
                }
             }
@@ -1303,6 +1316,12 @@ CAS <- setRefClass(
              # The upload method may print messages.  This is the only way to see them.
              sw_connection$setBooleanOption('print_messages', getOption('cas.print.messages'))
              response <- sw_connection$upload(filename, r2cas(.self$soptions, .self$sw_error, args))
+             if ( class(response) == '_p_CASResponse' ) {
+                 # register a finalizer for SWAT cleanup
+                 if (!is.null(response@ref)) {
+                     reg.finalizer(response@ref, delete_SW_CASResponse)
+                 }
+             }
              sw_connection$setBooleanOption('print_messages', FALSE)
          }
 
@@ -1539,6 +1558,13 @@ cas2r <- function(sw_value) {
    } else if ( t == "table" )  {
       sw_table <- sw_value$getTable()
       swat::errorcheck(sw_value)
+      if ( !is.null(sw_table) && (class(sw_table) == '_p_CASTable' )) {
+          # register a finalizer for SWAT cleanup
+          if (!is.null(sw_table@ref)) {
+              reg.finalizer(sw_table@ref, delete_SW_CASTable)
+          }
+      }
+
       nCols <- sw_table$getNColumns()
       swat::errorcheck(sw_table)
       nRows <- sw_table$getNRows()
