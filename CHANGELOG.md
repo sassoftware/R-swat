@@ -1,6 +1,12 @@
 
 # Change Log
 
+## 1.7.0 - 2022-07-12
+
+- Add to.r.data.frame function to convert a CAS Table to an R Data Frame
+- Cleanup swat object memory
+- Update TK subsystem
+
 ## 1.6.3 - 2021-08-11
 
 - Fix duplicate action parameter issue

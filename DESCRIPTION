@@ -1,7 +1,7 @@
 Package: swat
 Type: Package
 Title: SAS Scripting Wrapper for Analytics Transfer (SWAT)
-Version: 1.6.3.9000
+Version: 1.7.0
 TKVersion: none
 Date: 06JUN2020
 Authors@R: c(person("Jared", "Dean", role = c("aut", "cre"),
