@@ -192,6 +192,10 @@ def get_supported_versions(platform, r_base):
         if (platform == "linux-64" and r_base == "mro"
                 and tuple([int(x) for x in ver.split('.')]) == (3, 5, 1)):
             continue
+        # skip 3.4.3 and 3.5.x on OSX due to build issues with libgfortran.3.dylib
+        if (platform == "osx-64"
+                and tuple([int(x) for x in ver.split('.')]) < (3, 6, 0)):
+            continue
 
         r_base_vers.add(item['version'])
 
