@@ -1,6 +1,10 @@
 
 # Change Log
 
+## 1.8.0 - 2022-11-14
+
+- Update TK subsystem
+
 ## 1.7.0 - 2022-07-12
 
 - Add to.r.data.frame function to convert a CAS Table to an R Data Frame
