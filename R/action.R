@@ -111,7 +111,7 @@ runAction <-  function(CASorCASTab='', actn, check_errors=FALSE, ...) {
       {
       tp  = swat::gen.table.parm(CASorCASTab)
       cas = CASorCASTab@conn
-      pms = list('caz'=cas, 'actn'=actn, 'table'=tp, ...)
+      pms = list('caz'=cas, 'actn'=actn, 'table'=tp[!names(tp) == "vars"], ...)
       res <- do.call('casRetrieve', pms)
       }
    else

@@ -757,7 +757,7 @@ cas.read.table <- function (conn, file, header = FALSE, sep = "", quote = "\"'",
                             colClasses = NA, nrows = -1, skip = 0, check.names = TRUE,
                             fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = TRUE,
                             comment.char = "#", allowEscapes = FALSE, flush = FALSE,
-                            stringsAsFactors = default.stringsAsFactors(), fileEncoding = "",
+                            stringsAsFactors = FALSE, fileEncoding = "",
                             encoding = "unknown", text, skipNul = FALSE, 
                             casOut = list(name='', replace=FALSE)
 ) {

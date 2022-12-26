@@ -1866,7 +1866,7 @@ cas2r <- function(sw_value) {
       int64_missval <- '-9223372036854775808'
       setMissing <- function (value, missval)
       {
-          value[is.na(value) || is.nan(value) || value == missval] <- NA
+          value[is.na(value) | is.nan(value) | value == missval] <- NA
           return(value)
       }
 

@@ -129,7 +129,7 @@ setMethod("median",
           {
             tp = swat::gen.table.parm(x)
             nvars <- swat::numericVarList(x)
-            res <- casRetrieve(x@conn, 'percentile.percentile', table=tp, inputs=nvars, values='50')
+            res <- casRetrieve(x@conn, 'percentile.percentile', table=tp[!names(tp) == "vars"], inputs=nvars, values='50')
             return (as.numeric(res$results$Percentile$Value))
           })
 
@@ -556,7 +556,7 @@ cas.median <- function(CASTable, q){
   x <- CASTable
   tp = swat::gen.table.parm(x)
   nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, 'percentile.percentile', table=tp, inputs=nvars, values=list('50'))
+  res <- casRetrieve(x@conn, 'percentile.percentile', table=tp[!names(tp) == "vars"], inputs=nvars, values=list('50'))
   check_for_cas_errors(res)
   m <- res$results$Percentile
   colnames(m)[3] <- "Median"
@@ -665,7 +665,7 @@ cas.quantile <- function(CASTable, q){
   x <- CASTable
   tp = swat::gen.table.parm(x)
   nvars <- swat::numericVarList(x)
-  res <- casRetrieve(x@conn, 'percentile.percentile', table=tp, inputs=nvars, values=as.list(q))
+  res <- casRetrieve(x@conn, 'percentile.percentile', table=tp[!names(tp) == "vars"], inputs=nvars, values=as.list(q))
   check_for_cas_errors(res)
   return(res$results$Percentile[1:3])
 }
@@ -1042,13 +1042,13 @@ setMethod("summary",
               }
             }
             # get distinct counts for NA's (missing values)
-            distinct_res <- casRetrieve(object@conn, 'simple.distinct', table=tp)
+            distinct_res <- casRetrieve(object@conn, 'simple.distinct', table=tp[!names(tp) == "vars"])
             if (length(nvars) > 0)
             {
               # get statistics for numeric variables
               nres <- casRetrieve(object@conn, 'simple.summary', table=tp, inputs=nvars, subSet=list("NMISS", "MIN", "MEAN", "MAX"))
               ret = nres$results$Summary
-              pctres <- casRetrieve(object@conn, 'percentile.percentile', table=tp, inputs=nvars, values=list('25', '50', '75'))
+              pctres <- casRetrieve(object@conn, 'percentile.percentile', table=tp[!names(tp) == "vars"], inputs=nvars, values=list('25', '50', '75'))
               pet <- pctres$results$Percentile
             }
             
