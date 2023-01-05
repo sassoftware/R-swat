@@ -116,11 +116,11 @@ runAction <-  function(CASorCASTab='', actn, check_errors=FALSE, ...) {
       if (actn %in% c("percentile.percentile", "percentile.assess", "percentile.boxPlot")) {
         
         nvars = swat::numericVarList(CASorCASTab)
-        inputs = lapply(nvars, function(x) list(name = x))
-        
+
         pms = append(pms, list('table'=tp[names(tp) != "vars"], 
-                               "inputs" = inputs,
+                               "inputs" = nvars,
                                ...))
+        
       } else {
         pms = append(pms, list('table'=tp, ...))
       }
