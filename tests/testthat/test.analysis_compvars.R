@@ -97,6 +97,5 @@ test_that("cor, cov", {
 })
 
 test_that("summary", {
-  skip("Issue 72")
-  expect_true(all.equal(summary(ct_cmp[c(1:4,7:8)]), summary(df_cmp[c(1:4,7:8)]), check.attributes=FALSE))
+  expect_true(all.equal(summary(ct_cmp[c(1:4,7:8)]), summary(df_cmp[c(1:4,7:8)], quantile.type = 2), check.attributes = FALSE))
 })

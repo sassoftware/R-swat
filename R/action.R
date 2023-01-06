@@ -111,7 +111,20 @@ runAction <-  function(CASorCASTab='', actn, check_errors=FALSE, ...) {
       {
       tp  = swat::gen.table.parm(CASorCASTab)
       cas = CASorCASTab@conn
-      pms = list('caz'=cas, 'actn'=actn, 'table'=tp, ...)
+      pms = list('caz'=cas, 'actn'=actn)
+      
+      if (actn %in% c("percentile.percentile", "percentile.assess", "percentile.boxPlot")) {
+        
+        nvars = swat::numericVarList(CASorCASTab)
+
+        pms = append(pms, list('table'=tp[names(tp) != "vars"], 
+                               "inputs" = nvars,
+                               ...))
+        
+      } else {
+        pms = append(pms, list('table'=tp, ...))
+      }
+      
       res <- do.call('casRetrieve', pms)
       }
    else
@@ -137,11 +150,15 @@ runAction <-  function(CASorCASTab='', actn, check_errors=FALSE, ...) {
          gen.functions(cas, actionSet)
          swat::check_for_cas_errors(res)
          }
-      else
+      else if (class(CASorCASTab) == "CAS")
          {
          pms = list('caz'=cas, 'actn'=actn, ...)
          res <- do.call('casRetrieve', pms)
          }
+      else {
+        stop("Not a CasTable or CAS connection")
+      }
+      
       }
 
   if (check_errors)
