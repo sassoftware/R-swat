@@ -1,6 +1,13 @@
 
 # Change Log
 
+## 1.8.1 - 2023-01-06
+
+- Fix calls to the percentile action set to be compliant with the removal of table.vars
+- Fix logical warnings from methods that return casDataFrame
+- Fix unit testing for summary generic method
+- Throw an error instead of returning an empty list when trying to use a data.frame inside a cas.actionset.action
+
 ## 1.8.0 - 2022-11-14
 
 - Update TK subsystem
