@@ -1898,7 +1898,7 @@ cas2r <- function(sw_value) {
       }, silent = TRUE)
 
       # Use vectors if it exists, it will be much faster
-      if ( !is.null(vectors) ) {
+      if ( !is.null(vectors) && length(vectors) > 0 ) {
          col.names <- c()
          col.transformers <- list()
          for (col in 0 : (nCols - 1)) {
