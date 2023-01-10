@@ -1,6 +1,10 @@
 
 # Change Log
 
+## 1.8.2 - 2023-01-10
+
+- Fix problem handling empty list during response processing
+
 ## 1.8.1 - 2023-01-06
 
 - Fix calls to the percentile action set to be compliant with the removal of table.vars
