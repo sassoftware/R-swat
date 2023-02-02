@@ -1,6 +1,10 @@
 
 # Change Log
 
+## 1.8.3 - 2023-02-02
+
+- Fix problem handling empty list during request processing
+
 ## 1.8.2 - 2023-01-10
 
 - Fix problem handling empty list during response processing
