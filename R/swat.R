@@ -2205,16 +2205,19 @@ setListValue <- function(sw_values, i, key, value) {
    {
       sw_sublist <- sw_values$createListAt(i, key, length(value))
       swat::errorcheck(sw_values)
-      for ( j in 1:length(value) )
+      if ( length(value) > 0 ) 
       {
-         if ( is.null(names(value[j])) || nchar(names(value[j])) == 0 )
-         {
-            setListValue(sw_sublist, j-1, '', value[[j]])
-         }
-         else
-         {
-            setListValue(sw_sublist, j-1, names(value[j]), value[[j]])
-         }
+          for ( j in 1:length(value) )
+          {
+             if ( is.null(names(value[j])) || nchar(names(value[j])) == 0 )
+             {
+                setListValue(sw_sublist, j-1, '', value[[j]])
+             }
+             else
+             {
+                setListValue(sw_sublist, j-1, names(value[j]), value[[j]])
+             }
+          }
       }
       return (i + 1)
    }
