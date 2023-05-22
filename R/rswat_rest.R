@@ -174,8 +174,9 @@ REST_CASTable <- setRefClass(
             out <- do.call(rbind.data.frame, out)
             
             if (length(names(out)) > 0 ) {
-            names(out) <- col.names
+              names(out) <- col.names
             }
+            
             return( out )
         },
 
