@@ -1,6 +1,10 @@
 
 # Change Log
 
+## 1.8.4 - 2023-06-06
+
+- Fix Issue #46 dataStep action failing on Rest Protocol
+
 ## 1.8.3 - 2023-02-02
 
 - Fix problem handling empty list during request processing
