@@ -1,6 +1,11 @@
 
 # Change Log
 
+## 1.9.0 - 2023-09-22
+
+- Update TK subsystem
+- Fix issue running with R4.2 and later on Windows
+
 ## 1.8.4 - 2023-06-06
 
 - Fix Issue #46 dataStep action failing on Rest Protocol
