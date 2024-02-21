@@ -43,10 +43,10 @@ test_that("connection patterns", {
   expect_true(exists("s3"))
   s4 <- CAS$new(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL)
   expect_true(exists("s4"))
-  s1$close()
-  s2$close()
-  s3$close()
-  s4$close()
+  swat::cas.terminate(s1)
+  swat::cas.terminate(s2)
+  swat::cas.terminate(s3)
+  swat::cas.terminate(s4)
 })
 
 test_that('test.results', {
@@ -74,6 +74,7 @@ test_that("test.copy_connection", {
   expect_true(grepl("^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$",
                     s2$session, perl = TRUE))
   expect_true(caz$soptions == s2$soptions)
+  swat::cas.terminate(s2)
 })
 
 test_that("test.fork_connection", {
@@ -98,6 +99,10 @@ test_that("test.fork_connection", {
   expect_true(grepl("^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$",
                     slist[[3]]$session, perl = TRUE))
   expect_true(slist[[3]]$soptions == caz$soptions)
+
+  # Note, slist[[1]] is the original connection.  Don't terminate
+  swat::cas.terminate(slist[[2]])
+  swat::cas.terminate(slist[[3]])
 })
 
 test_that("test.connect_with_bad_session", {
@@ -109,6 +114,7 @@ test_that("test.set_session_locale", {
   u = CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol = PROTOCOL,
           locale = "es_US")
   expect_true(grepl("\\blocale=es_US\\b", u$soptions, perl = TRUE))
+  swat::cas.terminate(u)
 })
 
 test_that("test.set_bad_session_locale", {
@@ -366,6 +372,10 @@ test_that("test.test_multiple_connection_retrieval", {
    expect_true(f1Found)
    expect_true(f2Found)
    expect_true(f3Found)
+
+   # note f[[1]] is the original connection, not a copy.  Don't terminate.
+   swat::cas.terminate(f[[2]])
+   swat::cas.terminate(f[[3]])
 })
 
 test_that("test.test_addtable", {

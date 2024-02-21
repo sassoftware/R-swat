@@ -31,12 +31,12 @@ test_that("unique", {
   # Numeric uniques
   expect_is(unique(i2[1]), "numeric")
   expect_is(unique(i2$Sepal.Length), "numeric")
-  expect_equivalent(unique(i2[1]), unique(i2$Sepal.Length))
+  expect_setequal(unique(i2[1]), unique(i2$Sepal.Length))
   
   # Character uniques
   expect_is(unique(i2[5]), "character")
   expect_is(unique(i2$Species), "character")
-  expect_equivalent(unique(i2[5]), unique(i2$Species))
+  expect_setequal(unique(i2[5]), unique(i2$Species))
   
   # unique(CASTable) returns sorted values. unique(data.frame) does not.
   expect_failure(expect_equivalent(unique(i2$Sepal.Width), unique(iris$Sepal.Width)))

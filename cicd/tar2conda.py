@@ -184,9 +184,7 @@ def get_supported_versions(platform, r_base):
 
     for item in out:
         ver = item['version']
-        # skip 4.2.0, not supported yet
-        if (tuple([int(x) for x in ver.split('.')]) < (3, 4, 3)
-                or tuple([int(x) for x in ver.split('.')]) > (4, 0, 0)):
+        if (tuple([int(x) for x in ver.split('.')]) < (3, 5, 0)):
             continue
         # skip mro 3.5.1 due to build issues
         if (platform == "linux-64" and r_base == "mro"
