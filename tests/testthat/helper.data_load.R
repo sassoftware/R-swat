@@ -25,6 +25,11 @@ options(cas.gen.function.sig=FALSE, cas.print.messages=FALSE)
 #
 # Setup connection parameters
 #
+
+# Fails in Jenkins due to older version of R not supporting withr:defer
+# Uncomment when running tests outside of Jenkins
+#withr::defer(swat::cas.terminate(caz), teardown_env())
+
 info <- swat::.getConnectionInfo(NULL, NULL, NULL, NULL, NULL, NULL)
 HOSTNAME <- info$hostname
 PORT <- info$port
@@ -92,6 +97,7 @@ s0.1 <- c("aa", "bb", "cc", "dd", "dd", " ")
 d.1 <- c('12/31/09', '09/08/78', '12/25/00','04/01/16', NA, '03/08/02')
 d.1 <- as.Date(d, "%m/%d/%y")
 df0.1 <- data.frame(n1.1, n2.1, n3.1, n4.1, s.1, d.1)
+df0_.1 <- data.frame(n1.1, n2.1, n3.1, n4.1, s0.1, d.1)
 
 # Create data frame with missing values
 n1 <- c(2, 3, 5, NA, 5, 598)
@@ -125,6 +131,7 @@ ct  <- as.casTable(caz, df, casOut=list(replace=TRUE))
 i2 <- as.casTable(caz, iris, casOut=list(replace=TRUE))
 df.ct <- as.casTable(caz, df_, casOut=list(replace=TRUE))
 df0.ct <- as.casTable(caz, df0_, casOut=list(replace=TRUE))
+df0_1.ct <- as.casTable(caz, df0_.1, casOut=list(replace=TRUE))
 
 ctn  <- as.casTable(caz, dfn, casOut=list(replace=TRUE))
 
