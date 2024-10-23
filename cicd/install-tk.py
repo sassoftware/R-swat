@@ -25,7 +25,10 @@ import json
 import os
 import platform
 import re
-import requests
+try:
+    import requests
+except ImportError:
+    pass
 import subprocess
 import sys
 import zipfile
@@ -189,6 +192,7 @@ def get_packages(lib_root, tk_base, release, platform, pkgs):
 
         # Package was not found, bail out
         if resp.status_code == 404:
+            print_err("***** get_packages : got 404 for package ... bailing out ... ")
             is_installed = False
             break
 
@@ -214,8 +218,13 @@ def main(args):
     # Create output directory
     os.makedirs(lib_root, exist_ok=True)
 
-    is_installed = get_packages(lib_root, args.tk_base, args.release,
-                                args.platform, TK_PKGS)
+    if args.platform.lower() in ("linux-64", "win-64"):
+        print_err("***** main : binary supported on platform {}".format(args.platform))
+        is_installed = get_packages(lib_root, args.tk_base, args.release,
+                                    args.platform, TK_PKGS)
+    else:
+        print_err("***** main : REST ONLY platform {}".format(args.platform))
+        is_installed = False
 
     update_tk_version(args.root, is_installed and args.release or 'none')
 
