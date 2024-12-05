@@ -56,7 +56,8 @@ def create_release(tag_name, target_commitish, rc_release):
     )
 
     if res.status_code >= 400:
-        raise RuntimeError(res.json())
+        #raise RuntimeError(res.json())
+        print("create release error")
 
     res = res.json()
 
