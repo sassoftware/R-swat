@@ -83,7 +83,7 @@ def git_tag(tag, sha=None):
     cmd = ['git', 'tag', tag]
     if sha:
         cmd.append(sha)
-    subprocess.check_call(cmd)
+    # subprocess.check_call(cmd)
 
 
 def git_push(tag=None):
