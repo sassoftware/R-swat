@@ -56,8 +56,7 @@ def create_release(tag_name, target_commitish, rc_release):
     )
 
     if res.status_code >= 400:
-        #raise RuntimeError(res.json())
-        print("create release error")
+        raise RuntimeError(res.json())
 
     res = res.json()
 
@@ -84,7 +83,7 @@ def git_tag(tag, sha=None):
     cmd = ['git', 'tag', tag]
     if sha:
         cmd.append(sha)
-    # subprocess.check_call(cmd)
+    subprocess.check_call(cmd)
 
 
 def git_push(tag=None):
