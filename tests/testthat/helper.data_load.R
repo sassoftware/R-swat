@@ -36,9 +36,12 @@ PORT <- info$port
 USERNAME <- info$username
 PASSWORD <- info$password
 PROTOCOL <- info$protocol
+PATH <- ''
 
 if ( grepl('^https?:', HOSTNAME) ) {
-    HOSTNAME <- httr::parse_url(HOSTNAME)$hostname
+    PURL <- httr::parse_url(HOSTNAME)
+    PATH <- PURL$path
+    HOSTNAME <- PURL$hostname
 }
 if ( HOSTNAME == '' ) { HOSTNAME = NULL }
 if ( PORT == '' ) { PORT <- NULL }
@@ -66,10 +69,10 @@ if ( is.null(HOSTNAME) )
   }
 }
 
-message(cat('NOTE: Using HOSTNAME=', HOSTNAME, ' PORT=', PORT, ' PROTOCOL=', PROTOCOL, sep=''))
+message(cat('NOTE: Using HOSTNAME=', HOSTNAME, ' PORT=', PORT, ' PROTOCOL=', PROTOCOL, ' PATH=', PATH, sep=''))
 
 # Create CAS connection
-caz <- swat::CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL)
+caz <- swat::CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL, path=PATH)
 
 #
 # Create test data

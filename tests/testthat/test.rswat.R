@@ -31,18 +31,30 @@ test_that("test.basic_connection", {
 })
 
 test_that("test.connection_failure", {
-  expect_error(CAS(HOSTNAME, 19999, USERNAME, PASSWORD, protocol = PROTOCOL))
+  expect_error(CAS(HOSTNAME, 19999, USERNAME, PASSWORD, protocol = PROTOCOL, path=PATH))
 })
 
 test_that("connection patterns", {
-  s1 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, ':', PORT, sep=''), username=USERNAME, password=PASSWORD)
+  if(is.null(PATH) || PATH=='') {
+    s1 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, ':', PORT, sep=''), username=USERNAME, password=PASSWORD)
+  } else {
+    s1 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, ':', PORT, '/', PATH,  sep=''), username=USERNAME, password=PASSWORD)
+  }
+
   expect_true(exists("s1"))
-  s2 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, ':', PORT, sep=''), NULL, USERNAME, PASSWORD)
+  if(is.null(PATH) || PATH=='') {
+    s2 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, ':', PORT, sep=''), NULL, USERNAME, PASSWORD)
+  } else {
+    s2 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, ':', PORT, '/', PATH,  sep=''), NULL, USERNAME, PASSWORD)
+  }
   expect_true(exists("s2"))
-  s3 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, sep=''), PORT, USERNAME, PASSWORD)
+
+  s3 <- CAS$new(paste(PROTOCOL, '://', HOSTNAME, sep=''), PORT, USERNAME, PASSWORD, path=PATH)
   expect_true(exists("s3"))
-  s4 <- CAS$new(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL)
+
+  s4 <- CAS$new(HOSTNAME, PORT, USERNAME, PASSWORD, protocol=PROTOCOL, path=PATH)
   expect_true(exists("s4"))
+
   swat::cas.terminate(s1)
   swat::cas.terminate(s2)
   swat::cas.terminate(s3)
@@ -112,7 +124,7 @@ test_that("test.connect_with_bad_session", {
 
 test_that("test.set_session_locale", {
   u = CAS(HOSTNAME, PORT, USERNAME, PASSWORD, protocol = PROTOCOL,
-          locale = "es_US")
+          locale = "es_US", path=PATH)
   expect_true(grepl("\\blocale=es_US\\b", u$soptions, perl = TRUE))
   swat::cas.terminate(u)
 })
@@ -185,9 +197,16 @@ test_that("test.test_echo", {
 })
 
 test_that("test.test_summary", {
+  out <- caz$retrieve("queryCaslib",caslib="castesttmp")
+  if ( out$results[[1]] == 0 )
+    # caslib castesttmp not present on udanext deployments
+    skip("The caslib 'castesttmp' does not exist.")
+
   out = caz$retrieve("loadactionset", actionset = "simple")
+  expect_true(out$disposition$statusCode == 0)
   out = caz$retrieve("loadtable", path = "datasources/cars_single.sashdat",
                    caslib = "castesttmp")
+  expect_true(out$disposition$statusCode == 0)
   out = caz$retrieve("summary", table = list(name = "datasources.cars_single"))
   summ = out$results$Summary
   expect_true(dim(summ)[[2]] >= 15)
@@ -249,6 +268,10 @@ test_that("test.test_summary", {
 
 test_that("test.test_alltypes", {
   out = caz$retrieve("loadactionset", actionset = "actiontest")
+  if ( out$disposition$statusCode != 0 )
+    # actiontest not present on udanext deployments
+    skip(out$messages[[1]])
+
   out = caz$retrieve("alltypes", casout = "typestable")
   out = caz$retrieve("fetch", table = list(name = "typestable"),
                    sastypes = FALSE)
@@ -281,10 +304,17 @@ test_that("test.test_alltypes", {
 })
 
 test_that("test.test_array_types", {
+  out <- caz$retrieve("queryCaslib",caslib="castesttmp")
+  if ( out$results[[1]] == 0 )
+    # caslib castesttmp not present on udanext deployments
+    skip("The caslib 'castesttmp' does not exist.")
+
   out <- caz$retrieve("loadtable", path = "datasources/summary_array.sashdat",
                     caslib = "castesttmp")
+  expect_true(out$disposition$statusCode == 0)
   out <- caz$retrieve("fetch", table = list(name = "datasources.summary_array"),
                     sastypes = FALSE)
+  expect_true(out$disposition$statusCode == 0)
   df <- out$results$Fetch
   for (i in 1:14) {
     expect_true(df$"_Min_"[[i]] == df$myArray1[[i]])
@@ -305,6 +335,11 @@ test_that("test.test_array_types", {
 })
 
 test_that("test.test_multiple_connection_retrieval", {
+   out = caz$retrieve("loadactionset", actionset = "actiontest")
+   if ( out$disposition$statusCode != 0 )
+     # actiontest not present on udanext deployments
+     skip(out$messages[[1]])
+
    f = caz$fork(3)
 
    expect_true(length(f) == 3)
