@@ -289,7 +289,10 @@ download_sas_binaries <- function(libpath = .libPaths(), pkg_url = NULL, vb_vers
   
   download.file(pkg_url, tempfile)
   
-  untar(tempfile, files = "R-swat-1.10.0/inst/libs", exdir = temp)
-  file.rename(file.path(temp, "R-swat-1.10.0/inst/libs"), file.path(libpath, "libs"))
+  installed_lib_paths = paste0("R-swat-", pkg_version, "/inst/libs")
+  
+  untar(tempfile, files = installed_lib_paths, exdir = temp)
+  file.rename(file.path(temp, installed_lib_paths), file.path(libpath, "libs"))
+  
   message("Restart your R session and reload swat to enable binary connection")
 }
