@@ -244,3 +244,52 @@ numericVarList <- function(object) {
   }
   return (nvars)
 }
+
+
+#' Download SAS SWAT binary libraries for the current platform
+#'
+#' @description
+#' Downloads and extracts platform-specific SWAT (SAS Scripting Wrapper for Analytics Transfer)
+#' binary libraries into a swat/ subdirectory of the first library path returned by `.libPaths()`.
+#'
+#' @param libpath Character vector of library paths. The first element is used as the installation root. Defaults to `.libPaths()`.
+#' @param pkg_url Optional explicit URL to a release tar.gz. If `NULL`, a URL is constructed from the installed swat package version.
+#' @param vb_version Character scalar for the Viya build/version suffix embedded in the archive name (default: `"vb24110"`).
+#'
+#' @return Invisibly returns the destination path of the extracted `libs` directory.
+#'
+#' @note
+#' If `pkg_url` is not `NULL`, the current code does not set `url` (will error). You may want to add `url <- pkg_url` in the `else` branch.
+#'
+#' @examples
+#' \dontrun{
+#' download_sas_binaries()
+#' }
+#'
+#' @export
+
+download_sas_binaries <- function(libpath = .libPaths(), pkg_url = NULL, vb_version = "vb24110" ){
+  libpath <- file.path(libpath[1], "swat")
+  temp <- tempdir()
+  tempfile <- file.path(temp, "r-swat.tar.gz")
+  
+  platform <- switch(.Platform$OS.type,
+                     windows = "win",
+                     unix    = "linux",
+                     stop("Platform not supported for binary connection")
+  )
+
+  if (is.null(pkg_url)) {
+    pkg_version <- packageVersion("swat")
+    pkg_ver <- sub("^([0-9]+\\.[0-9]+\\.[0-9]+).*", "\\1", pkg_version)
+    
+    pkg_url <- paste0("https://github.com/sassoftware/R-swat/releases/download/v", 
+                  pkg_ver,"/R-swat-", pkg_ver ,"+",vb_version,"-", platform, "-64.tar.gz")
+  }
+  
+  download.file(pkg_url, tempfile)
+  
+  untar(tempfile, files = "R-swat-1.10.0/inst/libs", exdir = temp)
+  file.rename(file.path(temp, "R-swat-1.10.0/inst/libs"), file.path(libpath, "libs"))
+  message("Restart your R session and reload swat to enable binary connection")
+}
