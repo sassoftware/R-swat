@@ -87,7 +87,7 @@
 #' @rawNamespace exportPattern("^[[:alpha:]]+")
 #' @rawNamespace importFrom("methods", "as", "callNextMethod", "is", "new", "setClass", "setGeneric", "slot", "initialize", "show")
 #' @rawNamespace importFrom("utils", "read.csv", "read.table", "str", "write.csv", "write.csv2", "write.table")
-#' @rawNamespace if ( grepl('linux', R.version$os) ) {useDynLib(rswat)}
+#' @rawNamespace #if ( grepl('linux', R.version$os) ) {useDynLib(rswat)}
 #' @rawRd % Copyright SAS Institute
 "_PACKAGE"
 
