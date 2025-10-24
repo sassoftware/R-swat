@@ -272,6 +272,8 @@ download_sas_binaries <- function(libpath = .libPaths(), pkg_url = NULL, vb_vers
   libpath <- file.path(libpath[1], "swat")
   temp <- tempdir()
   tempfile <- file.path(temp, "r-swat.tar.gz")
+  pkg_version <- packageVersion("swat")
+  pkg_ver <- sub("^([0-9]+\\.[0-9]+\\.[0-9]+).*", "\\1", pkg_version)
   
   platform <- switch(.Platform$OS.type,
                      windows = "win",
@@ -280,9 +282,6 @@ download_sas_binaries <- function(libpath = .libPaths(), pkg_url = NULL, vb_vers
   )
 
   if (is.null(pkg_url)) {
-    pkg_version <- packageVersion("swat")
-    pkg_ver <- sub("^([0-9]+\\.[0-9]+\\.[0-9]+).*", "\\1", pkg_version)
-    
     pkg_url <- paste0("https://github.com/sassoftware/R-swat/releases/download/v", 
                   pkg_ver,"/R-swat-", pkg_ver ,"+",vb_version,"-", platform, "-64.tar.gz")
   }
