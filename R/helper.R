@@ -282,6 +282,11 @@ download_sas_binaries <- function(libpath = .libPaths()){
                      stop("Platform not supported for binary connection")
   )
   
+  if (identical(Sys.info()[["sysname"]], "Darwin")) {
+    stop("MacOS is not supported binary connection")
+  }
+  
+  
   pkg_url = binaryLinks[grep(platform, binaryLinks)]
   download.file(pkg_url, tempfile)
   
