@@ -253,13 +253,8 @@ numericVarList <- function(object) {
 #' binary libraries into a swat/ subdirectory of the first library path returned by `.libPaths()`.
 #'
 #' @param libpath Character vector of library paths. The first element is used as the installation root. Defaults to `.libPaths()`.
-#' @param pkg_url Optional explicit URL to a release tar.gz. If `NULL`, a URL is constructed from the installed swat package version.
-#' @param vb_version Character scalar for the Viya build/version suffix embedded in the archive name (default: `"vb24110"`).
-#'
 #' @return Invisibly returns the destination path of the extracted `libs` directory.
 #'
-#' @note
-#' If `pkg_url` is not `NULL`, the current code does not set `url` (will error). You may want to add `url <- pkg_url` in the `else` branch.
 #'
 #' @examples
 #' \dontrun{
@@ -268,27 +263,26 @@ numericVarList <- function(object) {
 #'
 #' @export
 
-download_sas_binaries <- function(libpath = .libPaths(), pkg_url = NULL, vb_version = "vb24110" ){
+download_sas_binaries <- function(libpath = .libPaths()){
+  url <- sprintf("https://api.github.com/repos/%s/%s/releases/latest", "sassoftware", "R-swat")
+  resp <- httr::GET(url, accept("application/vnd.github+json"))
+  httr::stop_for_status(resp)
+  
+  output <- jsonlite::fromJSON(content(resp, "text", encoding = "UTF-8"))
+  pkg_ver <- sub("v", "", output$tag_name)
+  binaryLinks <- output$assets$browser_download_url
+  
   libpath <- file.path(libpath[1], "swat")
   temp <- tempdir()
   tempfile <- file.path(temp, "r-swat.tar.gz")
-
-
-  if (is.null(pkg_url)) {
-    pkg_version <- packageVersion("swat")
-    pkg_ver <- sub("^([0-9]+\\.[0-9]+\\.[0-9]+).*", "\\1", pkg_version)
-    
-    platform <- switch(.Platform$OS.type,
-                       windows = "win",
-                       unix    = "linux",
-                       stop("Platform not supported for binary connection")
-    )
-    pkg_url <- paste0("https://github.com/sassoftware/R-swat/releases/download/v", 
-                  pkg_ver,"/R-swat-", pkg_ver ,"+",vb_version,"-", platform, "-64.tar.gz")
-  } else {
-    pkg_ver <- sub(".*?/download/v([^/]+)/.*", "\\1", pkg_url)
-  }
   
+  platform <- switch(.Platform$OS.type,
+                     windows = "win",
+                     unix    = "linux",
+                     stop("Platform not supported for binary connection")
+  )
+  
+  pkg_url = binaryLinks[grep(platform, binaryLinks)]
   download.file(pkg_url, tempfile)
   
   installed_lib_paths = paste0("R-swat-", pkg_ver, "/inst/libs")
