@@ -265,10 +265,10 @@ numericVarList <- function(object) {
 
 download_sas_binaries <- function(libpath = .libPaths()){
   url <- sprintf("https://api.github.com/repos/%s/%s/releases/latest", "sassoftware", "R-swat")
-  resp <- httr::GET(url, accept("application/vnd.github+json"))
+  resp <- httr::GET(url, httr::accept("application/vnd.github+json"))
   httr::stop_for_status(resp)
   
-  output <- jsonlite::fromJSON(content(resp, "text", encoding = "UTF-8"))
+  output <- jsonlite::fromJSON(httr::content(resp, "text", encoding = "UTF-8"))
   pkg_ver <- sub("v", "", output$tag_name)
   binaryLinks <- output$assets$browser_download_url
   
@@ -281,8 +281,8 @@ download_sas_binaries <- function(libpath = .libPaths()){
                      unix    = "linux",
                      stop("Platform not supported for binary connection")
   )
-
-  pkg_url = binaryLinks[grep(platform, binaryLinks)][0]
+  
+  pkg_url = binaryLinks[grep(platform, binaryLinks)]
   download.file(pkg_url, tempfile)
   
   installed_lib_paths = paste0("R-swat-", pkg_ver, "/inst/libs")
@@ -292,3 +292,4 @@ download_sas_binaries <- function(libpath = .libPaths()){
   
   message("Restart your R session and reload swat to enable binary connection")
 }
+
