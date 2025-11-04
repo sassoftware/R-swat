@@ -33,6 +33,11 @@ The SWAT package for R is available from https://sassoftware.r-universe.dev.
 > install.packages('swat', repos = c('https://sassoftware.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
+Optional: download SAS binaries for a binary connection with improved performance. Requires restart.
+
+```
+> swat::download_sas_binaries()
+```
 ### Alternative Installation Methods
 You can also download releases from https://github.com/sassoftware/R-swat/releases.
 
