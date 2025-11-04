@@ -27,7 +27,7 @@ the following requirements:
 
 ### Installation
 
-The SWAT package for R is available from https://sassoftware.r-universe.dev.
+The SWAT package for R is available from SAS at https://sassoftware.r-universe.dev.
 
 ```
 > install.packages('swat', repos = c('https://sassoftware.r-universe.dev', 'https://cloud.r-project.org'))
@@ -39,7 +39,7 @@ Optional: download SAS binaries for a binary connection with improved performanc
 > swat::download_sas_binaries()
 ```
 ### Alternative Installation Methods
-You can also download releases from https://github.com/sassoftware/R-swat/releases.
+You can also download releases as a tar.gz file from https://github.com/sassoftware/R-swat/releases.
 
 Install the ``dplyr``, ``httr`` and ``jsonlite`` packages, These packages
 have additional dependencies that are automatically installed from CRAN
