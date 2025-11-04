@@ -265,10 +265,10 @@ numericVarList <- function(object) {
 
 download_sas_binaries <- function(libpath = .libPaths()){
   url <- sprintf("https://api.github.com/repos/%s/%s/releases/latest", "sassoftware", "R-swat")
-  resp <- httr::GET(url, accept("application/vnd.github+json"))
+  resp <- httr::GET(url, httr::accept("application/vnd.github+json"))
   httr::stop_for_status(resp)
-  
-  output <- jsonlite::fromJSON(content(resp, "text", encoding = "UTF-8"))
+
+  output <- jsonlite::fromJSON(httr::content(resp, "text", encoding = "UTF-8"))
   pkg_ver <- sub("v", "", output$tag_name)
   binaryLinks <- output$assets$browser_download_url
   
