@@ -271,7 +271,7 @@ download_sas_binaries <- function(libpath = .libPaths()){
   output <- jsonlite::fromJSON(httr::content(resp, "text", encoding = "UTF-8"))
   pkg_ver <- sub("v", "", output$tag_name)
   binaryLinks <- output$assets$browser_download_url
-  
+
   libpath <- file.path(libpath[1], "swat")
   temp <- tempdir()
   tempfile <- file.path(temp, "r-swat.tar.gz")
@@ -281,18 +281,18 @@ download_sas_binaries <- function(libpath = .libPaths()){
                      unix    = "linux",
                      stop("Platform not supported for binary connection")
   )
-  
+
   if (identical(Sys.info()[["sysname"]], "Darwin")) {
     stop("MacOS is not supported for binary connection")
   }
-  
+
   pkg_url = binaryLinks[grep(platform, binaryLinks)]
   download.file(pkg_url, tempfile)
-  
+
   installed_lib_paths = paste0("R-swat-", pkg_ver, "/inst/libs")
-  
+
   untar(tempfile, files = installed_lib_paths, exdir = temp)
   file.rename(file.path(temp, installed_lib_paths), file.path(libpath, "libs"))
-  
+
   message("Restart your R session and reload swat to enable binary connection")
 }
