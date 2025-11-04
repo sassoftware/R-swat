@@ -244,3 +244,55 @@ numericVarList <- function(object) {
   }
   return (nvars)
 }
+
+
+#' Download SAS SWAT binary libraries for the current platform
+#'
+#' @description
+#' Downloads and extracts platform-specific SWAT (SAS Scripting Wrapper for Analytics Transfer)
+#' binary libraries into a swat/ subdirectory of the first library path returned by `.libPaths()`.
+#'
+#' @param libpath Character vector of library paths. The first element is used as the installation root. Defaults to `.libPaths()`.
+#' @return Invisibly returns the destination path of the extracted `libs` directory.
+#'
+#'
+#' @examples
+#' \dontrun{
+#' download_sas_binaries()
+#' }
+#'
+#' @export
+
+download_sas_binaries <- function(libpath = .libPaths()){
+  url <- sprintf("https://api.github.com/repos/%s/%s/releases/latest", "sassoftware", "R-swat")
+  resp <- httr::GET(url, httr::accept("application/vnd.github+json"))
+  httr::stop_for_status(resp)
+
+  output <- jsonlite::fromJSON(httr::content(resp, "text", encoding = "UTF-8"))
+  pkg_ver <- sub("v", "", output$tag_name)
+  binaryLinks <- output$assets$browser_download_url
+
+  libpath <- file.path(libpath[1], "swat")
+  temp <- tempdir()
+  tempfile <- file.path(temp, "r-swat.tar.gz")
+  
+  platform <- switch(.Platform$OS.type,
+                     windows = "win",
+                     unix    = "linux",
+                     stop("Platform not supported for binary connection")
+  )
+
+  if (identical(Sys.info()[["sysname"]], "Darwin")) {
+    stop("MacOS is not supported for binary connection")
+  }
+
+  pkg_url = binaryLinks[grep(platform, binaryLinks)]
+  download.file(pkg_url, tempfile)
+
+  installed_lib_paths = paste0("R-swat-", pkg_ver, "/inst/libs")
+
+  untar(tempfile, files = installed_lib_paths, exdir = temp)
+  file.rename(file.path(temp, installed_lib_paths), file.path(libpath, "libs"))
+
+  message("Restart your R session and reload swat to enable binary connection")
+}
