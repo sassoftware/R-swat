@@ -24,14 +24,26 @@ the following requirements:
 * Use 64-bit Linux or 64-bit Windows. 
 * Use a 64-bit version of R. 
 * Use R 3.1.0 or later.
-* Install the ``dplyr``, ``httr`` and ``jsonlite`` packages. These packages
-have additional dependencies that are automatically installed from CRAN
-when you run install.packages(). 
 
 ### Installation
 
-The SWAT package for R is available from SAS as a tar.gz file. You can download 
-releases from https://github.com/sassoftware/R-swat/releases.
+The SWAT package for R is available from SAS at https://sassoftware.r-universe.dev.
+
+```
+> install.packages('swat', repos = c('https://sassoftware.r-universe.dev', 'https://cloud.r-project.org'))
+```
+
+Optional: download SAS binaries for a binary connection with improved performance. Requires restart.
+
+```
+> swat::download_sas_binaries()
+```
+### Alternative Installation Methods
+You can also download releases as a tar.gz file from https://github.com/sassoftware/R-swat/releases.
+
+Install the ``dplyr``, ``httr`` and ``jsonlite`` packages, These packages
+have additional dependencies that are automatically installed from CRAN
+when you run install.packages().
 
 After you download the package, you can install the package with a command that is 
 similar to the following: 
