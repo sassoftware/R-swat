@@ -41,7 +41,7 @@ Optional: download SAS binaries for a binary connection with improved performanc
 ### Alternative Installation Methods
 You can also download releases as a tar.gz file from https://github.com/sassoftware/R-swat/releases.
 
-Install the ``dplyr``, ``httr`` and ``jsonlite`` packages, These packages
+Install the ``dplyr``, ``httr`` and ``jsonlite`` packages. These packages
 have additional dependencies that are automatically installed from CRAN
 when you run install.packages().
 
