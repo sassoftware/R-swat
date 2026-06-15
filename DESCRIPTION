@@ -47,3 +47,4 @@ Collate:
     'connection_viewer.R'
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
+SystemRequirements: NUMA (deb) or numactl-devel (rpm)
