@@ -45,12 +45,14 @@ R CMD INSTALL R-swat-{version}-linux64.tar.gz
 R CMD INSTALL R-swat-{version}-win64.tar.gz
 ```
 
-Some platforms do not support all CAS protocols, you can still use the REST interface by installing the REST-only package with R CMD INSTALL.
+Some platforms do not support all CAS protocols, you can still use the REST interface by
+installing the REST-only package with R CMD INSTALL.
 ```
 R CMD INSTALL R-swat-{version}-REST-only-osx.tar.gz
 ```
 
-<b>NOTE:</b> The platform-specific installers bundle libraries from the SAS TK subsystem.  These bundled libraries are required for using the binary interface to CAS.
+<b>NOTE:</b> The platform-specific installers bundle libraries from the SAS TK subsystem.
+These bundled libraries are required for using the binary interface to CAS.
 '''
 
 
