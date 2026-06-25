@@ -1,14 +1,14 @@
 # SAS Scripting Wrapper for Analytics Transfer (SWAT) for R
 
 SWAT is an R package that enables you to interface with
-SAS Cloud Analytics Services (CAS), the in-memory server that is 
+SAS Cloud Analytics Services (CAS), the in-memory server that is
 the centerpiece of the [SAS Viya](http://www.sas.com/en_us/software/viya.html)
-platform. 
-Using the SWAT package, you can write an R program that connects to a CAS server, 
-analyze large in-memory data sets, and then work with the results of the data 
+platform.
+Using the SWAT package, you can write an R program that connects to a CAS server,
+analyze large in-memory data sets, and then work with the results of the data
 analysis using familiar data-wrangling techniques in R.
 
-This package provides facilities for starting a CAS session and 
+This package provides facilities for starting a CAS session and
 running actions in CAS--such as classifying data with a decision tree or modeling
 with linear regression. Data processing is performed by CAS, which can scale from
 a single-machine server to distributed servers that run on multiple hosts and
@@ -18,12 +18,14 @@ perform massively parallel processing.
 
 ### Requirements
 
-To use the SWAT package for R, the client machine that runs R must meet 
-the following requirements: 
+To use the SWAT package for R, the client machine that runs R must meet
+the following requirements:
 
-* Use 64-bit Linux or 64-bit Windows. 
-* Use a 64-bit version of R. 
+* Use 64-bit Linux or 64-bit Windows.
+* Use a 64-bit version of R.
 * Use R 3.1.0 or later.
+* When running on Linux, the shared library libnuma.so.1 is required to make binary protocol connections to CAS
+
 
 ### Installation
 
@@ -45,8 +47,8 @@ Install the ``dplyr``, ``httr`` and ``jsonlite`` packages. These packages
 have additional dependencies that are automatically installed from CRAN
 when you run install.packages().
 
-After you download the package, you can install the package with a command that is 
-similar to the following: 
+After you download the package, you can install the package with a command that is
+similar to the following:
 
 ```
 R CMD INSTALL R-swat-X.X.X-platform.tar.gz
@@ -64,30 +66,30 @@ You can also install from within R directly using a URL.
                    repos=NULL, type='file')
 ```
 
-If you are running on a platform that does not have an associated installer, 
+If you are running on a platform that does not have an associated installer,
 you should install the source code tar.gz.  These platforms will be
 limited to using the CAS REST interface only.
 
 ```
-> install.packages('https://github.com/sassoftware/R-swat/archive/vX.X.X.tar.gz', 
+> install.packages('https://github.com/sassoftware/R-swat/archive/vX.X.X.tar.gz',
                    repos=NULL, type='file')
 ```
 
 ## Connecting to CAS
 
 ### Authinfo File
-Using a .authinfo file is not required to use the package, but is recommended. When you 
-enter your credentials (user ID and password) in a .authinfo file and secure the 
-permissions, you can avoid specifying those credentials in programs. 
+Using a .authinfo file is not required to use the package, but is recommended. When you
+enter your credentials (user ID and password) in a .authinfo file and secure the
+permissions, you can avoid specifying those credentials in programs.
 
-Throughout the documentation, it is assumed that you have a .authinfo file. The following 
-statement connects R to CAS and supplies the credentials from the .authinfo file: 
+Throughout the documentation, it is assumed that you have a .authinfo file. The following
+statement connects R to CAS and supplies the credentials from the .authinfo file:
 
 ```
 conn <- swat::CAS('cloud.example.com', 8777, protocol='http')
 ```
 
-If you do not use a .authinfo file, then you must connect with a statement like the following: 
+If you do not use a .authinfo file, then you must connect with a statement like the following:
 
 ```
 conn <- swat::CAS('cloud.example.com', 8777, protocol='http', username='sasdemo', password='!s3cret')
@@ -95,10 +97,10 @@ conn <- swat::CAS('cloud.example.com', 8777, protocol='http', username='sasdemo'
 
 ### Binary and REST Communication
 
-Communication between R and CAS can be performed in a binary format with proprietary C 
-libraries, or over HTTP to a REST interface on the server. The C libraries (and therefore 
-binary communication) are supported for 64-bit Linux or Windows only. Connections to CAS that use 
-binary communication are similar to the following example: 
+Communication between R and CAS can be performed in a binary format with proprietary C
+libraries, or over HTTP to a REST interface on the server. The C libraries (and therefore
+binary communication) are supported for 64-bit Linux or Windows only. Connections to CAS that use
+binary communication are similar to the following example:
 
 ```
 conn <- swat::CAS('cloud.example.com', 5570)
@@ -144,7 +146,7 @@ $Summary
 > out$Summary[c('Column', 'Min', 'Max')]
 ```
 
-If you get an error message about the **TCP/IP negClientSSL support routine**, you 
-likely have an issue with your SSL certificate configuration.  See the 
+If you get an error message about the **TCP/IP negClientSSL support routine**, you
+likely have an issue with your SSL certificate configuration.  See the
 [Encryption](https://sassoftware.github.io/python-swat/encryption.html) documentation
 (the R configuration is the same as the Python client) for more information.
